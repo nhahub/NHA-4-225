@@ -523,13 +523,16 @@
 
 | الطبقة | التقنية | السبب |
 |---|---|---|
-| **Frontend** | Next.js (React) + Tailwind CSS + Shadcn UI | SSR/SSG/ISR، routing مُدمج |
+| **Frontend** | Next.js 15 (App Router) + Tailwind CSS + Shadcn UI (محدود) | SSR/SSG، إعداد cheat sheet للـ Tailwind وتثبيت مكونات Shadcn الضرورية فقط |
 | **Motion** | CSS Transitions فقط | أبسط، أسرع، بدون dependency إضافي |
-| **Backend** | Next.js Server Actions + API Routes (Vercel Serverless) | بدون خادم منفصل |
-| **قاعدة بيانات** | PostgreSQL (Neon) + Drizzle ORM | `@neondatabase/serverless` مع `-pooler` |
-| **مصادقة** | JWT (`jose`) + OAuth (Google فقط) | `jose` متوافقة مع Edge Runtime |
-| **Data Freshness** | SWR مع Optimistic Updates + `mutate()` | لا polling. بيانات تتحدث عند كل إجراء |
-| **البنية التحتية** | CI/CD (GitHub Actions) + Vercel CLI | نشر تلقائي |
+| **Backend** | Next.js Server Actions (Vercel Serverless) | بدون خادم منفصل |
+| **قاعدة بيانات** | PostgreSQL (Neon free tier) + Drizzle ORM | `@neondatabase/serverless` مع `-pooler` |
+| **مصادقة** | JWT via `jose` + Google OAuth | `jose` متوافقة مع Edge Runtime |
+| **State / Freshness** | Server Components (Initial fetch) + SWR (Optimistic updates) | تقليل عدد الـ hooks، SWR للـ mutations فقط |
+| **Validation** | Zod (client + server) | توحيد التحقق |
+| **Testing** | Vitest (domain unit tests) | اختبارات سريعة للمنطق |
+| **إدارة الحزم** | npm | أقل مشاكل، documentation أكثر، سيوفر وقت debugging (بدلاً من pnpm) |
+| **البنية التحتية** | CI/CD (GitHub Actions) → Vercel auto-deploy | نشر تلقائي |
 
 ### ٧.٣ النشر (Free Tier)
 

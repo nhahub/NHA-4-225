@@ -110,20 +110,21 @@ All 8 database tables are created in Sprint 1 with all columns — including col
 ### 2.1 Initialization
 
 ```bash
-npx create-next-app@latest hadaf --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --turbopack --use-pnpm
+npx create-next-app@latest hadaf --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --turbopack --use-npm
 
 # UI Foundation
 npx shadcn@latest init
+npx shadcn@latest add button dialog sheet input select toast progress card
 
 # Database
-pnpm add drizzle-orm @neondatabase/serverless
-pnpm add -D drizzle-kit
+npm install drizzle-orm @neondatabase/serverless
+npm install -D drizzle-kit
 
 # Core Dependencies
-pnpm add jose zod swr
+npm install jose zod swr
 
 # Development
-pnpm add -D @types/node vitest
+npm install -D @types/node vitest
 ```
 
 **7 runtime dependencies:** next, react, drizzle-orm, @neondatabase/serverless, jose, swr, zod
@@ -133,7 +134,7 @@ pnpm add -D @types/node vitest
 | Layer | Choice |
 |---|---|
 | Language | TypeScript strict, Next.js App Router, Turbopack |
-| Styling | Tailwind CSS + Shadcn UI + HSL CSS variables (light/dark) |
+| Styling | Tailwind CSS (cheat sheet provided for team) + Shadcn UI (limited to 8 components) + HSL CSS variables (light/dark) |
 | Motion | CSS Transitions only |
 | Testing | Vitest (domain unit tests) + manual testing |
 
@@ -320,7 +321,7 @@ CREATE INDEX idx_analytics_user_created ON analytics_events(user_id, created_at)
 | `daily_summaries` | `(user_id, date)` UNIQUE | Prevent duplicates |
 | `analytics_events` | `(user_id, created_at)` | Event queries |
 
-**Caching:** Client = SWR (cache + optimistic, no polling). Server = none. Static config = `lib/constants.ts`.
+**Caching:** Server Components = Initial Fetch. Client = SWR (client-side mutations/optimistic only, no polling). Static config = `lib/constants.ts`.
 
 **Soft-Delete:** Goals → `status`, Tasks → `status`, Habits → `is_archived`. No hard deletes.
 
@@ -381,7 +382,7 @@ type ActionResult<T> =
 
 | State | Solution |
 |---|---|
-| Server data (tasks, goals, habits) | SWR (cache + optimistic) |
+| Server data (tasks, goals, habits) | Server Components (initial fetch) + SWR (optimistic mutations) |
 | UI state (modals, forms) | React `useState` / `useReducer` |
 | Day Type | React Context (`DayTypeProvider`) |
 | Auth | Edge Middleware + SWR user hook |
@@ -404,7 +405,7 @@ type ActionResult<T> =
 
 ### 3.5 Infrastructure
 
-**CI/CD (GitHub Actions):** `pnpm install → lint → type-check → test → build`
+**CI/CD (GitHub Actions):** `npm install → npm run lint → npm run type-check → npm run test → npm run build`
 
 **Environment Variables:**
 
@@ -790,10 +791,10 @@ FCP ≤1.5s, LCP ≤2.0s, TTI ≤2.5s, CLS ≤0.1, JS ≤150KB gzip, DB query �
 
 ```bash
 git clone https://github.com/{org}/hadaf.git && cd hadaf
-pnpm install
+npm install
 cp .env.example .env.local   # Fill: DATABASE_URL, JWT_SECRET, GOOGLE_*
-pnpm db:push
-pnpm dev                     # → http://localhost:3000
+npm run db:push
+npm run dev                     # → http://localhost:3000
 ```
 
 ### 10.2 Scripts
@@ -802,10 +803,10 @@ pnpm dev                     # → http://localhost:3000
 
 ### 10.3 Pre-Deploy Checklist
 
-1. `pnpm type-check` + `pnpm lint` + `pnpm test` + `pnpm build`
+1. `npm run type-check` + `npm run lint` + `npm run test` + `npm run build`
 2. Env vars in Vercel
 3. Google redirect URL updated for production
-4. `pnpm db:push`
+4. `npm run db:push`
 5. RTL + dark mode + mobile verified
 6. Lighthouse ≥85 Desktop, ≥75 Mobile
 
