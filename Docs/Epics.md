@@ -1,9 +1,11 @@
 # 📋 Hadaf (هدف) — Epic Breakdown v2.0 — MVP
 
 > **Generated from:** PRD v2.0 MVP + UX Design Spec v2.0
-> **Date:** يونيو ٢٠٢٥
-> **Scope:** MVP (Phase 1) — 8 weeks, 5 students
-> **34 stories, ~115 SP**
+> **Date:** يونيو ٢٠٢٦
+> **Scope:** MVP (Phase 1) — 20 days, 5 team members (2 juniors + 3 entry-level, 2 agent-capable)
+> **34 stories, ~145 SP (recalibrated for human + agent velocity)**
+> **Bilingual:** Arabic (RTL) + English (LTR) at parity
+> **Submission:** Live deployed + repo + demo video
 
 ---
 
@@ -28,15 +30,18 @@ Every story respects these constraints:
 | **SWR + Optimistic Updates** | No polling — `mutate()` after every action |
 | **Browser Notifications only** | No FCM |
 
-### 1.2 Team Capacity
+### 1.2 Team Capacity (20 days, 5 humans + agents)
 
-| Sprint | Weeks | Velocity | Focus |
+| Sprint | Days | Velocity | Focus |
 |---|---|---|---|
-| Sprint 1 | 1-2 | ~31 SP | Infrastructure + Foundation |
-| Sprint 2 | 3-4 | ~31 SP | Core CRUD (Goals + Tasks + Habits) |
-| Sprint 3 | 5-6 | ~33 SP | Scoring + Home + Settings + Capacity |
-| Sprint 4 | 7-8 | ~20 SP | Onboarding + Polish |
-| **Total** | **8 weeks** | **~115 SP** | |
+| Sprint 0 | 1-2 | ~20 SP | Foundation + Brand + i18n + Illustrations + Deploy |
+| Sprint 1 | 3-7 | ~35 SP | Infrastructure + Auth + DB + App Shell + Domain |
+| Sprint 2 | 8-12 | ~42 SP | Goals + Tasks + Habits (3 parallel tracks) |
+| Sprint 3 | 13-16 | ~31 SP | Home + Onboarding + Scoring + Capacity Gauge |
+| Sprint 4 | 17-20 | ~17 SP | Polish + Demo Video + Final Deploy |
+| **Total** | **20 days** | **~145 SP** | |
+
+**Velocity assumptions:** 2 agent-capable humans dispatch BMAD-role subagents (`ba`, `pm`, `designer`, `frontend`, `backend`, `qa`). 3 entry-level humans do manual work, illustration, copy, QA. Agents deliver ~3–5× human-only velocity on well-scoped tasks. Human + agent pairing handles the rest.
 
 ---
 
@@ -58,23 +63,27 @@ Every story respects these constraints:
 
 ---
 
-## 3. Sprint Plan
+## 3. Sprint Plan (20 days, bilingual)
 
-| Sprint | Weeks | Focus | Stories | SP |
+| Sprint | Days | Focus | Stories | SP |
 |---|---|---|---|---|
-| **Sprint 1** | 1-2 | Infrastructure & Foundation | INF-1 through INF-10 | 31 |
-| **Sprint 2** | 3-4 | Core CRUD (Goals + Tasks + Habits) | E1-1, E1-2, E1-3, E1-4, E2-1, E2-2, E3-1, E2-3 | 31 |
-| **Sprint 3** | 5-6 | Features & Integration | E2-4, E3-2, E3-3, E6-2, E12-1, E4-1, E4-3, HOME-1, HOME-2 | 33 |
-| **Sprint 4** | 7-8 | Onboarding + Polish | ONB-1, ONB-2, ONB-3, POL-1, POL-2, POL-3, POL-4 | 20 |
+| **Sprint 0** | 1-2 | Foundation & Brand | Scaffold, tokens, i18n, fonts, 10 illustrations, Vercel deploy | ~20 |
+| **Sprint 1** | 3-7 | Infrastructure & Core | INF-1 through INF-10 + Domain logic (5 modules) | ~35 |
+| **Sprint 2** | 8-12 | Goals + Tasks + Habits | E1-1, E1-2, E1-3, E1-4, E2-1, E2-2, E3-1, E2-3 | ~42 |
+| **Sprint 3** | 13-16 | Features & Integration | E2-4, E3-2, E3-3, E6-2, E12-1, E4-1, E4-3, HOME-1, HOME-2 | ~31 |
+| **Sprint 4** | 17-20 | Onboarding + Polish + Demo | ONB-1, ONB-2, ONB-3, POL-1, POL-2, POL-3, POL-4 + demo video | ~17 |
 
 ### Sprint Demos
 
 | Sprint | What We Demo |
 |---|---|
-| **Sprint 1** | Login → see responsive shell → RTL Arabic → dark mode toggle → navigate tabs → empty states |
-| **Sprint 2** | Create goal via wizard → create linked task (auto-type) → see dashboard with rings → see task list |
-| **Sprint 3** | Complete tasks (3 types) → points awarded → progress bar colors → habits + MVD → Day Types → Home screen |
-| **Sprint 4** | Full onboarding flow → all polish states → end-to-end user journey |
+| **Sprint 0** | Vercel preview deploys "Coming soon" landing → brand mark visible → language toggle works (AR ↔ EN) → 10 illustrations shipped → design tokens applied |
+| **Sprint 1** | Login (Google OAuth) → responsive shell (mobile + desktop) → both RTL/LTR render correctly → dark/light theme → all 8 tables connected → domain logic passes unit tests → first skeleton + empty states |
+| **Sprint 2** | Create goal via wizard (both languages) → create linked task (auto-type) → see dashboard with rings + 12-week bar → create Boolean + Counter habit → see MVD toggle → first scoring points awarded |
+| **Sprint 3** | Complete tasks (3 types, both languages) → Contribution Pulse animation → progress bar with 4 colors → 5 day states → Daily Pulse card on Home → full 3-step onboarding flow |
+| **Sprint 4** | Full end-to-end user journey in both languages → all polish states → Lighthouse ≥ 85 desktop / ≥ 75 mobile → demo video → live on production |
+
+**Critical decision point — Day 12:** A real user (any human, even non-team) must complete "create goal → create task → complete task → see progress" without help, in both languages. If they cannot, we fix UX before Sprint 3.
 
 ---
 

@@ -1,43 +1,49 @@
 # Architecture Decision Document — Hadaf (هدف) v2.0 — MVP
 
-> **Date:** June 2025
+> **Date:** June 2026
 > **Aligned with:** PRD v2.0 + UX Design Spec v2.0 + Epics v2.0
-> **Team:** 5 interns learning Next.js — 8 weeks
-> **Scope:** This document covers the MVP (Phase 1) only. The full Hadaf project spans 4 phases. After the internship, the same codebase and architecture carry forward with zero migration.
+> **Team:** 5 humans — 20 days
+> **Scope:** This document covers the MVP (Phase 1) only. The full Hadaf project spans 4 phases. After MVP, the same codebase and architecture carry forward with zero migration.
+> **Bilingual:** Arabic (RTL) + English (LTR) at parity — i18n from day 1, no language is fallback.
 
 ---
 
-## 0.1 Internship Scope
+## 0.1 MVP Scope (20 days, 5 humans + agents, bilingual)
 
 All 8 database tables are created in Sprint 1 with all columns — including columns not used immediately (e.g., `is_spiritual`, `checklist`). Folder structure, patterns, domain logic, and CI/CD are designed for the complete product.
 
-**During the internship (8 weeks, 5 interns, ~115 SP),** the team implements 34 stories:
+**During the 20-day build (5 humans + agents, ~145 SP),** the team implements 34 stories + brand + i18n + demo video:
 
 | Area | What's Built |
 |---|---|
-| Infrastructure | Auth, DB (all 8 tables), App Shell, RTL, Dark Mode, CI/CD, Accessibility |
+| Foundation (Sprint 0) | Scaffold, design tokens, **i18n setup (AR + EN)**, font self-hosting, **10 illustrations**, brand mark, Vercel deploy |
+| Infrastructure | Auth, DB (all 8 tables), App Shell, RTL/LTR parity, Dark Mode, CI/CD, Accessibility |
 | Goals | Repository, SMART Wizard, Dashboard (rings + health + 12-week bar), Goal Detail + Milestones |
-| Tasks | Repository + Scoring Domain, Task Creation with Auto-Type, 3 Completion Types, Task List |
-| Habits | Repository, Build Habits (Boolean + Counter), MVD System |
+| Tasks | Repository + Scoring Domain, Task Creation with Auto-Type, 3 Completion Types, Task List, **Backlog** |
+| Habits | Repository, Build Habits (Boolean + Counter + Quit), MVD System |
 | Scoring | Scoring Engine, Progress Bar + 5 Day States |
 | Settings | Day Types (Work/Light/Off) + work hours + day start |
-| Capacity | Backend calculation only |
-| Home | Adaptive greeting, assembled daily view |
-| Onboarding | 3-step wizard |
+| Capacity | **Visual gauge on Home screen** (the moat — not backend-only) |
+| Home | Adaptive greeting, **Daily Pulse signature card**, assembled daily view |
+| Onboarding | 3-step wizard, Goal vs Habit dialog |
 | Polish | Empty States, Loading Skeletons, Error Toasts, Confirmation Dialogs |
+| Demo | Cinematic 1–3 min video (Khaled's story arc, AR VO + EN subtitles) |
 
-**Internship constraints:**
+**Project constraints:**
 
 | Constraint | Rule |
 |---|---|
-| Language | Arabic-only (RTL infrastructure built, no toggle UI) |
-| Motion | CSS Transitions only — no Framer Motion |
-| Quick Add | Home screen only (not FAB on every screen) |
-| Task Sort | Priority-based only (no manual drag reorder) |
-| Capacity | Backend calculation; no visual gauge |
-| Habits | Boolean + Counter only; users type habit names (no suggested library) |
-| Persistence | Save on Action — no auto-save |
-| Destructive Actions | Confirmation Dialogs — no Undo/Redo |
+| **Language** | **Bilingual parity** — Arabic (RTL) + English (LTR), both first-class. i18n from day 1. No language is "fallback." |
+| **Voice / Tone** | **Non-formal but high-quality** — conversational, friendly, polished. Same person writes both. AI-assisted translation handles bilingual copy. |
+| **Design assets** | **None pre-existing** — logo, illustrations, brand mark all created from scratch in Sprint 0. Current UX spec is a baseline; final design direction owned separately. |
+| **Motion** | CSS Transitions only — no Framer Motion. Push CSS limits (View Transitions API, `@keyframes`, scroll-bound animations) for premium feel. |
+| **Quick Add** | Home screen only (not FAB on every screen) |
+| **Task Sort** | Priority-based only (no manual drag reorder) |
+| **Capacity** | **Visual gauge on Home screen required** (the differentiator) |
+| **Habits** | Boolean + Counter only; users type habit names (no suggested library) |
+| **Persistence** | Save on Action — no auto-save |
+| **Destructive Actions** | Confirmation Dialogs — no Undo/Redo |
+| **Deployment** | Live on Vercel from Day 2 onwards. Preview deploys per PR. Production on `main`. |
 
 ---
 
@@ -82,10 +88,12 @@ All 8 database tables are created in Sprint 1 with all columns — including col
 | **Neon** | 512 MB storage, auto-suspend | Loading Skeletons handle 2-5s cold start |
 
 **Team Constraints:**
-- 5 interns learning Next.js
-- 8-week timeline
-- No dedicated UX designer — Shadcn UI as component foundation
+- 5 humans (2 juniors + 3 entry-level) — 2 of them agent-capable
+- 20-day timeline (compressed from original 8-week plan)
+- BMAD method: agents dispatched in `ba` / `pm` / `designer` / `frontend` / `backend` / `qa` roles
+- No dedicated UX designer for v1.0 — Shadcn UI as component foundation; final design direction elevated separately
 - No budget — every service must have a free tier
+- No pre-existing design assets (logo, illustrations, Figma) — designed from scratch in Sprint 0
 
 **External Dependencies:** Neon PostgreSQL, Vercel, GitHub, Google OAuth
 
@@ -388,7 +396,22 @@ type ActionResult<T> =
 | Auth | Edge Middleware + SWR user hook |
 | Forms | React Hook Form + Zod |
 | Theme | CSS variables + `data-theme` attribute |
-| Language | React Context + `<html dir>` — Arabic-only during MVP |
+| **Language (i18n)** | **`next-intl` from day 1.** Locale stored in URL (`/ar/...` and `/en/...`) + user preference in `users.settings.language`. `<html dir>` and `<html lang>` set from locale. Bilingual parity — no language is fallback. |
+
+**i18n Architecture:**
+
+| Concern | Solution |
+|---|---|
+| String catalog | `messages/ar.json` and `messages/en.json` — flat key structure, mirrored 1:1 |
+| Server Components | `getTranslations()` from `next-intl/server` |
+| Client Components | `useTranslations()` from `next-intl` |
+| Routing | `/[locale]/...` segment — middleware sets locale from URL or cookie |
+| Number formatting | `Intl.NumberFormat(locale)` — Arabic numerals for `ar`, Western for `en` |
+| Date formatting | `Intl.DateTimeFormat(locale)` |
+| Direction | `<html dir="rtl">` for Arabic, `dir="ltr"` for English |
+| Logical CSS | Tailwind `ms-`/`me-`/`ps-`/`pe-` everywhere — works in both directions |
+| Iconography | `lucide-react` (mostly directional-neutral) + custom SVGs that flip for RTL when needed |
+| Voice/Tone consistency | Single `copy-brief.md` doc guides both languages — non-formal but high quality. AI-assisted translation via the same agent preserves tone. |
 
 **Component Types:**
 

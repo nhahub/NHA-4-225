@@ -1,8 +1,10 @@
-# 📋 Hadaf (هدف) — Internship Scope Summary
+# 📋 Hadaf (هدف) — Project Scope Summary
 
-> **Version:** 1.0 | **Date:** June 2025
-> **Team:** 5 interns (Next.js learners) | **Duration:** 8 weeks (4 × 2-week sprints)
-> **Language:** Arabic-only (RTL)
+> **Version:** 2.0 | **Date:** June 2026
+> **Team:** 5 humans (2 juniors + 3 entry-level, 2 agent-capable) | **Duration:** 20 days (5 × 4-day sprints)
+> **Language:** Bilingual parity — Arabic (RTL) + English (LTR), both first-class
+> **Methodology:** Agile (daily standups, weekly demos) + BMAD agent roles + agentic coding
+> **Submission:** Live deployed app (Vercel) + public code repo + cinematic demo video (1–3 min)
 
 ---
 
@@ -43,18 +45,22 @@ The internship delivers the **core product loop** — enough to prove the value 
 | **POL** (Polish) | 4 | 11 | Empty states, loading skeletons, error toasts with retry, confirmation dialogs |
 | **Total** | **34** | **~115** | |
 
-### Key Internship Constraints
+### Key Project Constraints
 
 | Constraint | Rule |
 |---|---|
-| **Language** | Arabic-only. RTL infrastructure is built, but no language toggle UI |
-| **Motion** | CSS Transitions only — no Framer Motion |
+| **Language** | Bilingual parity — Arabic (RTL) and English (LTR) ship together, both first-class. i18n from day 1, full string catalog in both languages. No language is "fallback." |
+| **Voice / Tone** | Non-formal but high-quality — conversational, friendly, polished. Not corporate / stiff, not slangy. AI-assisted translation produces this naturally. Same person should feel to have written both languages. |
+| **Design** | Current UX spec is a baseline. Final design direction is owned and elevated separately to an impeccable bar. **No pre-existing assets (logo, illustrations, Figma)** — all designed from scratch in-Sprint 0. |
+| **Motion** | CSS Transitions only — no Framer Motion. Push CSS to its limits (View Transitions API, `@keyframes`, scroll-bound animations) for premium feel. |
 | **Quick Add** | Accessible from Home screen only (not floating on every screen) |
 | **Task Sorting** | Priority-based only (no manual drag reorder) |
-| **Capacity** | Backend calculation exists; no visual gauge on Home screen |
+| **Capacity** | **Visual gauge on Home screen is required** (the moat) — not backend-only as in v1.0 |
 | **Habits** | Boolean + Counter only. Users type habit names (no suggested library) |
 | **Persistence** | Save on Action — no auto-save |
 | **Destructive Actions** | Confirmation Dialogs — no Undo/Redo |
+| **Deployment** | Live on Vercel from Day 2 onwards (preview deploys per PR, production on `main`) |
+| **Demo Video** | Cinematic 1–3 min video using **Khaled's story arc** (loses streak → discovers MVD → never loses momentum). Bilingual (Arabic VO + English subtitles). |
 
 ---
 
@@ -76,24 +82,32 @@ The internship delivers the **core product loop** — enough to prove the value 
 
 ---
 
-## 4. Sprint Plan
+## 4. Sprint Plan (20 days)
 
-| Sprint | Weeks | Focus | Stories | SP |
+| Sprint | Days | Focus | Stories | SP (target) |
 |---|---|---|---|---|
-| **Sprint 1** | 1-2 | Infrastructure & Foundation | INF-1 through INF-10 | 31 |
-| **Sprint 2** | 3-4 | Core CRUD (Goals + Tasks + Habits) | E1-1, E1-2, E1-3, E1-4, E2-1, E2-2, E3-1, E2-5 | 31 |
-| **Sprint 3** | 5-6 | Features & Integration | E2-3, E3-2, E3-3, E6-2, E12-1, E4-1, E4-3, HOME-1, HOME-2 | 33 |
-| **Sprint 4** | 7-8 | Onboarding + Polish | ONB-1, ONB-2, ONB-3, POL-1, POL-2, POL-3, POL-4 | 20 |
-| **Total** | **8 weeks** | | **34 stories** | **~115 SP** |
+| **Sprint 0** | 1-2 | Foundation & Brand | Scaffold, design tokens, i18n, fonts, 10 illustrations, Vercel deploy | ~20 |
+| **Sprint 1** | 3-7 | Infrastructure & Core | INF (all), App Shell, Auth, DB (all 8 tables), Domain logic (5 modules) | ~35 |
+| **Sprint 2** | 8-12 | Goals + Tasks + Habits (3 parallel tracks) | E1 (4) + E2 (4) + E3 (3) | ~42 |
+| **Sprint 3** | 13-16 | Home, Onboarding, Scoring | E4 (2), E6 (1), E12 (1), HOME (2), ONB (3) | ~31 |
+| **Sprint 4** | 17-20 | Polish, Deploy, Demo | POL (4), perf, accessibility, demo video, final deploy | ~17 |
+| **Total** | **20 days** | | **~34 stories + 5 demos** | **~145 SP** |
+
+> **SP estimate is recalibrated** for the new team (5 humans + 2 agent-capable dispatching BMAD-role subagents). Agents deliver ~3–5× human-only velocity on well-scoped tasks.
 
 ### Sprint Demos
 
 | Sprint | What We Demo |
 |---|---|
-| **Sprint 1** | Login → see responsive shell → RTL Arabic → dark mode toggle → navigate tabs → empty states |
-| **Sprint 2** | Create goal via wizard → create linked task (auto-type) → see dashboard with rings → see task list |
-| **Sprint 3** | Complete tasks (3 types) → points awarded → progress bar colors → habits + MVD → Day Types → Home screen |
-| **Sprint 4** | Full onboarding flow → all polish states → end-to-end user journey |
+| **Sprint 0** | Vercel preview deploys "Coming soon" landing page → brand mark visible → language toggle works (AR ↔ EN) → 10 illustrations shipped → design tokens applied |
+| **Sprint 1** | Login (Google OAuth) → responsive shell (mobile + desktop) → RTL/LTR both render correctly → dark/light theme → all 8 tables connected → domain logic passes unit tests → first skeleton + empty states visible |
+| **Sprint 2** | Create goal via wizard (both languages) → create linked task (auto-type detection) → see dashboard with rings + 12-week bar → create Boolean + Counter habit → see MVD toggle → first scoring points awarded |
+| **Sprint 3** | Complete tasks (3 types, both languages) → Contribution Pulse animation → progress bar with 4 colors → 5 day states visible → Daily Pulse card on Home → full 3-step onboarding flow |
+| **Sprint 4** | Full end-to-end user journey in both languages → loading + empty + error states all polished → Lighthouse ≥ 85 desktop / ≥ 75 mobile → demo video → live on production |
+
+### Critical Decision Point — Day 12
+
+After Sprint 2, a real user (any human, even non-team) must complete: **create goal → create task → complete task → see progress** without help, in both languages. If they cannot, the UX has a problem and we address it before Sprint 3.
 
 ---
 
@@ -101,14 +115,18 @@ The internship delivers the **core product loop** — enough to prove the value 
 
 | Category | Criteria |
 |---|---|
-| **Core Loop** | Create goal → create linked task → complete task → see points + progress bar update |
+| **Core Loop** | Create goal → create linked task → complete task → see points + progress bar update (in both languages) |
 | **Habits** | Create Boolean + Counter habits → log daily → see MVD auto-switch on Light Day |
 | **Onboarding** | New user finishes 3-step wizard in ≤ 5 minutes |
 | **Resilient UI** | Every screen has empty state + loading skeleton + error toast with retry |
-| **Quality** | RTL correct in Arabic, dark mode correct, mobile responsive (375px+), Lighthouse ≥ 85 Desktop |
+| **Bilingual** | Every screen renders perfectly in Arabic (RTL) and English (LTR). No "missing translation" placeholders. i18n keys fully covered. |
+| **Voice** | Microcopy is non-formal, friendly, polished — same person wrote both languages. No corporate stiffness, no slang. |
+| **Quality** | RTL/LTR correct, dark mode correct, mobile responsive (375px+), Lighthouse ≥ 85 Desktop / ≥ 75 Mobile |
 | **Architecture** | Domain logic pure (no React/Drizzle imports), DB queries in repositories only, clean folder structure |
-| **Deployment** | Running on Vercel with CI/CD green on every push to `main` |
+| **Deployment** | Live on Vercel with CI/CD green on every push to `main` — preview deploys per PR |
+| **Demo Video** | 1–3 min cinematic video, Arabic VO + English subtitles, telling **Khaled's story arc** (loses streak → discovers MVD → never loses momentum) |
 | **Code Quality** | TypeScript strict, ESLint clean, unit tests for all domain functions |
+| **Capacity Gauge** | Visual daily capacity gauge on Home screen (the moat — not backend-only) |
 
 ---
 
@@ -137,7 +155,49 @@ All **8 tables** are created in Sprint 1:
 | **Server Actions** | Every mutation goes through `'use server'` functions with auth + Zod validation |
 | **Optimistic Updates** | SWR `mutate()` fires immediately on client; server confirms; no polling |
 | **Domain Purity** | `domain/*.ts` has **zero** imports from React, Next.js, or Drizzle — fully unit-testable |
-| **RTL-First** | Tailwind logical properties (`ms-`, `me-`, `ps-`, `pe-`) everywhere — no `ml-`/`mr-` |
+| **i18n-First (Bilingual)** | `next-intl` (or equivalent) from day 1. Tailwind logical properties (`ms-`, `me-`, `ps-`, `pe-`) work in both RTL (Arabic) and LTR (English). `<html dir>` and `<html lang>` set from URL or user preference. |
 | **Graceful Degradation** | Loading Skeletons (Neon cold start 2-5s), Empty States (CTA), Error Toasts (retry) |
+
+---
+
+## 8. Team & Coordination
+
+### 8.1 Team Composition
+
+| Role | Count | Responsibility |
+|---|---|---|
+| **Junior developer** (agent-capable) | 2 | Dispatch BMAD-role subagents (BA, PM, Designer, Frontend, Backend, QA). Review agent output, unblock edge cases, merge PRs. |
+| **Entry-level developer** | 3 | Manual implementation on well-scoped tasks, illustration/icon work, copy/i18n catalog, QA passes, demo video production. |
+| **Product owner (you)** | 1 | Final say on scope, design direction, voice/tone, demo narrative. Daily 15-min standup. Sign off on Done. |
+
+### 8.2 Daily Cadence
+
+- **Standup (15 min, async OK):** What shipped yesterday? What's shipping today? Blockers?
+- **PR review:** At least one other human reviews every PR before merge.
+- **Demo at end of each sprint** (Day 2, 7, 12, 16, 20): Live walkthrough in both languages.
+
+### 8.3 BMAD Agent Roles (used by agent-capable humans)
+
+| Role | Responsibility |
+|---|---|
+| `ba` | User stories, acceptance criteria, edge cases, bilingual copy briefs |
+| `pm` | Sprint ordering, scope cuts, dependency mapping, critical-path |
+| `designer` | Design tokens, illustrations, motion specs, RTL/LTR layouts, brand mark |
+| `frontend` | Components, screens, responsive layouts, i18n string usage |
+| `backend` | Server actions, repositories, Drizzle queries, Zod schemas |
+| `qa` | Unit tests, manual test cases, edge case hunts, accessibility audit, Lighthouse checks |
+
+### 8.4 Definition of Done (per story)
+
+1. Feature works in both Arabic (RTL) and English (LTR) — verified manually
+2. Domain logic has unit tests (where applicable)
+3. Loading + empty + error states exist
+4. Lighthouse score ≥ 85 desktop / ≥ 75 mobile on the affected page
+5. PR reviewed by at least one other human
+6. No `any` in TypeScript, ESLint clean
+7. No hard-coded strings (all in i18n catalog)
+8. No new technical debt introduced (defer is OK, hack is not)
+
+---
 
 ---
