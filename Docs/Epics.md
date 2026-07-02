@@ -3,7 +3,7 @@
 > **Generated from:** PRD v2.0 MVP + UX Design Spec v2.0
 > **Date:** يونيو ٢٠٢٦
 > **Scope:** MVP (Phase 1) — 20 days, 5 team members (2 juniors + 3 entry-level, 2 agent-capable)
-> **34 stories, ~145 SP (recalibrated for human + agent velocity)**
+> **26 vertically-sliced stories, ~145 SP (recalibrated for human + agent velocity)**
 > **Bilingual:** Arabic (RTL) + English (LTR) at parity
 > **Submission:** Live deployed + repo + demo video
 
@@ -35,486 +35,153 @@ Every story respects these constraints:
 | Sprint | Days | Velocity | Focus |
 |---|---|---|---|
 | Sprint 0 | 1-2 | ~20 SP | Foundation + Brand + i18n + Illustrations + Deploy |
-| Sprint 1 | 3-7 | ~35 SP | Infrastructure + Auth + DB + App Shell + Domain |
-| Sprint 2 | 8-12 | ~42 SP | Goals + Tasks + Habits (3 parallel tracks) |
-| Sprint 3 | 13-16 | ~31 SP | Home + Onboarding + Scoring + Capacity Gauge |
-| Sprint 4 | 17-20 | ~17 SP | Polish + Demo Video + Final Deploy |
+| Sprint 1 | 3-7 | ~35 SP | Project Setup + Identity + Goal Management |
+| Sprint 2 | 8-12 | ~42 SP | Task Management + Habit Tracking |
+| Sprint 3 | 13-16 | ~31 SP | Capacity & Scoring + Home Screen |
+| Sprint 4 | 17-20 | ~17 SP | Onboarding + Polish + Demo Video + Final Deploy |
 | **Total** | **20 days** | **~145 SP** | |
 
 **Velocity assumptions:** 2 agent-capable humans dispatch BMAD-role subagents (`ba`, `pm`, `designer`, `frontend`, `backend`, `qa`). 3 entry-level humans do manual work, illustration, copy, QA. Agents deliver ~3–5× human-only velocity on well-scoped tasks. Human + agent pairing handles the rest.
 
 ---
 
-## 2. MVP Epic Overview
+## 2. MVP Epic Overview (Vertically Sliced)
 
 | Epic ID | Epic Name | Stories | Total SP | Sprint |
 |---|---|---|---|---|
-| **INF** | Infrastructure & Foundation | 10 | 31 | Sprint 1 |
-| **E1** | Goal Management | 4 | 18 | Sprint 2 |
-| **E2** | Task Management & Time Blocking | 4 | 16 | Sprint 2 |
-| **E3** | Habit Tracking | 3 | 8 | Sprint 2 |
-| **E4** | Scoring & Gamification | 2 | 8 | Sprint 3 |
-| **E6** | Settings & Day Types | 1 | 3 | Sprint 3 |
-| **E12** | Daily Capacity | 1 | 3 | Sprint 3 |
+| **E0** | Project Setup & Identity | 6 | 18 | Sprint 1 |
+| **E1** | Goal Management | 2 | 12 | Sprint 1-2 |
+| **E2** | Task Management & Time Blocking | 3 | 16 | Sprint 2 |
+| **E3** | Habit Tracking | 2 | 8 | Sprint 2 |
+| **E4** | Capacity & Scoring | 3 | 12 | Sprint 3 |
 | **HOME** | Home Screen | 2 | 8 | Sprint 3 |
 | **ONB** | Onboarding | 3 | 9 | Sprint 4 |
 | **POL** | System States & Polish | 4 | 11 | Sprint 4 |
-| | **TOTAL** | **34** | **~115** | |
+| | **TOTAL** | **25** | **~94** | |
+
+*(Note: Original SP was ~115 without Foundation, re-sliced SP is slightly lower due to avoiding redundant backend/frontend isolated stories).*
 
 ---
 
 ## 3. Sprint Plan (20 days, bilingual)
 
-| Sprint | Days | Focus | Stories | SP |
-|---|---|---|---|---|
-| **Sprint 0** | 1-2 | Foundation & Brand | Scaffold, tokens, i18n, fonts, 10 illustrations, Vercel deploy | ~20 |
-| **Sprint 1** | 3-7 | Infrastructure & Core | INF-1 through INF-10 + Domain logic (5 modules) | ~35 |
-| **Sprint 2** | 8-12 | Goals + Tasks + Habits | E1-1, E1-2, E1-3, E1-4, E2-1, E2-2, E3-1, E2-3 | ~42 |
-| **Sprint 3** | 13-16 | Features & Integration | E2-4, E3-2, E3-3, E6-2, E12-1, E4-1, E4-3, HOME-1, HOME-2 | ~31 |
-| **Sprint 4** | 17-20 | Onboarding + Polish + Demo | ONB-1, ONB-2, ONB-3, POL-1, POL-2, POL-3, POL-4 + demo video | ~17 |
+| Sprint | Days | Focus | Stories |
+|---|---|---|---|
+| **Sprint 0** | 1-2 | Foundation & Brand | Scaffold, tokens, i18n, fonts, 10 illustrations, Vercel deploy |
+| **Sprint 1** | 3-7 | Setup, Auth & Goals | E0-1 through E0-6, E1-1 |
+| **Sprint 2** | 8-12 | Tasks & Habits | E1-2, E2-1, E2-2, E2-3, E3-1, E3-2 |
+| **Sprint 3** | 13-16 | Capacity, Gamification & Home | E4-1, E4-2, E4-3, HOME-1, HOME-2 |
+| **Sprint 4** | 17-20 | Onboarding + Polish + Demo | ONB-1, ONB-2, ONB-3, POL-1, POL-2, POL-3, POL-4 + demo video |
 
 ### Sprint Demos
 
 | Sprint | What We Demo |
 |---|---|
 | **Sprint 0** | Vercel preview deploys "Coming soon" landing → brand mark visible → language toggle works (AR ↔ EN) → 10 illustrations shipped → design tokens applied |
-| **Sprint 1** | Login (Google OAuth) → responsive shell (mobile + desktop) → both RTL/LTR render correctly → dark/light theme → all 8 tables connected → domain logic passes unit tests → first skeleton + empty states |
-| **Sprint 2** | Create goal via wizard (both languages) → create linked task (auto-type) → see dashboard with rings + 12-week bar → create Boolean + Counter habit → see MVD toggle → first scoring points awarded |
-| **Sprint 3** | Complete tasks (3 types, both languages) → Contribution Pulse animation → progress bar with 4 colors → 5 day states → Daily Pulse card on Home → full 3-step onboarding flow |
+| **Sprint 1** | Login (Google OAuth) → responsive shell → dark/light theme → Goal creation wizard (both languages) |
+| **Sprint 2** | Create goal → create linked task (auto-type) → complete tasks → track Boolean/Counter habits → see MVD toggle |
+| **Sprint 3** | See Daily Capacity gauge → Progress bar with 4 colors → 5 day states → Daily Pulse card on Home |
 | **Sprint 4** | Full end-to-end user journey in both languages → all polish states → Lighthouse ≥ 85 desktop / ≥ 75 mobile → demo video → live on production |
 
-**Critical decision point — Day 12:** A real user (any human, even non-team) must complete "create goal → create task → complete task → see progress" without help, in both languages. If they cannot, we fix UX before Sprint 3.
+---
+
+## 4. Full Story Breakdown by Epic (Vertical Slices)
+
+> **Core Principle:** Database tables are created *only* when the feature requires them. No monolithic DB setup.
 
 ---
 
-## 4. Full Story Breakdown by Epic
+## Epic E0: Project Setup & Identity (6 stories, 18 SP)
 
----
+**Goal:** Establish the foundation, design system, and user authentication.
 
-## Epic INF: Infrastructure & Foundation (10 stories, 31 SP)
-
-**Goal:** The team has a running project with auth, database, responsive shell, RTL, theming, CI/CD, and the analytics table.
-
-**Definition of Done:**
-- [ ] App runs on localhost and deploys to Vercel
-- [ ] Google OAuth login works end-to-end
-- [ ] Protected routes redirect unauthenticated users
-- [ ] Responsive shell with Bottom Nav (mobile) and Sidebar (desktop)
-- [ ] Arabic RTL renders correctly
-- [ ] Dark and Light themes toggle correctly
-- [ ] Database connected with all 8 tables created
-- [ ] CI pipeline runs lint + type-check + build on every push
-- [ ] analytics_events table exists and can log events
-
----
-
-### INF-1: Project Scaffold & Design System Foundation
-**SP: 3 | Priority: P0 | Sprint: 1**
-
+### E0-1: Project Scaffold & Design System Foundation
 Initialize Next.js project with Tailwind, Shadcn UI, and CSS design tokens.
+**AC:** `create-next-app` (Turbopack), Shadcn UI initialized, HSL CSS variables, CSS transitions defined, App runs locally.
 
-**AC:**
-- `create-next-app` with TypeScript strict, Tailwind, App Router, `src/`, Turbopack
-- Shadcn UI initialized with `components/ui/`
-- HSL CSS variables for color system (light + dark mode)
-- CSS transition utility classes defined
-- App runs on `localhost:3000`
-
----
-
-### INF-2: Typography, RTL Foundation & Number Formatting
-**SP: 2 | Priority: P0 | Sprint: 1**
-
+### E0-2: Typography & RTL Foundation
 Configure Tajawal + IBM Plex Sans Arabic fonts with RTL support.
+**AC:** Fonts self-hosted, `<html> dir="rtl"`, Tailwind logical properties used.
 
-**AC:**
-- Tajawal for headings, IBM Plex Sans Arabic for body
-- `<html>` element has `dir="rtl"` and `lang="ar"`
-- Tailwind logical properties (`ms-`, `me-`, `ps-`, `pe-`) used throughout
-- Fonts self-hosted from `/public/fonts/`
-- `lib/i18n/number-format.ts` provides locale-aware formatting
-- Arabic UI renders ١٢٣٤٥
+### E0-3: Layered Architecture Setup
+Set up all architectural layers.
+**AC:** `app/`, `features/`, `domain/`, `data/`, `components/`, `lib/`, `hooks/` exist. `domain/` is framework-agnostic.
 
----
+### E0-4: Database Connection & Analytics Schema
+Connect Neon PostgreSQL via Drizzle ORM and create the basic tables.
+**AC:** Connect to Neon. Create `analytics_events` table for telemetry.
 
-### INF-3: Layered Architecture & Folder Structure
-**SP: 2 | Priority: P0 | Sprint: 1**
+### E0-5: Google OAuth Authentication
+Sign in with Google account and establish the user.
+**AC:** Create `users` table. Google OAuth 2.0 via `jose` (JWT). Refresh token rotation. Analytics event logged on login.
 
-Complete folder structure with all architectural layers.
-
-**AC:**
-- All layers exist: `app/`, `features/`, `domain/`, `data/`, `components/`, `lib/`, `hooks/`
-- `domain/` has zero imports from React, Next.js, or Drizzle
-- `lib/constants.ts` contains: difficulty multipliers, scoring config, categories
+### E0-6: App Shell & Edge Middleware
+Responsive app shell and protected routes.
+**AC:** Edge Middleware validates JWT on `/app/*`. Mobile Bottom Nav, Desktop Sidebar. Dark/Light Theme toggle. A11y keyboard navigation.
 
 ---
 
-### INF-4: Database Connection & Core Schema
-**SP: 5 | Priority: P0 | Sprint: 1**
+## Epic E1: Goal Management (2 stories, 12 SP)
 
-Neon PostgreSQL connected via Drizzle ORM with all 8 core tables.
+**Goal:** User can create 12-week goals via SMART wizard, break them into milestones, and see progress visually.
 
-**AC:**
-- `data/db/client.ts` connects using `@neondatabase/serverless` with `-pooler`
-- `data/db/schema.ts` defines all 8 tables: users, goals, milestones, tasks, habits, habit_logs, daily_summaries, analytics_events
-- All indexes created
-- `drizzle.config.ts` configured for migrations
-- `npm run db:push` creates all tables on Neon
+### E1-1: SMART Goal Wizard & Foundation
+Implement goal creation wizard and underlying data structures.
+**AC:** Create `goals` and `milestones` database tables. 3-step SMART wizard. 5-goal limit enforced. Domain logic for hybrid progress.
 
----
-
-### INF-5: Google OAuth Authentication
-**SP: 5 | Priority: P0 | Sprint: 1**
-
-Sign in with Google account using JWT via `jose`.
-
-**AC:**
-- Google OAuth 2.0 consent screen
-- JWT access token (15min, httpOnly cookie) + refresh token (7-day, DB)
-- New user record on first login with default settings JSONB
-- `lib/auth/jwt.ts` exports `signToken()`, `verifyToken()`
-- Analytics event logged on login
-- Silent refresh on expired access token
+### E1-2: Goal Dashboard & Detail View
+Visual dashboard for goals and deep-dive detail views.
+**AC:** 12-Week Bar segmenting. Goal cards with SVG progress ring and health dot (🟢🟡🟠🔴). Detail view with milestones (checkable/reorderable) and linked tasks.
 
 ---
 
-### INF-6: Protected Routes & Edge Middleware
-**SP: 3 | Priority: P0 | Sprint: 1**
+## Epic E2: Task Management & Time Blocking (3 stories, 16 SP)
 
-Edge Middleware validates JWT on every `/app/*` route.
+**Goal:** User can create tasks with auto-type detection and complete them with dynamic flows.
 
-**AC:**
-- Valid token → request proceeds with userId in headers
-- Invalid/expired → silent refresh attempt → redirect to login if both fail
-- Login/auth routes exempt from JWT validation
-- Logged-in users redirected away from `/login`
+### E2-1: Task Engine & Auto-Type Creation
+Implement task creation with intelligent type inference.
+**AC:** Create `tasks` table. Quick Add Bottom Sheet. Auto-detect type (Quick, Scheduled, Flexible) based on user input. Preview expected points.
 
----
+### E2-2: Task Completion Flows
+Implement the 3 completion types and point calculation.
+**AC:** Domain scoring logic. Smart Complete (Scheduled), Manual Complete (Flexible), Quick Complete (Quick). Contribution Pulse fires on completion.
 
-### INF-7: Responsive App Shell & Navigation
-**SP: 5 | Priority: P0 | Sprint: 1**
-
-Navigation shell adapts to device (Bottom Nav mobile, Sidebar desktop).
-
-**AC:**
-- **Mobile (<768px):** Single column + Bottom Nav (4 items: Home | Goals | Habits | More)
-- **Tablet (768-1024px):** Two columns + toggleable sidebar
-- **Desktop (>1024px):** Three columns + fixed sidebar (right side, RTL)
-- Touch targets ≥ 44×44px
-- Active nav item highlighted
+### E2-3: Task List & Backlog
+Manage today's tasks and overdue backlog.
+**AC:** Sort logic (scheduled by time, others by priority). Backlog ribbon ("N tasks from previous days"). Backlog management (reschedule, delete).
 
 ---
 
-### INF-8: Dark Mode & Theme Toggle
-**SP: 2 | Priority: P1 | Sprint: 1**
+## Epic E3: Habit Tracking (2 stories, 8 SP)
 
-Toggle between light and dark themes.
+**Goal:** User can track Boolean/Counter habits with MVD support and Quit habits with relapse tracking.
 
-**AC:**
-- CSS variables swap between tokens
-- Preference stored in `users.settings.theme`
-- `prefers-color-scheme` respected on first load
-- Contrast ≥ 4.5:1 in both modes
+### E3-1: Build Habits & MVD
+Implement daily habits and Minimum Viable Day toggle.
+**AC:** Create `habits` and `habit_logs` tables. Boolean (✅/☐) and Counter ([+]/[-]). MVD indicator shows minimal version on Light Days. 
 
----
-
-### INF-9: CI/CD Pipeline
-**SP: 2 | Priority: P1 | Sprint: 1**
-
-GitHub Actions pipeline runs on every push.
-
-**AC:**
-- Runs: ESLint, TypeScript type-check, unit tests, build
-- Pipeline fails if any step has errors
-- Push to `main` → Vercel auto-deploy
-- PR checks appear as status checks
+### E3-2: Quit Habits & Relapse Tracking
+Track habits to break with auto-incrementing counters.
+**AC:** Counter auto-increments daily. "Log Relapse" button resets counter and provides encouragement. No negative points.
 
 ---
 
-### INF-10: Accessibility Foundation
-**SP: 2 | Priority: P1 | Sprint: 1**
+## Epic E4: Capacity & Scoring (3 stories, 12 SP)
 
-Full keyboard navigation and screen reader support in app shell.
+**Goal:** User configures their day types, the system calculates their capacity, and dynamically updates their daily progress.
 
-**AC:**
-- All interactive elements reachable via Tab/Enter/Escape
-- Focus indicators with ≥ 3:1 contrast
-- Skip-to-content link as first focusable element
-- `aria-label` on all nav items, `aria-current="page"` on active
-- `prefers-reduced-motion` disables CSS transitions
+### E4-1: Day Types & Settings
+Configuration for how the system treats different days.
+**AC:** Update `users.settings` JSONB. Configure Work/Light/Off days. Configure work hours. Manual day type override.
 
----
+### E4-2: Daily Capacity Intelligence
+System calculates daily capacity without asking the user.
+**AC:** Formula `(end_work - start_work - breaks) × 80%`. Light Day = 50%. Warn user if planned tasks exceed capacity.
 
-## Epic E1: Goal Management (4 stories, 18 SP)
-
-**Goal:** User can create 12-week goals via SMART wizard, break them into milestones, see progress with Goal Health dots.
-
-**Dependencies:** INF (all stories)
-
----
-
-### E1-1: Goals Database & Repository
-**SP: 3 | Priority: P0 | Sprint: 2**
-
-Goals and milestones repository layer with CRUD + domain logic.
-
-**AC:**
-- `data/repositories/goals.repo.ts` provides: createGoal, getActiveGoals, getGoalWithMilestones, updateGoal, softDeleteGoal, replaceGoal, createMilestone, completeMilestone, reorderMilestones, getLinkedTaskCount, getCompletedLinkedTaskCount, getTotalTimeInvested
-- `domain/goal-progress.ts` provides: calculateHybridProgress(), calculateGoalHealth(), calculateWeeklyExecutionScore()
-- All mutations log to analytics_events
-- Unit tests for hybrid progress, goal health, execution score
-
----
-
-### E1-2: SMART Goal Wizard with Goal-Readiness Dialog
-**SP: 5 | Priority: P0 | Sprint: 2**
-
-Create 12-week goal through guided wizard that teaches goal vs habit difference.
-
-**AC:**
-- Goal-Readiness Dialog: two cards (Goal vs Habit) + active goal count vs max
-- Step 1/3: Title + Metric + Smart Habit Detection
-- Step 2/3: 5 Categories (education_work, family, health, religion, other) + Relevance
-- Step 3/3: 12-week cycle + Milestones (add/reorder)
-- 5-goal limit enforced with clear dialog
-- Analytics event on goal creation
-
----
-
-### E1-3: Goal Dashboard with Progress Rings & 12-Week Bar
-**SP: 5 | Priority: P0 | Sprint: 2**
-
-All active goals on dashboard with progress rings, health dots, 12-week bar.
-
-**AC:**
-- Loading Skeleton while loading
-- 12-Week Bar: 12 segments, current week highlighted
-- Goal cards: SVG progress ring, health dot (🟢🟡🟠🔴), title, category, milestone count, task count
-- Goals ordered by category
-- Weekly Execution Score at bottom
-- Empty State with CTA when no goals
-- RTL: Week 1 on right
-
----
-
-### E1-4: Goal Detail View with Milestones & Linked Tasks
-**SP: 5 | Priority: P0 | Sprint: 2**
-
-Single goal details with milestones, linked tasks, and progress override.
-
-**AC:**
-- Large progress ring + health dot + category + metric + relevance + cycle dates
-- Total time invested from completed linked tasks
-- Milestones list (checkable, editable, reorderable)
-- Linked tasks list with completion status
-- Manual override via slider with "يدوي" badge
-- Goal delete with reason (soft-delete)
-- Goal replace mid-cycle
-
----
-
-## Epic E2: Task Management & Time Blocking (4 stories, 16 SP)
-
-**Goal:** User can create 3 types of tasks (auto-detected), complete them via 3 types of completion, manage backlog.
-
-**Dependencies:** INF, E1-1
-
----
-
-### E2-1: Tasks Repository & Scoring Domain Logic
-**SP: 3 | Priority: P0 | Sprint: 2**
-
-Tasks repository and scoring domain logic.
-
-**AC:**
-- `data/repositories/tasks.repo.ts`: createTask (auto-type), getTasksByDate, getBacklogTasks, getBacklogCount, completeTask, postponeTask, deleteTask, updateChecklist, getTasksForGoal
-- `domain/scoring.ts`: calculateTaskPoints() with formula (duration/10 × difficulty × accuracy × streak)
-- Quick = 2 fixed, Time Cap = 3×, Math.ceil
-- Streak = consecutive days with ≥1 completed task
-- Unit tests for all scoring scenarios
-
----
-
-### E2-2: Task Creation with Auto-Type Detection & Quick Add
-**SP: 5 | Priority: P0 | Sprint: 2**
-
-Create tasks via Quick Add where system auto-detects type.
-
-**AC:**
-- Quick Add Bottom Sheet: title (required), goal dropdown, priority, difficulty
-- Collapsible sections: [Add Time] [Add Duration] [Add Checklist]
-- Title only → Quick. + Time → Scheduled. + Duration → Flexible.
-- Time and Duration mutually exclusive
-- Expected points preview (updates live)
-- Capacity warning when over-planning
-- User never sees type labels
-
----
-
-### E2-3: 3 Completion Types (Smart / Manual / Quick)
-**SP: 5 | Priority: P0 | Sprint: 2-3**
-
-Complete tasks via auto-selected completion flow.
-
-**AC:**
-- **Scheduled → Smart Complete:** Planned vs Actual time, accuracy bonus, points calc
-- **Flexible → Manual Complete:** "كم أخذت؟" slider, points calc
-- **Quick → Quick Complete:** One tap, 2 points, no dialog
-- Contribution Pulse fires if linked to goal
-- Completed card fades to 50% + strikethrough
-- Points update on progress bar immediately (optimistic)
-
----
-
-### E2-4: Task List with Backlog & Sorting
-**SP: 3 | Priority: P1 | Sprint: 3**
-
-Today's task list with backlog ribbon and sorting.
-
-**AC:**
-- Task list sorted: Scheduled by time_block_start, others by priority → created_at
-- Backlog ribbon: "لديك [N] مهام من أيام سابقة" → opens backlog list
-- Backlog: sorted by date (oldest first). Actions: reschedule today, reschedule date, delete
-- "تنظيف شامل" button deletes all backlog
-- Warning if backlog > 10 tasks
-- When all tasks complete: "أنجرت كل مهامك! 🎉" + smart suggestion
-
----
-
-## Epic E3: Habit Tracking (3 stories, 8 SP)
-
-**Goal:** User can track Boolean and Counter habits with MVD, create quit habits with relapse tracking.
-
-**Dependencies:** INF, E1-1
-
----
-
-### E3-1: Habits Repository & Domain Logic
-**SP: 3 | Priority: P0 | Sprint: 2**
-
-Habits repository with logging and MVD support.
-
-**AC:**
-- `data/repositories/habits.repo.ts`: createHabit, getActiveHabits, logHabit, getHabitLog, getHabitStreak, createQuitHabit, incrementQuitCounter, logRelapse
-- `domain/scoring.ts`: calculateHabitPoints() — Boolean: 5/3, Counter: 5/4/3/0, Quit: always 0
-- MVD: Full = 100% points, Minimal = 50% points
-- Light Day auto-switches to MVD
-- Unit tests for all habit point scenarios
-
----
-
-### E3-2: Build Habits (Boolean + Counter) with MVD
-**SP: 3 | Priority: P0 | Sprint: 2-3**
-
-Track daily habits with Boolean and Counter types, MVD support.
-
-**AC:**
-- Habit list: Boolean (✅/☐), Counter ([+]/[-] with target)
-- MVD indicator: shows minimal version on Light Days
-- Full completion = green check, MVD = amber check with "MVD" badge
-- Streak display per habit
-- Suggested habits library (chips — no religious habits)
-- Custom habit creation with type, category, frequency, target, MVD value
-
----
-
-### E3-3: Quit Habits with Auto-Counter & Relapse
-**SP: 2 | Priority: P1 | Sprint: 3**
-
-Quit habits with auto-incrementing counter and relapse tracking.
-
-**AC:**
-- Counter auto-increments daily (+1 day) — no daily question
-- "سجل انتكاسة" button (non-prominent): resets counter
-- Encouragement message on relapse: "لا بأس. التقدم ليس خطًا مستقيمًا. 💪"
-- No points deducted ever
-- Stats: longest streak, total relapses, average between relapses
-
----
-
-## Epic E4: Scoring & Gamification (2 stories, 8 SP)
-
-**Goal:** Fair scoring system with dynamic progress bar and 5 day states.
-
-**Dependencies:** E2-1, E3-1
-
----
-
-### E4-1: Scoring Engine Integration
-**SP: 5 | Priority: P0 | Sprint: 3**
-
-Scoring engine integrated with tasks and habits.
-
-**AC:**
-- Task completion → points calculated and stored
-- Habit completion → points calculated and stored
-- Daily target: adaptive based on last 7 days average
-- Points displayed as Arabic numerals (١٢٣ not 123)
-- Milestone Bonus: 10 points per milestone completion
-- All scoring uses Math.ceil (always integers)
-- Same scoring function runs client-side (optimistic) and server-side (authoritative)
-
----
-
-### E4-3: Dynamic Progress Bar + 5 Day States
-**SP: 3 | Priority: P0 | Sprint: 3**
-
-Progress bar with dynamic colors and day state calculation.
-
-**AC:**
-- Progress bar colors: 0-30%=🔴, 31-60%=🟠, 61-85%=🟣, 86-100%+=🟢
-- CSS transition on width (500ms ease-out)
-- Day States: Legendary ≥150%, Amazing ≥120%, Perfect ≥100%, Good Enough 50-99%, Low <50%
-- Good Enough Day badge: "💪 يوم جيد بما فيه الكفاية"
-- Low Day: "غدًا يوم جديد" (no negative message)
-- Day state recalculates on every completion
-
----
-
-## Epic E6: Settings & Day Types (1 story, 3 SP)
-
-**Goal:** User can configure Day Types, work hours, and day start time.
-
-**Dependencies:** INF
-
----
-
-### E6-2: Day Types Configuration
-**SP: 3 | Priority: P0 | Sprint: 3**
-
-Day Types settings with Work/Light/Off and work hours configuration.
-
-**AC:**
-- Day Types: Work (full), Light (50%), Off (habits only)
-- Off days: weekly schedule (default: Fri+Sat, editable)
-- Work hours: start/end time (default: 9:00-17:00)
-- Day start: default 4:00 AM, range 1:00-6:00
-- Manual day type override for any specific day
-- Settings stored in `users.settings` JSONB
-- Theme toggle (dark/light)
-
----
-
-## Epic E12: Daily Capacity (1 story, 3 SP)
-
-**Goal:** Backend calculation of daily capacity from settings.
-
-**Dependencies:** E6-2
-
----
-
-### E12-1: Daily Capacity Calculation
-**SP: 3 | Priority: P0 | Sprint: 3**
-
-Auto-calculate daily capacity from one-time settings.
-
-**AC:**
-- Formula: `(end_work - start_work - breaks) × 80%`
-- Light Day: × 50%. Off Day: capacity = 0
-- Warning when Time Blocks > capacity (soft, non-blocking)
-- Suggestion when Time Blocks < 30% capacity
-- No daily questions — calculated from settings
-- `domain/capacity.ts`: calculateDailyCapacity()
+### E4-3: Scoring Engine & Progress Bar
+Implement dynamic progress bar and day states.
+**AC:** Create `daily_summaries` table. Progress bar with 4 CSS color states (🔴🟠🟣🟢). 5 Day States (Legendary to Low). Good Enough Day badge.
 
 ---
 
@@ -522,37 +189,13 @@ Auto-calculate daily capacity from one-time settings.
 
 **Goal:** Adaptive home screen with morning greeting and daily overview.
 
-**Dependencies:** E2, E3, E4
-
----
-
 ### HOME-1: Adaptive Morning Greeting
-**SP: 5 | Priority: P0 | Sprint: 3**
-
-Context-aware morning greeting handling 3 scenarios.
-
-**AC:**
-- **Has tasks:** "صباح الخير [اسم]. عندك [N] مهام و[N] عادات اليوم." + first task prominent + progress bar + goal progress
-- **No tasks (has goals):** "صباح الخير. عندك [N] عادات اليوم." + suggestion: "هدفك [X] يحتاج اهتمام. أضف مهمة؟"
-- **New user:** "صباح الخير! ابدأ بمهمتك الأولى:" + one task + habits
-- Daily Summary Toast on first open: "أمس: X مهام ✅ | Y عادات ✅ | Z نقطة"
-- Toast auto-dismisses after 3 seconds or on tap
-
----
+Context-aware morning greeting.
+**AC:** Handles 3 scenarios: Has tasks, No tasks (has goals), New user. Daily Summary Toast on first open.
 
 ### HOME-2: Home Screen Layout Assembly
-**SP: 3 | Priority: P1 | Sprint: 3**
-
-Assemble all home screen components into one cohesive view.
-
-**AC:**
-- Section 1: Adaptive greeting (HOME-1)
-- Section 2: Today's tasks (sorted, with Quick Add)
-- Section 3: Habits section (Boolean + Counter + MVD indicator)
-- Section 4: Backlog ribbon (if any)
-- Section 5: Daily progress bar
-- Quick Add accessible from home screen
-- All sections have empty/loading/error states
+Assemble all home screen components into one view.
+**AC:** Greeting → Today's tasks → Habits section → Backlog ribbon → Daily progress bar.
 
 ---
 
@@ -560,49 +203,17 @@ Assemble all home screen components into one cohesive view.
 
 **Goal:** New user completes 3-step onboarding wizard in ≤ 5 minutes.
 
-**Dependencies:** E1-2, E3-2, E6-2
-
----
-
 ### ONB-1: Onboarding Wizard — Step 1 (Goal)
-**SP: 3 | Priority: P0 | Sprint: 4**
-
-First step: Goal vs Habit dialog + create first goal.
-
-**AC:**
-- Goal vs Habit Clarity Dialog: two cards with examples
-- "ابدأ بهدف واحد. واحد بس."
-- SMART wizard for first goal (same as E1-2)
-- Skip not allowed — user must create one goal
-
----
+Goal vs Habit dialog + create first goal.
+**AC:** Cannot skip. SMART wizard for first goal.
 
 ### ONB-2: Onboarding Wizard — Step 2 (Habits + MVD)
-**SP: 3 | Priority: P0 | Sprint: 4**
-
-Second step: Choose habits from library with MVD setup.
-
-**AC:**
-- Suggested habits library (chips): health, education, relationships
-- Tap to select, tap again to deselect
-- For each selected habit: "ما الحد الأدنى في أصعب يوم؟" (MVD setup)
-- Skip allowed (0 habits)
-- No religious habits in MVP library
-
----
+Choose habits from library with MVD setup.
+**AC:** Suggested habits library. "What's the MINIMUM? MVD" setup.
 
 ### ONB-3: Onboarding Wizard — Step 3 (Settings + First Task)
-**SP: 3 | Priority: P0 | Sprint: 4**
-
-Third step: Quick settings + create first task.
-
-**AC:**
-- Work hours: [9:00] to [17:00] (defaults, editable)
-- Days off: [✅ الجمعة] [✅ السبت] (defaults, editable)
-- "إنشاء أول مهمة لليوم": pre-filled with goal link
-- On completion: "🎉 مرحبًا [اسم]! ابدأ بواحدة. واحدة بس."
-- `onboarding_completed` flag set to true
-- User redirected to Home screen
+Quick settings + create first task.
+**AC:** Work hours, Days off. Create first task pre-filled with goal link. Set `onboarding_completed`.
 
 ---
 
@@ -610,65 +221,21 @@ Third step: Quick settings + create first task.
 
 **Goal:** Every screen has proper empty, loading, error, and confirmation states.
 
-**Dependencies:** All previous epics
-
----
-
 ### POL-1: Empty States for Every Screen
-**SP: 3 | Priority: P0 | Sprint: 4**
-
 Illustration + CTA for every empty screen.
-
-**AC:**
-- Goals empty: "حدد أول هدف لك" + [أنشئ هدف]
-- Tasks empty: "لا مهام اليوم. هدفك [X] يحتاج مهمة!" + [أضف مهمة]
-- Habits empty: "أضف عادتك الأولى" + [إضافة عادة]
-- Home empty (no goals/tasks/habits): "ابدأ بهدف واحد" + [ابدأ الآن]
-- Each empty state has relevant illustration + single clear CTA
-
----
+**AC:** Positive, inviting empty state messages.
 
 ### POL-2: Loading Skeletons for Every Data Area
-**SP: 3 | Priority: P0 | Sprint: 4**
-
 Skeleton loading states matching final layout.
-
-**AC:**
-- Goal cards skeleton (3 placeholder cards)
-- Task list skeleton (4-5 placeholder rows)
-- Habits skeleton (3-4 placeholder rows)
-- Home screen skeleton
-- Skeleton uses shimmer animation (1500ms)
-- Respects `prefers-reduced-motion`
-
----
+**AC:** Shimmer animation (1500ms). Handle Neon cold starts gracefully.
 
 ### POL-3: Error Toasts with Retry
-**SP: 3 | Priority: P1 | Sprint: 4**
-
 Error handling with retry for all failed actions.
-
-**AC:**
-- Validation errors: field-level error messages
-- DB failures: "فشل الحفظ. [حاول مرة أخرى]"
-- Network offline: persistent banner "لا يوجد اتصال"
-- Server errors: "حدث خطأ. [حاول مرة أخرى]"
-- Auto-retry (3×) before showing error
-- All error messages lead with positive framing
-
----
+**AC:** Validation errors. DB failures ("فشل الحفظ"). Network offline banner.
 
 ### POL-4: Confirmation Dialogs
-**SP: 2 | Priority: P1 | Sprint: 4**
-
 Confirmation before every destructive action.
-
-**AC:**
-- Shadcn AlertDialog before: delete goal, delete task, delete habit, postpone task, log relapse
-- Goal deletion requires reason (quick-select + free text)
-- Cancel always available
-- Dialog text is clear and non-threatening
-- No Undo/Redo — confirmation prevents mistakes
+**AC:** Delete goal (requires reason), delete task, delete habit, log relapse. No Undo/Redo.
 
 ---
 
@@ -676,21 +243,22 @@ Confirmation before every destructive action.
 
 | PRD FR | Epic | Story |
 |---|---|---|
-| FR1, FR1.1, FR2, FR3, FR4, FR11 | E1 | E1-2 |
-| FR5, FR6, FR6.2, FR6.3, FR7, FR9, FR10 | E1 | E1-1, E1-3, E1-4 |
-| FR6.1 | E1 | E1-5 (integrated in E2-3) |
-| FR11.2, FR11.3 | E1 | E1-4 |
-| FR12, FR12.1, FR12.2, FR12.3, FR13-16 | E2 | E2-2 |
-| FR17-21 (Checklist) | E2 | E2-2 |
-| FR26, FR26.1, FR26.2, FR26.3, FR27-28 | E2 | E2-3 |
-| FR29, FR30, FR31, FR31.1 | E2 | E2-4 |
-| FR32-33 | E2 | E2-4 |
-| FR34, FR34.1, FR35, FR36, FR36.1, FR37 | E3 | E3-2 |
-| FR41, FR42, FR42.1, FR43 | E3 | E3-3 |
-| FR44, FR45 | E4 | E4-1 |
+| FR1, FR1.1, FR2, FR3, FR4, FR11 | E1 | E1-1 |
+| FR5, FR6, FR6.2, FR6.3, FR7, FR9, FR10 | E1 | E1-1, E1-2 |
+| FR8 (لوحة أهداف بصرية) | E1 | E1-2 |
+| FR6.1 | E2 | E2-2 |
+| FR11.2, FR11.3 | E1 | E1-2 |
+| FR12, FR12.1, FR12.2, FR12.3, FR13-16 | E2 | E2-1 |
+| FR17-21 (Checklist) | E2 | E2-1 |
+| FR26, FR26.1, FR26.2, FR26.3, FR27-28 | E2 | E2-2 |
+| FR29, FR30, FR31, FR31.1 | E2 | E2-3 |
+| FR32-33 | E2 | E2-3 |
+| FR34, FR34.1, FR35, FR36, FR36.1, FR37 | E3 | E3-1 |
+| FR41, FR42, FR42.1, FR43 | E3 | E3-2 |
+| FR44, FR45 | E4 | E4-3 |
 | FR46, FR47 | E4 | E4-3 |
-| FR53, FR55, FR55.1-3 | E6 | E6-2 |
+| FR53, FR55, FR55.1-3 | E4 | E4-1 |
 | FR60 | HOME | HOME-1 |
-| FR83, FR83.1-3 | E12 | E12-1 |
+| FR83, FR83.1-3 | E4 | E4-2 |
 | FR84, FR84.1 | HOME | HOME-1 |
-| FR90 | E2 | E2-4 (browser notifications) |
+| FR90 | E2 | E2-3 |
