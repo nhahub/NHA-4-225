@@ -40,33 +40,33 @@ A lane marked `_None_` means genuinely no work in that layer for this story — 
 
 **Summary table:**
 
-| Story | Name | Phase | Est. SP | Depends on |
-|---|---|---|---|---|
-| E0-1 | Project Scaffold & Design System | 1 | 2 | — |
-| E0-2 | Typography & RTL Foundation | 1 | 3 | E0-1 |
-| E0-3 | Layered Architecture Setup | 1 | 2 | E0-1 |
-| E0-4 | Database Connection & Analytics Schema | 1 | 3 | E0-3 |
-| E0-5 | Google OAuth Authentication | 1 | 5 | E0-4 |
-| E0-6 | App Shell & Edge Middleware | 1 | 4 † | E0-5 |
-| E1-1 | SMART Goal Wizard & Foundation | 1 | 6 | E0-4, E0-5 |
-| E1-2 | Goal Dashboard & Detail View | 2 | 8 † | E1-1 (+ E2-2 for heat map data) |
-| E2-1 | Task Engine & Auto-Type Creation | 2 | 6 | E1-1 |
-| E2-2 | Task Completion Flows | 2 | 6 | E2-1 |
-| E2-3 | Task List & Backlog | 2 | 5 † | E2-2 |
-| E3-1 | Build Habits & MVD | 2 | 5 | E0-4 |
-| E3-2 | Quit Habits & Relapse Tracking | 2 | 3 | E3-1 |
-| E4-1 | Day Types & Settings | 3 | 4 † | E0-5 |
-| E4-2 | Daily Capacity Intelligence | 3 | 4 | E4-1 |
-| E4-3 | Scoring Engine & Progress Bar | 3 | 5 | E2-2, E3-1, E4-1 |
-| HOME-1 | Adaptive Morning Greeting | 3 | 4 | E1-1, E2-1, E4-3 |
-| HOME-2 | Home Screen Layout Assembly | 3 | 4 | HOME-1, E2-3, E3-1, E4-2 |
-| ONB-1 | Onboarding Step 1 (Goal) | 4 | 3 | E1-1 |
-| ONB-2 | Onboarding Step 2 (Habits+MVD) | 4 | 3 | E3-1 |
-| ONB-3 | Onboarding Step 3 (Settings+Task) | 4 | 3 | E4-1, E2-1 |
-| POL-1 | Empty States | 4 | 3 | all screens |
-| POL-2 | Loading Skeletons | 4 | 2 | all screens |
-| POL-3 | Error Toasts + Retry | 4 | 3 | all actions |
-| POL-4 | Confirmation Dialogs | 4 | 3 | all delete/relapse actions |
+| Story | Name | Phase | Est. SP | Owner | Depends on |
+|---|---|---|---|---|---|
+| E0-1 | Project Scaffold & Design System | 1 | 2 | **Ziad** | — |
+| E0-2 | Typography & RTL Foundation | 1 | 3 | **Ziad** | E0-1 |
+| E0-3 | Layered Architecture Setup | 1 | 2 | **Ziad** | E0-1 |
+| E0-4 | Database Connection & Analytics Schema | 1 | 3 | **Ziad** | E0-3 |
+| E0-5 | Google OAuth Authentication | 1 | 5 | **Mustafa** | E0-4 |
+| E0-6 | App Shell & Edge Middleware | 1 | 4 † | **Ziad** | E0-5 |
+| E1-1 | SMART Goal Wizard & Foundation | 1 | 6 | **Mustafa** | E0-4, E0-5 |
+| E1-2 | Goal Dashboard & Detail View | 2 | 8 † | **Hamza** | E1-1 (+ E2-2 for heat map data) |
+| E2-1 | Task Engine & Auto-Type Creation | 2 | 6 | **Mustafa** | E1-1 |
+| E2-2 | Task Completion Flows | 2 | 6 | **Mustafa** | E2-1 |
+| E2-3 | Task List & Backlog | 2 | 5 † | **Mohamed** | E2-2 |
+| E3-1 | Build Habits & MVD | 2 | 5 | **Ziad** | E0-4 |
+| E3-2 | Quit Habits & Relapse Tracking | 2 | 3 | **Khaled** | E3-1 |
+| E4-1 | Day Types & Settings | 3 | 4 † | **Hamza** | E0-5 |
+| E4-2 | Daily Capacity Intelligence | 3 | 4 | **Khaled** | E4-1 |
+| E4-3 | Scoring Engine & Progress Bar | 3 | 5 | **Ziad** | E2-2, E3-1, E4-1 |
+| HOME-1 | Adaptive Morning Greeting | 3 | 4 | **Hamza** | E1-1, E2-1, E4-3 |
+| HOME-2 | Home Screen Layout Assembly | 3 | 4 | **Khaled** | HOME-1, E2-3, E3-1, E4-2 |
+| ONB-1 | Onboarding Step 1 (Goal) | 4 | 3 | **Hamza** | E1-1 |
+| ONB-2 | Onboarding Step 2 (Habits+MVD) | 4 | 3 | **Khaled** | E3-1 |
+| ONB-3 | Onboarding Step 3 (Settings+Task) | 4 | 3 | **Mohamed** | E4-1, E2-1 |
+| POL-1 | Empty States | 4 | 3 | **Khaled** | all screens |
+| POL-2 | Loading Skeletons | 4 | 2 | **Mohamed** | all screens |
+| POL-3 | Error Toasts + Retry | 4 | 3 | **Mohamed** | all actions |
+| POL-4 | Confirmation Dialogs | 4 | 3 | **Mohamed** | all delete/relapse actions |
 | | **Total** | | **99** | |
 
 *† = grew after the full-PRD cross-check in §2 (was 94 SP total before gap-fill).*
@@ -138,7 +138,7 @@ All 5 of the MVP-required analytics events from PRD §2.3 (`login`, `task_comple
 
 ### Epic E0 — Project Setup & Identity (19 SP · 6 stories)
 
-#### E0-1 — Project Scaffold & Design System Foundation *(~2 SP)*
+#### E0-1 — Project Scaffold & Design System Foundation *(~2 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (infra)
 > Initialize Next.js project with Tailwind, Shadcn UI, and CSS design tokens.
 
@@ -157,7 +157,7 @@ Epic E0 · FR: — (infra)
 
 ---
 
-#### E0-2 — Typography & RTL Foundation *(~3 SP)*
+#### E0-2 — Typography & RTL Foundation *(~3 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (enables NFR10 Arabic RTL + PRD bilingual mandate)
 > Tajawal + IBM Plex Sans Arabic, RTL support, **bilingual i18n scaffold (gap-fill, see §0)**.
 
@@ -177,7 +177,7 @@ Epic E0 · FR: — (enables NFR10 Arabic RTL + PRD bilingual mandate)
 
 ---
 
-#### E0-3 — Layered Architecture Setup *(~2 SP)*
+#### E0-3 — Layered Architecture Setup *(~2 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (infra)
 > All architectural layers exist; `domain/` is framework-agnostic.
 
@@ -199,7 +199,7 @@ Epic E0 · FR: — (infra)
 
 ---
 
-#### E0-4 — Database Connection & Analytics Schema *(~3 SP)*
+#### E0-4 — Database Connection & Analytics Schema *(~3 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (infra; underlies every KPI in §2.4)
 > Connect Neon PostgreSQL via Drizzle, create the `analytics_events` table.
 
@@ -221,7 +221,7 @@ Epic E0 · FR: — (infra; underlies every KPI in §2.4)
 
 ---
 
-#### E0-5 — Google OAuth Authentication *(~5 SP)*
+#### E0-5 — Google OAuth Authentication *(~5 SP)* · 👤 **Mustafa**
 Epic E0 · FR: — (NFR6 Security: HTTPS/JWT/OAuth)
 > Sign in with Google, establish the user, JWT session.
 
@@ -246,7 +246,7 @@ Epic E0 · FR: — (NFR6 Security: HTTPS/JWT/OAuth)
 
 ---
 
-#### E0-6 — App Shell & Edge Middleware *(~4 SP †)*
+#### E0-6 — App Shell & Edge Middleware *(~4 SP †)* · 👤 **Ziad**
 Epic E0 · FR: — (NFR6/7/8/10; language switcher is **[PRD gap-fill]**, §3 Infrastructure row)
 > Responsive app shell, protected routes, and a real way to switch languages.
 
@@ -270,7 +270,7 @@ Epic E0 · FR: — (NFR6/7/8/10; language switcher is **[PRD gap-fill]**, §3 In
 
 ### Epic E1 — Goal Management, part 1 (Phase 1 slice)
 
-#### E1-1 — SMART Goal Wizard & Foundation *(~6 SP)*
+#### E1-1 — SMART Goal Wizard & Foundation *(~6 SP)* · 👤 **Mustafa**
 Epic E1 · FR1, FR1.1, FR2, FR3, FR4, FR11 *(+FR5/6/6.2/6.3/7/9/10 shared with E1-2)*
 > 3-step SMART wizard, 5-goal limit, hybrid-progress domain logic.
 
@@ -310,7 +310,7 @@ Epic E1 · FR1, FR1.1, FR2, FR3, FR4, FR11 *(+FR5/6/6.2/6.3/7/9/10 shared with E
 
 ### Epic E1 — Goal Management, part 2
 
-#### E1-2 — Goal Dashboard & Detail View *(~8 SP †)*
+#### E1-2 — Goal Dashboard & Detail View *(~8 SP †)* · 👤 **Hamza**
 Epic E1 · FR8, FR11.2, FR11.3 *(+FR5/6/6.2/6.3/7/9/10 shared with E1-1)*. Heat map + search are **[PRD gap-fill]**, §2.1.
 > 12-week bar, progress rings, weekly heat map, health dots, detail view with milestones, and basic search/filter.
 
@@ -345,7 +345,7 @@ Epic E1 · FR8, FR11.2, FR11.3 *(+FR5/6/6.2/6.3/7/9/10 shared with E1-1)*. Heat 
 
 ### Epic E2 — Task Management & Time Blocking (17 SP · 3 stories)
 
-#### E2-1 — Task Engine & Auto-Type Creation *(~6 SP)*
+#### E2-1 — Task Engine & Auto-Type Creation *(~6 SP)* · 👤 **Mustafa**
 Epic E2 · FR12, FR12.1, FR12.2, FR12.3, FR13, FR14, FR15, FR16, FR17, FR18, FR19, FR20, FR21
 > `tasks` table, Quick Add sheet, auto-type detection, points preview.
 
@@ -380,7 +380,7 @@ Epic E2 · FR12, FR12.1, FR12.2, FR12.3, FR13, FR14, FR15, FR16, FR17, FR18, FR1
 
 ---
 
-#### E2-2 — Task Completion Flows *(~6 SP)*
+#### E2-2 — Task Completion Flows *(~6 SP)* · 👤 **Mustafa**
 Epic E2 · FR6.1, FR26, FR26.1, FR26.2, FR26.3, FR27, FR27.1, FR27.2, FR27.3, FR27.4, FR28
 > 3 completion types, full scoring, Contribution Pulse.
 
@@ -410,7 +410,7 @@ Epic E2 · FR6.1, FR26, FR26.1, FR26.2, FR26.3, FR27, FR27.1, FR27.2, FR27.3, FR
 
 ---
 
-#### E2-3 — Task List & Backlog *(~5 SP †)*
+#### E2-3 — Task List & Backlog *(~5 SP †)* · 👤 **Mohamed**
 Epic E2 · FR29, FR30, FR31, FR31.1, FR32, FR32.1, FR32.2, FR32.3, FR33, FR90. Search is **[PRD gap-fill]**, §2.1.
 > Sorting, backlog ribbon, backlog management, browser notifications, basic search/filter.
 
@@ -438,7 +438,7 @@ Epic E2 · FR29, FR30, FR31, FR31.1, FR32, FR32.1, FR32.2, FR32.3, FR33, FR90. S
 
 ### Epic E3 — Habit Tracking (8 SP · 2 stories)
 
-#### E3-1 — Build Habits & MVD *(~5 SP)*
+#### E3-1 — Build Habits & MVD *(~5 SP)* · 👤 **Ziad**
 Epic E3 · FR34, FR34.1, FR35, FR36, FR36.1, FR37
 > `habits`+`habit_logs` tables, Boolean+Counter, MVD on Light Days.
 
@@ -470,7 +470,7 @@ Epic E3 · FR34, FR34.1, FR35, FR36, FR36.1, FR37
 
 ---
 
-#### E3-2 — Quit Habits & Relapse Tracking *(~3 SP)*
+#### E3-2 — Quit Habits & Relapse Tracking *(~3 SP)* · 👤 **Khaled**
 Epic E3 · FR41, FR42, FR42.1, FR43
 > Auto-incrementing counter, relapse logging, no negative points.
 
@@ -498,7 +498,7 @@ Epic E3 · FR41, FR42, FR42.1, FR43
 
 ### Epic E4 — Capacity & Scoring (13 SP · 3 stories)
 
-#### E4-1 — Day Types & Settings *(~4 SP †)*
+#### E4-1 — Day Types & Settings *(~4 SP †)* · 👤 **Hamza**
 Epic E4 · FR53, FR55, FR55.1, FR55.2, FR55.3. Notification toggle is **[PRD gap-fill]**, §2.1.
 > Work/Light/Off configuration, work hours, manual override, notification preferences.
 
@@ -523,7 +523,7 @@ Epic E4 · FR53, FR55, FR55.1, FR55.2, FR55.3. Notification toggle is **[PRD gap
 
 ---
 
-#### E4-2 — Daily Capacity Intelligence *(~4 SP)*
+#### E4-2 — Daily Capacity Intelligence *(~4 SP)* · 👤 **Khaled**
 Epic E4 · FR83, FR83.1, FR83.2, FR83.3
 > System-calculated capacity. **Visual gauge on Home is required — the differentiator, not backend-only.**
 
@@ -547,7 +547,7 @@ Epic E4 · FR83, FR83.1, FR83.2, FR83.3
 
 ---
 
-#### E4-3 — Scoring Engine & Progress Bar *(~5 SP)*
+#### E4-3 — Scoring Engine & Progress Bar *(~5 SP)* · 👤 **Ziad**
 Epic E4 · FR44, FR45, FR46, FR47
 > `daily_summaries` table, 4-color progress bar, 5 Day States.
 
@@ -575,7 +575,7 @@ Epic E4 · FR44, FR45, FR46, FR47
 
 ### Epic HOME — Home Screen (8 SP · 2 stories)
 
-#### HOME-1 — Adaptive Morning Greeting *(~4 SP)*
+#### HOME-1 — Adaptive Morning Greeting *(~4 SP)* · 👤 **Hamza**
 Epic HOME · FR60, FR84, FR84.1
 > 3 greeting scenarios + first-open daily summary toast.
 
@@ -596,7 +596,7 @@ Epic HOME · FR60, FR84, FR84.1
 
 ---
 
-#### HOME-2 — Home Screen Layout Assembly *(~4 SP)*
+#### HOME-2 — Home Screen Layout Assembly *(~4 SP)* · 👤 **Khaled**
 Epic HOME · FR: — (layout assembly, no new FR)
 > Assemble greeting → tasks → habits → backlog → progress bar.
 
@@ -617,7 +617,7 @@ Epic HOME · FR: — (layout assembly, no new FR)
 
 ### Epic ONB — Onboarding (9 SP · 3 stories)
 
-#### ONB-1 — Onboarding Wizard Step 1 (Goal) *(~3 SP)*
+#### ONB-1 — Onboarding Wizard Step 1 (Goal) *(~3 SP)* · 👤 **Hamza**
 Epic ONB · FR: — (reuses FR1.1 dialog + E1-1 wizard)
 > Non-skippable Goal vs Habit dialog + first goal.
 
@@ -635,7 +635,7 @@ Epic ONB · FR: — (reuses FR1.1 dialog + E1-1 wizard)
 
 ---
 
-#### ONB-2 — Onboarding Wizard Step 2 (Habits + MVD) *(~3 SP)*
+#### ONB-2 — Onboarding Wizard Step 2 (Habits + MVD) *(~3 SP)* · 👤 **Khaled**
 Epic ONB · FR: — (reuses E3-1 habit creation). Category restriction is **[PRD gap-fill]** clarification, §2.1.
 > Suggested habits library (chips) + MVD setup.
 
@@ -652,7 +652,7 @@ Epic ONB · FR: — (reuses E3-1 habit creation). Category restriction is **[PRD
 
 ---
 
-#### ONB-3 — Onboarding Wizard Step 3 (Settings + First Task) *(~3 SP)*
+#### ONB-3 — Onboarding Wizard Step 3 (Settings + First Task) *(~3 SP)* · 👤 **Mohamed**
 Epic ONB · FR: — (reuses E4-1 settings + E2-1 task creation)
 > Quick settings + first task + `onboarding_completed`.
 
@@ -674,7 +674,7 @@ Epic ONB · FR: — (reuses E4-1 settings + E2-1 task creation)
 
 ### Epic POL — System States & Polish (11 SP · 4 stories)
 
-#### POL-1 — Empty States for Every Screen *(~3 SP)*
+#### POL-1 — Empty States for Every Screen *(~3 SP)* · 👤 **Khaled**
 Epic POL · FR: — (positive-messaging principle)
 
 **🗄️ Database:** _None._ **⚙️ Backend:** _None._
@@ -691,7 +691,7 @@ Epic POL · FR: — (positive-messaging principle)
 
 ---
 
-#### POL-2 — Loading Skeletons for Every Data Area *(~2 SP)*
+#### POL-2 — Loading Skeletons for Every Data Area *(~2 SP)* · 👤 **Mohamed**
 Epic POL · FR: — (Neon cold-start handling)
 
 **🗄️ Database:** _None._ **⚙️ Backend:** _None._
@@ -708,7 +708,7 @@ Epic POL · FR: — (Neon cold-start handling)
 
 ---
 
-#### POL-3 — Error Toasts with Retry *(~3 SP)*
+#### POL-3 — Error Toasts with Retry *(~3 SP)* · 👤 **Mohamed**
 Epic POL · FR: — (NFR5 interruption handling, NFR13 Save on Action)
 
 **🗄️ Database:** _None._
@@ -726,7 +726,7 @@ Epic POL · FR: — (NFR5 interruption handling, NFR13 Save on Action)
 
 ---
 
-#### POL-4 — Confirmation Dialogs *(~3 SP)*
+#### POL-4 — Confirmation Dialogs *(~3 SP)* · 👤 **Mohamed**
 Epic POL · FR: — (NFR14 destructive-action confirmation)
 
 **🗄️ Database:** _None._
