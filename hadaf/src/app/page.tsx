@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -26,16 +28,13 @@ export default function Home() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="text-muted-foreground text-sm">
-            Sprint 0 — Story E0.1 (Project Scaffold &amp; Design System
-            Foundation) is live. The full app shell, auth, and features land in
-            subsequent stories.
+            Sprint 1 — Epic E1 (Goals) is live. The wizard is complete and the
+            goal dashboard is in progress.
           </p>
           <div className="flex gap-2">
-            <Button variant="default" disabled>
-              Get started
-            </Button>
-            <Button variant="outline" disabled>
-              Read the docs
+            <Button render={<Link href="/goals" />}>Open goals dashboard</Button>
+            <Button render={<Link href="/goals/new" />} variant="outline">
+              Create a goal
             </Button>
           </div>
         </CardContent>

@@ -145,13 +145,13 @@ Epic E0 · FR: — (infra)
 **🗄️ Database:** _None._
 **⚙️ Backend:** _None._
 **🎨 Frontend:**
-- [ ] `npx create-next-app@latest` — Turbopack, App Router, TypeScript, Tailwind, ESLint, `src/` dir, `@/*` alias
-- [ ] `npx shadcn@latest init` with CSS variables (HSL)
-- [ ] `npx shadcn@latest add button dialog sheet input select toast progress card`
-- [ ] HSL color tokens (light + dark) in `app/globals.css`
-- [ ] CSS transition utility tokens defined (confirm `framer-motion` is never installed)
-- [ ] Clean default boilerplate out of `page.tsx`
-- [ ] `npm run dev` runs clean — no lint/type errors
+- [x] `npx create-next-app@latest` — Turbopack, App Router, TypeScript, Tailwind, ESLint, `src/` dir, `@/*` alias
+- [x] `npx shadcn@latest init` with CSS variables (HSL)
+- [x] `npx shadcn@latest add button dialog sheet input select toast progress card`
+- [x] HSL color tokens (light + dark) in `app/globals.css`
+- [x] CSS transition utility tokens defined (confirm `framer-motion` is never installed)
+- [x] Clean default boilerplate out of `page.tsx`
+- [x] `npm run dev` runs clean — no lint/type errors
 
 **Sequencing:** First story, no dependencies. **Owners:** default pairing (Frontend-only story).
 
@@ -164,8 +164,8 @@ Epic E0 · FR: — (enables NFR10 Arabic RTL + PRD bilingual mandate)
 **🗄️ Database:** _None._
 **⚙️ Backend:** _None._
 **🎨 Frontend:**
-- [ ] Self-host Tajawal + IBM Plex Sans Arabic in `public/fonts/`
-- [ ] `@font-face` declarations + Tailwind `fontFamily` config
+- [x] Self-host Tajawal + IBM Plex Sans Arabic in `public/fonts/`
+- [x] `@font-face` declarations + Tailwind `fontFamily` config
 - [ ] `<html dir>` / `<html lang>` wired to active locale in root layout
 - [ ] Audit for `ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-` → replace with logical `ms-`/`me-`/`ps-`/`pe-`
 - [ ] Install `next-intl`
@@ -294,14 +294,14 @@ Epic E1 · FR1, FR1.1, FR2, FR3, FR4, FR11 *(+FR5/6/6.2/6.3/7/9/10 shared with E
 - [ ] Analytics event: `goal_created`
 
 **🎨 Frontend:**
-- [ ] `components/goals/goal-readiness-dialog.tsx` — Goal vs Habit Clarity (FR1.1)
-- [ ] `components/goals/goal-wizard.tsx` — Step 1: Goal + Measure
-- [ ] `components/goals/goal-wizard.tsx` — Step 2: Category + Relevance
-- [ ] `components/goals/goal-wizard.tsx` — Step 3: Milestones breakdown
-- [ ] `app/[locale]/app/goals/new/page.tsx` route
+- [x] `components/goals/goal-readiness-dialog.tsx` — Goal vs Habit Clarity (FR1.1)
+- [x] `components/goals/goal-wizard.tsx` — Step 1: Goal + Measure
+- [x] `components/goals/goal-wizard.tsx` — Step 2: Category + Relevance
+- [x] `components/goals/goal-wizard.tsx` — Step 3: Milestones breakdown
+- [x] `app/goals/new/page.tsx` route
 - [ ] `features/goals/hooks.ts`: `useCreateGoal` (SWR optimistic `mutate()`)
 - [ ] i18n strings in `ar.json`/`en.json` (wizard copy, limit dialog)
-- [ ] Field-level validation error states
+- [x] Field-level validation error states
 
 **Sequencing:** DB → domain (parallel, no DB dependency) → repo → schema/action → hook → UI. Depends on E0-4 (DB pattern), E0-5 (authed user). **Owners:** default pairing.
 
