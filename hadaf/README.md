@@ -59,5 +59,5 @@ Defined in `src/app/globals.css`:
 - **E0.2** — Typography & RTL Foundation (Tajawal + IBM Plex Sans Arabic)
 - **E0.3** — Layered Architecture (`features/`, `domain/`, `data/`, `hooks/`, `providers/`, `lib/`, `tests/`)
 - **E0.4** — Database Connection (Drizzle + Neon)
-- **E0.5** — Google OAuth
+- **E0.5** — Email/Password Authentication
 - **E0.6** — App Shell + Theme Toggle + Protected Routes

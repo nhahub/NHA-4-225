@@ -9,7 +9,7 @@ export const usersRepo = {
     });
   },
 
-  async createGoogleUser(data: {
+  async createUser(data: {
     email: string;
     name: string;
     avatarUrl: string;
@@ -19,7 +19,7 @@ export const usersRepo = {
       .values({
         email: data.email,
         name: data.name,
-        avatar_url: data.avatarUrl,
+        avatarUrl: data.avatarUrl,
         // The default settings object we mapped in schema.ts automatically handles the rest!
       })
       .returning();
@@ -35,9 +35,9 @@ export const usersRepo = {
     return await db
       .update(users)
       .set({
-        refresh_token: token,
-        refresh_token_exp: expiresAt,
-        updated_at: new Date(),
+        refreshToken: token,
+        refreshTokenExp: expiresAt,
+        // updatedAt auto-refreshes via $onUpdate
       })
       .where(eq(users.id, userId));
   },

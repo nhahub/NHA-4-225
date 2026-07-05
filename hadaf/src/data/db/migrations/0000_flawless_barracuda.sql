@@ -12,7 +12,7 @@ CREATE TABLE "analytics_events" (
 	"user_id" uuid NOT NULL,
 	"event_type" text NOT NULL,
 	"event_data" jsonb,
-	"created_at" timestamp with time zone DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "daily_summaries" (
@@ -26,8 +26,8 @@ CREATE TABLE "daily_summaries" (
 	"daily_target" integer DEFAULT 0 NOT NULL,
 	"day_state" "day_state",
 	"summary_shown" boolean DEFAULT false NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uniq_user_daily_summary_date" UNIQUE("user_id","date")
 );
 --> statement-breakpoint
@@ -45,8 +45,8 @@ CREATE TABLE "goals" (
 	"manual_progress" integer,
 	"status" "goal_status" DEFAULT 'active' NOT NULL,
 	"deletion_reason" text,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "habit_logs" (
@@ -56,7 +56,7 @@ CREATE TABLE "habit_logs" (
 	"value" integer DEFAULT 0 NOT NULL,
 	"is_mvd" boolean DEFAULT false NOT NULL,
 	"is_relapse" boolean DEFAULT false NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uniq_habit_log_date" UNIQUE("habit_id","date")
 );
 --> statement-breakpoint
@@ -72,8 +72,8 @@ CREATE TABLE "habits" (
 	"mvd_description" text,
 	"is_spiritual" boolean DEFAULT false NOT NULL,
 	"is_archived" boolean DEFAULT false NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "milestones" (
@@ -83,7 +83,7 @@ CREATE TABLE "milestones" (
 	"sort_order" integer DEFAULT 0 NOT NULL,
 	"is_completed" boolean DEFAULT false NOT NULL,
 	"completed_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "tasks" (
@@ -104,8 +104,8 @@ CREATE TABLE "tasks" (
 	"status" "task_status" DEFAULT 'pending' NOT NULL,
 	"points_earned" integer DEFAULT 0 NOT NULL,
 	"completed_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
@@ -116,9 +116,9 @@ CREATE TABLE "users" (
 	"settings" jsonb NOT NULL,
 	"refresh_token" text,
 	"refresh_token_exp" timestamp with time zone,
-	"onboarding_completed" boolean DEFAULT false,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now(),
+	"onboarding_completed" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
