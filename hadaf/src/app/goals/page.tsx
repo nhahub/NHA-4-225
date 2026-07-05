@@ -5,6 +5,8 @@ import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyGoalsState } from "@/components/goals/empty-goals-state";
 import { GoalCard } from "@/components/goals/goal-card";
+import { TwelveWeekOverview } from "@/components/goals/twelve-week-overview";
+import { WeeklyExecutionScore } from "@/components/goals/weekly-execution-score";
 import { LocaleToggle } from "@/components/shared/locale-toggle";
 import { getGoals } from "@/features/goals/queries";
 import { createT } from "@/i18n/messages";
@@ -42,16 +44,20 @@ export default async function GoalsPage() {
       {goals.length === 0 ? (
         <EmptyGoalsState />
       ) : (
-        <ul
-          role="list"
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {goals.map((goal) => (
-            <li key={goal.id}>
-              <GoalCard goal={goal} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <TwelveWeekOverview goals={goals} />
+          <ul
+            role="list"
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {goals.map((goal) => (
+              <li key={goal.id}>
+                <GoalCard goal={goal} />
+              </li>
+            ))}
+          </ul>
+          <WeeklyExecutionScore goals={goals} />
+        </>
       )}
     </main>
   );
