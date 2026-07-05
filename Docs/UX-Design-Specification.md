@@ -111,6 +111,8 @@ Rule: Errors are recoverable. Always show a retry action.
 
 ### 5.1 Color System: "Capacity-Aware Atmospheric Hierarchy"
 
+> ⚠️ **SUPERSEDED.** Color and typography are now owned by `/DESIGN.md` (the "Quiet Navigator" OKLCH system). The hex values below are historical and MUST NOT be used in code.
+
 #### Core Tokens
 
 | Token | Light Mode | Dark Mode | Usage |
@@ -150,6 +152,8 @@ Rule: Errors are recoverable. Always show a retry action.
 | Off Day | Warm, minimal UI | Serenity Teal |
 
 ### 5.2 Typography System
+
+> ⚠️ **SUPERSEDED.** Color and typography are now owned by `/DESIGN.md` (the "Quiet Navigator" OKLCH system). The hex values below are historical and MUST NOT be used in code.
 
 | Role | Font | Weight | Usage |
 |---|---|---|---|
