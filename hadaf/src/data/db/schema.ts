@@ -92,6 +92,7 @@ export const users = pgTable("users", {
     })),
   refreshToken: text("refresh_token"),
   refreshTokenExp: timestamp("refresh_token_exp", { withTimezone: true }),
+  passwordHash: text("password_hash").notNull(),
   onboardingCompleted: boolean("onboarding_completed")
     .notNull()
     .default(false),

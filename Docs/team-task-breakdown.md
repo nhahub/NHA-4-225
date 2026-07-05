@@ -182,18 +182,18 @@ Epic E0 · FR: — (infra)
 > All architectural layers exist; `domain/` is framework-agnostic.
 
 **🗄️ Database:**
-- [ ] Create `data/db/` folder
-- [ ] `drizzle.config.ts` skeleton (no tables yet)
+- [x] Create `data/db/` folder
+- [x] `drizzle.config.ts` skeleton (no tables yet)
 
 **⚙️ Backend:**
-- [ ] Create `features/`, `domain/`, `data/repositories/` folders
-- [ ] `lib/constants.ts`
-- [ ] `vitest.config.ts` + `tests/domain/` folder
-- [ ] Document/enforce: zero React/Next.js/Drizzle imports inside `domain/`
+- [x] Create `features/`, `domain/`, `data/repositories/` folders
+- [x] `lib/constants.ts`
+- [x] `vitest.config.ts` + `tests/domain/` folder
+- [x] Document/enforce: zero React/Next.js/Drizzle imports inside `domain/`
 
 **🎨 Frontend:**
-- [ ] Create `components/{ui,shared,layouts}/` folders
-- [ ] Create `hooks/`, `providers/` folders
+- [x] Create `components/{ui,shared,layouts}/` folders
+- [x] Create `hooks/`, `providers/` folders
 
 **Sequencing:** Depends on E0-1. **Owners:** default pairing.
 
@@ -204,16 +204,16 @@ Epic E0 · FR: — (infra; underlies every KPI in §2.4)
 > Connect Neon PostgreSQL via Drizzle, create the `analytics_events` table.
 
 **🗄️ Database:**
-- [ ] Provision Neon project (free tier)
-- [ ] `DATABASE_URL` with `-pooler` suffix in `.env.local` + `.env.example`
-- [ ] `data/db/schema.ts`: `analytics_events` table (id, user_id FK, event_type, event_data JSONB, created_at)
-- [ ] `idx_analytics_user_created` index
-- [ ] `data/db/client.ts` — Drizzle client via `@neondatabase/serverless`
-- [ ] First `drizzle-kit generate` + `drizzle-kit push`
+- [x] Provision Neon project (free tier)
+- [x] `DATABASE_URL` with `-pooler` suffix in `.env.local` + `.env.example`
+- [x] `data/db/schema.ts`: `analytics_events` table (id, user_id FK, event_type, event_data JSONB, created_at)
+- [x] `idx_analytics_user_created` index
+- [x] `data/db/client.ts` — Drizzle client via `@neondatabase/serverless`
+- [x] First `drizzle-kit generate` + `drizzle-kit push`
 
 **⚙️ Backend:**
-- [ ] `data/repositories/analytics.repo.ts`: `log(userId, eventType, eventData)`
-- [ ] Connectivity smoke test
+- [x] `data/repositories/analytics.repo.ts`: `log(userId, eventType, eventData)`
+- [x] Connectivity smoke test
 
 **🎨 Frontend:** _None._
 
@@ -226,22 +226,22 @@ Epic E0 · FR: — (NFR6 Security: HTTPS/JWT)
 > Sign in/up with Email and Password, establish the user, JWT session.
 
 **🗄️ Database:**
-- [ ] `users` table: id, email (unique), password_hash, name, avatar_url, `settings` JSONB (defaults per Architecture §3.1, including `language` and `theme`), `refresh_token`, `refresh_token_exp`, `onboarding_completed`, timestamps
+- [x] `users` table: id, email (unique), password_hash, name, avatar_url, `settings` JSONB (defaults per Architecture §3.1, including `language` and `theme`), `refresh_token`, `refresh_token_exp`, `onboarding_completed`, timestamps
 
 **⚙️ Backend:**
-- [ ] `lib/auth/jwt.ts` — sign/verify via `jose`, HS256, 15min access token
-- [ ] `lib/auth/session.ts` — `getAuthUser()` from httpOnly cookie
-- [ ] `lib/auth/password.ts` — hash and verify passwords (e.g. bcrypt or argon2)
-- [ ] `app/api/auth/login/route.ts` & `app/api/auth/register/route.ts` — Email/password flows
-- [ ] `data/repositories/users.repo.ts`: `findByEmail`, `create`, `updateRefreshToken`
-- [ ] Refresh token: 7-day, stored hashed, rotated on use
-- [ ] Token-reuse detection → invalidate all user tokens
-- [ ] Analytics event: `login` & `register`
+- [x] `lib/auth/jwt.ts` — sign/verify via `jose`, HS256, 15min access token
+- [x] `lib/auth/session.ts` — `getAuthUser()` from httpOnly cookie
+- [x] `lib/auth/password.ts` — hash and verify passwords (e.g. bcrypt or argon2)
+- [x] `app/api/auth/login/route.ts` & `app/api/auth/register/route.ts` — Email/password flows (Implemented via Server Actions)
+- [x] `data/repositories/users.repo.ts`: `findByEmail`, `create`, `updateRefreshToken`
+- [x] Refresh token: 7-day, stored hashed, rotated on use
+- [x] Token-reuse detection → invalidate all user tokens
+- [x] Analytics event: `login` & `register`
 
 **🎨 Frontend:**
-- [ ] `app/login/page.tsx` & `app/register/page.tsx` — Email/password forms
-- [ ] `providers/auth.tsx`
-- [ ] Redirect-after-login handling (`?redirect={path}`)
+- [x] `app/login/page.tsx` & `app/register/page.tsx` — Email/password forms
+- [x] `providers/auth.tsx`
+- [x] Redirect-after-login handling (`?redirect={path}`)
 
 **Sequencing:** Depends on E0-4 (DB conn pattern established). **Owners:** default pairing; highest-SP E0 story — keep one owner across DB+Backend for continuity.
 

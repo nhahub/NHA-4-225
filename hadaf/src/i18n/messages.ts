@@ -181,6 +181,53 @@ export const messages = {
       generic: "حدث خطأ ما. حاول مرة أخرى.",
       saveFailed: "فشل الحفظ. حاول مرة أخرى.",
     },
+    auth: {
+      login: {
+        title: "تسجيل الدخول",
+        subtitle: "أدخل بريدك وكلمة المرور للمتابعة.",
+        submit: "تسجيل الدخول",
+        submitPending: "جارٍ الدخول…",
+        noAccount: "ليس لديك حساب؟",
+        registerCta: "أنشئ حسابًا",
+      },
+      register: {
+        title: "إنشاء حساب",
+        subtitle: "أنشئ حسابك بثلاث خطوات قصيرة.",
+        submit: "أنشئ الحساب",
+        submitPending: "جارٍ الإنشاء…",
+        haveAccount: "لديك حساب بالفعل؟",
+        loginCta: "سجّل الدخول",
+      },
+      logout: {
+        submit: "تسجيل الخروج",
+      },
+      fields: {
+        email: "البريد الإلكتروني",
+        emailPlaceholder: "name@example.com",
+        password: "كلمة المرور",
+        passwordPlaceholder: "٨ أحرف على الأقل",
+        name: "الاسم",
+        namePlaceholder: "اسمك الذي سيظهر في التطبيق",
+      },
+      validation: {
+        emailRequired: "البريد الإلكتروني مطلوب",
+        emailInvalid: "صيغة البريد الإلكتروني غير صحيحة",
+        emailTooLong: "البريد الإلكتروني طويل جدًا",
+        passwordRequired: "كلمة المرور مطلوبة",
+        passwordTooShort: "٨ أحرف على الأقل",
+        passwordTooLong: "كلمة المرور طويلة جدًا",
+        nameRequired: "الاسم مطلوب",
+        nameTooLong: "الاسم طويل جدًا",
+        generic: "تحقق من الحقول وحاول مرة أخرى",
+      },
+      errors: {
+        invalidCredentials: "البريد أو كلمة المرور غير صحيحة",
+        emailExists: "هذا البريد مسجّل بالفعل",
+      },
+      success: {
+        loggedOut: "تم تسجيل الخروج",
+      },
+    },
   },
   en: {
     common: {
@@ -353,6 +400,53 @@ export const messages = {
     errors: {
       generic: "Something went wrong. Please try again.",
       saveFailed: "Save failed. Please try again.",
+    },
+    auth: {
+      login: {
+        title: "Log in",
+        subtitle: "Enter your email and password to continue.",
+        submit: "Log in",
+        submitPending: "Logging in…",
+        noAccount: "Don't have an account?",
+        registerCta: "Create one",
+      },
+      register: {
+        title: "Create account",
+        subtitle: "Set up your account in a few seconds.",
+        submit: "Create account",
+        submitPending: "Creating…",
+        haveAccount: "Already have an account?",
+        loginCta: "Log in",
+      },
+      logout: {
+        submit: "Log out",
+      },
+      fields: {
+        email: "Email",
+        emailPlaceholder: "name@example.com",
+        password: "Password",
+        passwordPlaceholder: "At least 8 characters",
+        name: "Name",
+        namePlaceholder: "The name shown in the app",
+      },
+      validation: {
+        emailRequired: "Email is required",
+        emailInvalid: "That doesn't look like a valid email",
+        emailTooLong: "Email is too long",
+        passwordRequired: "Password is required",
+        passwordTooShort: "At least 8 characters",
+        passwordTooLong: "Password is too long",
+        nameRequired: "Name is required",
+        nameTooLong: "Name is too long",
+        generic: "Check the fields and try again",
+      },
+      errors: {
+        invalidCredentials: "Email or password is incorrect",
+        emailExists: "This email is already registered",
+      },
+      success: {
+        loggedOut: "You've been logged out",
+      },
     },
   },
 } as const;
