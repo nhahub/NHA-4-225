@@ -28,7 +28,7 @@
 | **E0-2** | Typography & RTL Foundation | 3 | **Ziad** | E0-1 | Day 1 |
 | **E0-3** | Layered Architecture Setup | 2 | **Ziad** | E0-1 | Day 1 |
 | **E0-4** | Database Connection & Analytics | 3 | **Ziad** | E0-3 | Day 1 |
-| **E0-5** | Google OAuth Authentication | 5 | **Mustafa** | E0-4 | Day 1 |
+| **E0-5** | Email/Password Authentication | 5 | **Mustafa** | E0-4 | Day 1 |
 | **E0-6** | App Shell & Edge Middleware | 4 | **Ziad** | E0-5, E0-2 | Day 2 |
 | **E1-1** | SMART Goal Wizard & Foundation | 6 | **Mustafa** | E0-4, E0-5 | Day 2 |
 | **E1-2** | Goal Dashboard & Detail View | 8 | **Hamza** | E1-1 | Day 3 |
@@ -74,7 +74,7 @@
 
 | Story | SP | Day |
 |---|---|---|
-| E0-5: Google OAuth Authentication | 5 | Day 1 |
+| E0-5: Email/Password Authentication | 5 | Day 1 |
 | E1-1: SMART Goal Wizard & Foundation | 6 | Day 2 |
 | E2-1: Task Engine & Auto-Type Creation | 6 | Day 2–3 |
 | E2-2: Task Completion Flows | 6 | Day 3 |
@@ -130,7 +130,7 @@
 
 ```
 Ziad    → E0-1 (Scaffold) → E0-2 (RTL) → E0-3 (Architecture) → E0-4 (DB)
-Mustafa → E0-5 (OAuth + Auth)  [starts after Ziad finishes E0-4]
+Mustafa → E0-5 (Email/Password Auth)  [starts after Ziad finishes E0-4]
 Hamza   → Study docs, set up dev environment, read PRD + Architecture
 Khaled  → Study docs, set up dev environment, read PRD + Architecture
 Mohamed → Study docs, set up dev environment, read PRD + Architecture
@@ -203,7 +203,7 @@ graph TD
     E0-1["E0-1 Scaffold (Ziad)"] --> E0-2["E0-2 RTL+i18n (Ziad)"]
     E0-1 --> E0-3["E0-3 Architecture (Ziad)"]
     E0-3 --> E0-4["E0-4 DB+Analytics (Ziad)"]
-    E0-4 --> E0-5["E0-5 OAuth (Mustafa)"]
+    E0-4 --> E0-5["E0-5 Email/Password Auth (Mustafa)"]
     E0-5 --> E0-6["E0-6 Shell (Ziad)"]
     E0-2 --> E0-6
     E0-5 --> E1-1["E1-1 Goal Wizard (Mustafa)"]

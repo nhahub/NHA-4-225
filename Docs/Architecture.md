@@ -67,7 +67,7 @@ All 8 database tables are created in Sprint 1 with all columns — including col
 | Category | Target |
 |---|---|
 | **Performance** | ≤2s page load, Lighthouse ≥85 Desktop / ≥75 Mobile |
-| **Security** | HTTPS/TLS 1.3, JWT (15min) via `jose`, Rate limiting (100 req/min), Google OAuth |
+| **Security** | HTTPS/TLS 1.3, JWT (15min) via `jose`, Rate limiting (100 req/min) |
 | **Accessibility** | WCAG 2.1 AA, RTL-native, ≥4.5:1 contrast, ≥44px touch targets |
 | **Scale** | 100 concurrent users |
 | **Data Freshness** | SWR + Optimistic Updates + `mutate()` — no polling |
@@ -95,13 +95,13 @@ All 8 database tables are created in Sprint 1 with all columns — including col
 - No budget — every service must have a free tier
 - No pre-existing design assets (logo, illustrations, Figma) — designed from scratch in Sprint 0
 
-**External Dependencies:** Neon PostgreSQL, Vercel, GitHub, Google OAuth
+**External Dependencies:** Neon PostgreSQL, Vercel, GitHub
 
 ### 1.4 Cross-Cutting Concerns
 
 | # | Concern | Approach |
 |---|---|---|
-| 1 | **Authentication** | JWT via `jose` at Edge; Google OAuth only |
+| 1 | **Authentication** | JWT via `jose` at Edge; Email/Password (register + login) — login flow on Node.js runtime (bcrypt), JWT validation on Edge (jose). Final runtime decision: E0-5. |
 | 2 | **RTL-Native** | Arabic-first with Tailwind logical properties; `Intl.NumberFormat` for locale numbers |
 | 3 | **Save on Action** | Every mutation saves immediately — no auto-save, no debouncing |
 | 4 | **Confirmation Before Destruction** | Shadcn AlertDialog before every delete/archive |
@@ -336,7 +336,7 @@ CREATE INDEX idx_analytics_user_created ON analytics_events(user_id, created_at)
 ### 3.2 Authentication & Security
 
 ```
-Login: Google OAuth 2.0 (one-click)
+Login: Email/Password (register + login), password hashed with bcrypt
 Tokens:
 ├── Access Token: JWT via jose, 15min, httpOnly cookie
 ├── Refresh Token: 7-day, stored hashed in DB, rotated on use
@@ -436,9 +436,6 @@ type ActionResult<T> =
 |---|---|
 | `DATABASE_URL` | Neon connection string (with `-pooler`) |
 | `JWT_SECRET` | jose signing key |
-| `GOOGLE_CLIENT_ID` | Google OAuth |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth |
-| `GOOGLE_REDIRECT_URL` | OAuth callback URL |
 | `NEXT_PUBLIC_APP_URL` | Base URL for client |
 
 **Monitoring:** Vercel built-in analytics + function logs + `analytics_events` table + client Error Boundary.
@@ -574,8 +571,9 @@ hadaf/
 │   │   ├── globals.css                   # Tailwind + HSL tokens + CSS transitions
 │   │   ├── layout.tsx                    # Root layout (dir, lang, font, theme)
 │   │   ├── page.tsx                      # Landing → redirect
-│   │   ├── login/page.tsx
-│   │   ├── api/auth/callback/google/route.ts
+│   │   ├── (auth)/
+│   │   │   ├── login/page.tsx
+│   │   │   └── register/page.tsx
 │   │   └── app/                          # Protected routes
 │   │       ├── layout.tsx                # App shell + providers
 │   │       ├── page.tsx                  # Home
@@ -815,23 +813,22 @@ FCP ≤1.5s, LCP ≤2.0s, TTI ≤2.5s, CLS ≤0.1, JS ≤150KB gzip, DB query �
 ```bash
 git clone https://github.com/{org}/hadaf.git && cd hadaf
 npm install
-cp .env.example .env.local   # Fill: DATABASE_URL, JWT_SECRET, GOOGLE_*
-npm run db:push
+cp .env.example .env.local   # Fill: DATABASE_URL, JWT_SECRET
+npm run db:generate && npm run db:migrate
 npm run dev                     # → http://localhost:3000
 ```
 
 ### 10.2 Scripts
 
-`dev`, `build`, `start`, `lint`, `type-check`, `test`, `test:watch`, `db:push`, `db:generate`, `db:studio`, `seed`
+`dev`, `build`, `start`, `lint`, `type-check`, `test`, `db:generate`, `db:migrate`, `db:studio`
 
 ### 10.3 Pre-Deploy Checklist
 
 1. `npm run type-check` + `npm run lint` + `npm run test` + `npm run build`
 2. Env vars in Vercel
-3. Google redirect URL updated for production
-4. `npm run db:push`
-5. RTL + dark mode + mobile verified
-6. Lighthouse ≥85 Desktop, ≥75 Mobile
+3. `npm run db:migrate`
+4. RTL + dark mode + mobile verified
+5. Lighthouse ≥85 Desktop, ≥75 Mobile
 
 ### 10.4 Rollback
 

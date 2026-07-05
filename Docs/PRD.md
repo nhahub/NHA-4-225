@@ -118,7 +118,7 @@
 
 | Epic | النطاق المشمول |
 |---|---|
-| **البنية التحتية** | Auth (JWT + Google OAuth)، UI Shell (responsive)، Sidebar/Bottom Nav، Theme (dark/light)، Language toggle (AR/EN + RTL)، حفظ عند كل إجراء (Save on Action)، Confirmation Dialogs قبل الحذف، قاعدة البيانات (Neon + Drizzle)، CI/CD (GitHub Actions + Vercel)، جدول analytics_events |
+| **البنية التحتية** | Auth (JWT + Email/Password — bcrypt)، UI Shell (responsive)، Sidebar/Bottom Nav، Theme (dark/light)، Language toggle (AR/EN + RTL)، حفظ عند كل إجراء (Save on Action)، Confirmation Dialogs قبل الحذف، قاعدة البيانات (Neon + Drizzle)، CI/CD (GitHub Actions + Vercel)، جدول analytics_events |
 | **Epic 1: الأهداف** | معالج SMART (٣ خطوات)، حوار Goal vs Habit (FR1.1)، ٥ فئات، المراحل (Milestones)، تقدم Hybrid (FR6)، Goal Health بصري (🟢🟡🟠🔴)، تجاوز يدوي بـ Slider، حد ٣-٥ أهداف، حذف بسبب (soft-delete)، تغيير/استبدال هدف نص الدورة، لوحة أهداف بصرية (حلقات + شريط ١٢ أسبوع)، مؤشر التنفيذ الأسبوعي |
 | **Epic 2: المهام** | ٣ أنواع مهام بالكشف التلقائي (Scheduled/Flexible/Quick)، ٣ أنواع إكمال (Smart/Manual/Quick)، Time Blocking، Checklist بسيط داخل المهام، نظام الـ Backlog (لا auto-rollover)، Quick Add FAB، الإكمال الجزئي (Partial Snaps)، Time Cap (٣×)، ترتيب: Priority → Time |
 | **Epic 3: العادات — أساسي** | Boolean + Counter، MVD (Minimum Viable Day)، تكرار مرن، عادات الإقلاع (auto-counter + تسجيل انتكاسة يدوي)، مكتبة عادات مقترحة (بدون عادات دينية)، فصل العادات عن المهام تمامًا |
@@ -164,7 +164,7 @@
 | **سهولة الاستخدام** | Onboarding يُكمل في ≤ ٥ دقائق. Auto-Type Detection شفاف. المستخدم لا يحتاج شرح |
 | **مكافحة الإرهاق** | Backlog لا ينقل تلقائيًا. Good Enough Day يظهر عند ٥٠-٩٩٪. الرسائل تبدأ بالإنجاز |
 | **الأداء** | Lighthouse ≥ ٨٥ Desktop و ≥ ٧٥ Mobile. CSS transitions فقط |
-| **الأمان** | HTTPS + JWT + OAuth. Rate Limiting أساسي |
+| **الأمان** | HTTPS + JWT (Email/Password — bcrypt). Rate Limiting أساسي |
 | **التصميم** | ثنائي اللغة بمستوى أول: العربية (RTL) والإنجليزية (LTR) يعملان بالكامل. Dark/Light. Mobile responsive (Bottom Nav). لا توجد أصول تصميم مسبقة — يُصمم من الصفر في Sprint 0 |
 | **النبرة** | غير رسمية لكن بجودة عالية — محادثة ودودة وأنيقة في كلا اللغتين. نفس الصوت البشري في العربي والإنجليزي (AI-assisted translation) |
 | **النشر** | مباشر على Vercel من اليوم الثاني. Preview deploys لكل PR. CI/CD أخضر على كل push إلى `main` |
@@ -534,7 +534,7 @@
 | **Motion** | CSS Transitions فقط | أبسط، أسرع، بدون dependency إضافي |
 | **Backend** | Next.js Server Actions (Vercel Serverless) | بدون خادم منفصل |
 | **قاعدة بيانات** | PostgreSQL (Neon free tier) + Drizzle ORM | `@neondatabase/serverless` مع `-pooler` |
-| **مصادقة** | JWT via `jose` + Google OAuth | `jose` متوافقة مع Edge Runtime |
+| **مصادقة** | JWT via `jose` + Email/Password (bcrypt) | `jose` للـ JWT (Edge)، bcrypt للـ password (Node runtime) |
 | **State / Freshness** | Server Components (Initial fetch) + SWR (Optimistic updates) | تقليل عدد الـ hooks، SWR للـ mutations فقط |
 | **Validation** | Zod (client + server) | توحيد التحقق |
 | **Testing** | Vitest (domain unit tests) | اختبارات سريعة للمنطق |
@@ -569,7 +569,7 @@
 | **NFR3** | ظهور عناصر التفاعل | ≤ ٣٠٠ مللي ثانية |
 | **NFR4** | توفر النظام | ≥ ٩٩% خلال ساعات الاستخدام |
 | **NFR5** | التعامل مع الانقطاعات | Loading States + Retry Logic |
-| **NFR6** | الأمان | HTTPS + TLS 1.3 + JWT (15min) + OAuth |
+| **NFR6** | الأمان | HTTPS + TLS 1.3 + JWT (15min) + Email/Password (bcrypt) |
 | **NFR7** | Rate Limiting | ≤ ١٠٠ طلب/دقيقة لكل مستخدم |
 | **NFR8** | إمكانية الوصول | WCAG 2.1 Level AA + RTL-native + ≥ 4.5:1 contrast + ≥ 44px touch |
 | **NFR9** | الحجم | ≤ ١٠٠ مستخدم متزامن |
@@ -587,7 +587,7 @@
 
 - المستخدمون يستخدمون متصفحات حديثة (Chrome/Firefox/Safari/Edge ≥ 100)
 - المستخدمون يتحدثون العربية (RTL)
-- Google OAuth يكفي للتسجيل (لا حاجة لـ email/password)
+- Email/Password كافٍ للتسجيل (register + login؛ bcrypt للهاش، JWT للجلسات)
 - الـ Neon free tier يكفي لـ ١٠٠ مستخدم
 - الـ Vercel free tier يكفي للنشر
 

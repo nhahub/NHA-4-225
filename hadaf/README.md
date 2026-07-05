@@ -26,7 +26,7 @@ npm run lint      # ESLint
 
 ## Project Layout
 
-```text
+```
 hadaf/
 |-- public/fonts/ibm-plex/ # Self-hosted IBM Plex font assets
 |-- src/
@@ -38,11 +38,11 @@ hadaf/
 |   |-- hooks/             # Shared React hooks
 |   |-- i18n/              # Locale messages + server locale helper
 |   |-- lib/               # Utilities, constants, mock data
-|   `-- providers/         # Theme and locale providers
+|   |-- providers/         # Theme and locale providers
 |-- tests/domain/          # Pure domain tests
 |-- drizzle.config.ts
 |-- vitest.config.ts
-`-- package.json
+|-- package.json
 ```
 
 ## Design Tokens
@@ -57,13 +57,14 @@ Defined in `src/app/globals.css`:
 
 ## Conventions
 
-- **RTL:** Prefer Tailwind logical properties (`ms-*`, `me-*`, `ps-*`, `pe-*`) in app/feature code.
-- **Motion:** Use CSS utility classes or inline `transition-*` styles. No `framer-motion`.
-- **Components:** Shadcn primitives in `src/components/ui/` are headless. Feature components live in `src/components/<feature>/`.
-- **Domain:** Keep `src/domain/` framework-agnostic. Do not import React, Next.js, Drizzle, or database clients there.
+- **RTL:** Tailwind logical properties only (`ms-*`, `me-*`, `ps-*`, `pe-*`). No `ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-`.
+- **Motion:** No `framer-motion`. Use the CSS utility classes or write inline `transition-*` styles.
+- **Components:** Shadcn primitives in `src/components/ui/` are headless — no business logic. Feature components land in `src/components/<feature>/` in E0.3+.
 
-## Remaining Foundation Checks
+## What's next (Sprint 0 roadmap)
 
-- Confirm the real Neon database has been provisioned and that `.env.local` uses the pooled `DATABASE_URL`.
-- Run `npx drizzle-kit push` against the team database when schema changes are approved.
-- Decide whether the custom in-repo i18n provider is enough for MVP or whether the architecture requirement for `next-intl` and `/[locale]/` routing should still be implemented.
+- **E0.2** — Typography & RTL Foundation (Tajawal + IBM Plex Sans Arabic)
+- **E0.3** — Layered Architecture (`features/`, `domain/`, `data/`, `hooks/`, `providers/`, `lib/`, `tests/`)
+- **E0.4** — Database Connection (Drizzle + Neon)
+- **E0.5** — Email/Password Authentication
+- **E0.6** — App Shell + Theme Toggle + Protected Routes

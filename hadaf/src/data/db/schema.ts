@@ -78,7 +78,7 @@ export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: text("email").notNull().unique(),
   name: text("name"),
-  avatar_url: text("avatar_url"),
+  avatarUrl: text("avatar_url"),
   settings: jsonb("settings")
     .notNull()
     .$defaultFn(() => ({
@@ -90,11 +90,18 @@ export const users = pgTable("users", {
       language: "ar",
       notifications: { time_block_reminder: true },
     })),
-  refresh_token: text("refresh_token"),
-  refresh_token_exp: timestamp("refresh_token_exp", { withTimezone: true }),
-  onboarding_completed: boolean("onboarding_completed").default(false),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  refreshToken: text("refresh_token"),
+  refreshTokenExp: timestamp("refresh_token_exp", { withTimezone: true }),
+  onboardingCompleted: boolean("onboarding_completed")
+    .notNull()
+    .default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 // ═══════════════════════════════════════
@@ -118,8 +125,13 @@ export const goals = pgTable(
     manualProgress: integer("manual_progress"),
     status: goalStatusEnum("status").notNull().default("active"),
     deletionReason: text("deletion_reason"),
-    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => ({
     idxGoalsUserStatus: index("idx_goals_user_status").on(
@@ -141,7 +153,9 @@ export const milestones = pgTable("milestones", {
   sortOrder: integer("sort_order").notNull().default(0),
   isCompleted: boolean("is_completed").notNull().default(false),
   completedAt: timestamp("completed_at", { withTimezone: true }),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 // ═══════════════════════════════════════
@@ -173,8 +187,13 @@ export const tasks = pgTable(
     status: taskStatusEnum("status").notNull().default("pending"),
     pointsEarned: integer("points_earned").notNull().default(0),
     completedAt: timestamp("completed_at", { withTimezone: true }),
-    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => ({
     idxTasksUserDatePriority: index("idx_tasks_user_date_priority").on(
@@ -208,8 +227,13 @@ export const habits = pgTable("habits", {
   mvdDescription: text("mvd_description"),
   isSpiritual: boolean("is_spiritual").notNull().default(false),
   isArchived: boolean("is_archived").notNull().default(false),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 // ═══════════════════════════════════════
@@ -226,7 +250,9 @@ export const habitLogs = pgTable(
     value: integer("value").notNull().default(0),
     isMvd: boolean("is_mvd").notNull().default(false),
     isRelapse: boolean("is_relapse").notNull().default(false),
-    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => ({
     uniqHabitLogDate: unique("uniq_habit_log_date").on(
@@ -258,8 +284,13 @@ export const dailySummaries = pgTable(
     dailyTarget: integer("daily_target").notNull().default(0),
     dayState: dayStateEnum("day_state"),
     summaryShown: boolean("summary_shown").notNull().default(false),
-    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => ({
     uniqUserDailySummaryDate: unique("uniq_user_daily_summary_date").on(
@@ -281,12 +312,14 @@ export const analyticsEvents = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     eventType: text("event_type").notNull(),
     eventData: jsonb("event_data"),
-    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => ({
     idxAnalyticsUserCreated: index("idx_analytics_user_created").on(
       table.userId,
-      table.created_at,
+      table.createdAt,
     ),
   }),
 );
