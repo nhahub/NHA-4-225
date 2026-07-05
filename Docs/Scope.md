@@ -33,7 +33,7 @@ The internship delivers the **core product loop** — enough to prove the value 
 
 | Epic | Stories | SP | What's Delivered |
 |---|---|---|---|
-| **INF** (Infrastructure) | 10 | 31 | Auth (Google OAuth + JWT), PostgreSQL (Neon), responsive shell, RTL, dark/light mode, CI/CD, accessibility |
+| **INF** (Infrastructure) | 10 | 31 | Auth (Email/Password + JWT), PostgreSQL (Neon), responsive shell, RTL, dark/light mode, CI/CD, accessibility |
 | **E1** (Goals) | 4 | 18 | Goals repository + domain logic, SMART wizard (3 steps), Goal Dashboard with rings + 12-week bar, Goal Detail with milestones |
 | **E2** (Tasks) | 4 | 16 | Tasks repository + scoring domain, Task Creation with auto-type detection, 3 Completion Types (Smart/Manual/Quick), Task list with sorting |
 | **E3** (Habits) | 3 | 8 | Habits repository, Build Habits (Boolean + Counter), MVD System |
@@ -72,7 +72,7 @@ The internship delivers the **core product loop** — enough to prove the value 
 | **Motion** | CSS Transitions only |
 | **Backend** | Next.js Server Actions (Vercel Serverless) |
 | **Database** | PostgreSQL (Neon free tier) + Drizzle ORM |
-| **Auth** | JWT via `jose` + Google OAuth |
+| **Auth** | JWT via `jose` + Email/Password |
 | **Data Fetching** | SWR with Optimistic Updates (`mutate()` after actions — no polling) |
 | **Validation** | Zod schemas (client + server) |
 | **CI/CD** | GitHub Actions (lint + type-check + test + build) → Vercel auto-deploy |
@@ -100,7 +100,7 @@ The internship delivers the **core product loop** — enough to prove the value 
 | Sprint | What We Demo |
 |---|---|
 | **Sprint 0** | Vercel preview deploys "Coming soon" landing page → brand mark visible → language toggle works (AR ↔ EN) → 10 illustrations shipped → design tokens applied |
-| **Sprint 1** | Login (Google OAuth) → responsive shell (mobile + desktop) → RTL/LTR both render correctly → dark/light theme → all 8 tables connected → domain logic passes unit tests → first skeleton + empty states visible |
+| **Sprint 1** | Login (Email/Password) → responsive shell (mobile + desktop) → RTL/LTR both render correctly → dark/light theme → all 8 tables connected → domain logic passes unit tests → first skeleton + empty states visible |
 | **Sprint 2** | Create goal via wizard (both languages) → create linked task (auto-type detection) → see dashboard with rings + 12-week bar → create Boolean + Counter habit → see MVD toggle → first scoring points awarded |
 | **Sprint 3** | Complete tasks (3 types, both languages) → Contribution Pulse animation → progress bar with 4 colors → 5 day states visible → Daily Pulse card on Home → full 3-step onboarding flow |
 | **Sprint 4** | Full end-to-end user journey in both languages → loading + empty + error states all polished → Lighthouse ≥ 85 desktop / ≥ 75 mobile → demo video → live on production |

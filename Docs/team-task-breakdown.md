@@ -46,7 +46,7 @@ A lane marked `_None_` means genuinely no work in that layer for this story — 
 | E0-2 | Typography & RTL Foundation | 1 | 3 | **Ziad** | E0-1 |
 | E0-3 | Layered Architecture Setup | 1 | 2 | **Ziad** | E0-1 |
 | E0-4 | Database Connection & Analytics Schema | 1 | 3 | **Ziad** | E0-3 |
-| E0-5 | Google OAuth Authentication | 1 | 5 | **Mustafa** | E0-4 |
+| E0-5 | Email/Password Authentication | 1 | 5 | **Mustafa** | E0-4 |
 | E0-6 | App Shell & Edge Middleware | 1 | 4 † | **Ziad** | E0-5 |
 | E1-1 | SMART Goal Wizard & Foundation | 1 | 6 | **Mustafa** | E0-4, E0-5 |
 | E1-2 | Goal Dashboard & Detail View | 2 | 8 † | **Hamza** | E1-1 (+ E2-2 for heat map data) |
@@ -221,24 +221,25 @@ Epic E0 · FR: — (infra; underlies every KPI in §2.4)
 
 ---
 
-#### E0-5 — Google OAuth Authentication *(~5 SP)* · 👤 **Mustafa**
-Epic E0 · FR: — (NFR6 Security: HTTPS/JWT/OAuth)
-> Sign in with Google, establish the user, JWT session.
+#### E0-5 — Email/Password Authentication *(~5 SP)* · 👤 **Mustafa**
+Epic E0 · FR: — (NFR6 Security: HTTPS/JWT)
+> Sign in/up with Email and Password, establish the user, JWT session.
 
 **🗄️ Database:**
-- [ ] `users` table: id, email (unique), name, avatar_url, `settings` JSONB (defaults per Architecture §3.1, including `language` and `theme`), `refresh_token`, `refresh_token_exp`, `onboarding_completed`, timestamps
+- [ ] `users` table: id, email (unique), password_hash, name, avatar_url, `settings` JSONB (defaults per Architecture §3.1, including `language` and `theme`), `refresh_token`, `refresh_token_exp`, `onboarding_completed`, timestamps
 
 **⚙️ Backend:**
 - [ ] `lib/auth/jwt.ts` — sign/verify via `jose`, HS256, 15min access token
 - [ ] `lib/auth/session.ts` — `getAuthUser()` from httpOnly cookie
-- [ ] `app/api/auth/callback/google/route.ts` — Google OAuth 2.0 callback
-- [ ] `data/repositories/users.repo.ts`: `findOrCreateByEmail`, `updateRefreshToken`
+- [ ] `lib/auth/password.ts` — hash and verify passwords (e.g. bcrypt or argon2)
+- [ ] `app/api/auth/login/route.ts` & `app/api/auth/register/route.ts` — Email/password flows
+- [ ] `data/repositories/users.repo.ts`: `findByEmail`, `create`, `updateRefreshToken`
 - [ ] Refresh token: 7-day, stored hashed, rotated on use
 - [ ] Token-reuse detection → invalidate all user tokens
-- [ ] Analytics event: `login`
+- [ ] Analytics event: `login` & `register`
 
 **🎨 Frontend:**
-- [ ] `app/login/page.tsx` — one-click Google sign-in button
+- [ ] `app/login/page.tsx` & `app/register/page.tsx` — Email/password forms
 - [ ] `providers/auth.tsx`
 - [ ] Redirect-after-login handling (`?redirect={path}`)
 

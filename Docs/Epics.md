@@ -78,7 +78,7 @@ Every story respects these constraints:
 | Sprint | What We Demo |
 |---|---|
 | **Sprint 0** | Vercel preview deploys "Coming soon" landing → brand mark visible → language toggle works (AR ↔ EN) → 10 illustrations shipped → design tokens applied |
-| **Sprint 1** | Login (Google OAuth) → responsive shell → dark/light theme → Goal creation wizard (both languages) |
+| **Sprint 1** | Login (Email/Password) → responsive shell → dark/light theme → Goal creation wizard (both languages) |
 | **Sprint 2** | Create goal → create linked task (auto-type) → complete tasks → track Boolean/Counter habits → see MVD toggle |
 | **Sprint 3** | See Daily Capacity gauge → Progress bar with 4 colors → 5 day states → Daily Pulse card on Home |
 | **Sprint 4** | Full end-to-end user journey in both languages → all polish states → Lighthouse ≥ 85 desktop / ≥ 75 mobile → demo video → live on production |
@@ -111,9 +111,9 @@ Set up all architectural layers.
 Connect Neon PostgreSQL via Drizzle ORM and create the basic tables.
 **AC:** Connect to Neon. Create `analytics_events` table for telemetry.
 
-### E0-5: Google OAuth Authentication
-Sign in with Google account and establish the user.
-**AC:** Create `users` table. Google OAuth 2.0 via `jose` (JWT). Refresh token rotation. Analytics event logged on login.
+### E0-5: Email/Password Authentication
+Sign in/up with Email and Password and establish the user.
+**AC:** Create `users` table. Email/password login via `jose` (JWT). Refresh token rotation. Analytics event logged on login/register.
 
 ### E0-6: App Shell & Edge Middleware
 Responsive app shell and protected routes.
