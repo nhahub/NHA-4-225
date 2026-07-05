@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from "next/font/google";
+import localFont from "next/font/local";
 
 import { ThemeProvider } from "@/providers/theme-provider";
 import { LocaleProvider } from "@/providers/locale-provider";
@@ -7,16 +7,48 @@ import { readServerLocale } from "@/i18n/locale-server";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const ibmPlexSans = IBM_Plex_Sans({
+const ibmPlexSans = localFont({
   variable: "--font-ibm-plex-sans",
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
+  src: [
+    {
+      path: "../../public/fonts/ibm-plex/IBMPlexSans-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/ibm-plex/IBMPlexSans-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/ibm-plex/IBMPlexSans-SemiBold.woff2",
+      weight: "600",
+      style: "normal",
+    },
+  ],
+  display: "swap",
 });
 
-const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
+const ibmPlexSansArabic = localFont({
   variable: "--font-ibm-plex-sans-arabic",
-  weight: ["400", "500", "600"],
-  subsets: ["arabic"],
+  src: [
+    {
+      path: "../../public/fonts/ibm-plex/IBMPlexSansArabic-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/ibm-plex/IBMPlexSansArabic-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/ibm-plex/IBMPlexSansArabic-SemiBold.woff2",
+      weight: "600",
+      style: "normal",
+    },
+  ],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
