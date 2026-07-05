@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
 
 type ProgressTier = "low" | "warning" | "good" | "great";
@@ -33,6 +36,7 @@ export function GoalProgressRing({
   className,
   showLabel = false,
 }: GoalProgressRingProps) {
+  const { t } = useLocale();
   const clamped = Math.min(Math.max(progress, 0), 1);
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -40,6 +44,7 @@ export function GoalProgressRing({
   const gap = circumference - dash;
   const tier = tierFromProgress(clamped);
   const percent = Math.round(clamped * 100);
+  const unit = t("home.progressPercentUnit");
 
   return (
     <div
@@ -49,7 +54,7 @@ export function GoalProgressRing({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={percent}
-      aria-label={`Progress: ${percent}%`}
+      aria-label={`${t("goals.progressLabel")}: ${percent}${unit}`}
     >
       <svg
         viewBox={`0 0 ${size} ${size}`}
@@ -79,7 +84,8 @@ export function GoalProgressRing({
       </svg>
       {showLabel ? (
         <span className="text-foreground absolute inset-0 flex items-center justify-center text-xs font-medium tabular-nums">
-          {percent}%
+          {percent}
+          {unit}
         </span>
       ) : null}
     </div>

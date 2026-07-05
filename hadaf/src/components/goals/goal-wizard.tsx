@@ -17,27 +17,22 @@ import { WizardStepWhat } from "@/components/goals/wizard-step-what";
 import { WizardStepWhen } from "@/components/goals/wizard-step-when";
 import { WizardStepMilestones } from "@/components/goals/wizard-step-milestones";
 import { useCreateGoal } from "@/features/goals/hooks";
+import { stepTitle } from "@/features/goals/labels";
 import {
   goalWizardSchema,
   STEP_FIELDS,
   STEPS,
-  STEP_TITLE_EN,
   type GoalWizardFormInput,
   type GoalWizardFormOutput,
   type StepKey,
 } from "@/features/goals/schemas";
+import { useLocale } from "@/providers/locale-provider";
 
 const toISODate = (d: Date) => d.toISOString().slice(0, 10);
 const todayIso = toISODate(new Date());
 const inTwelveWeeksIso = toISODate(
   new Date(Date.now() + 84 * 86_400_000),
 );
-
-const STEP_HEADING: Record<StepKey, string> = {
-  what: STEP_TITLE_EN.what,
-  when: STEP_TITLE_EN.when,
-  milestones: STEP_TITLE_EN.milestones,
-};
 
 function defaultValues(): GoalWizardFormInput {
   return {
@@ -56,6 +51,7 @@ function defaultValues(): GoalWizardFormInput {
 export function GoalWizard() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const { submit, isPending } = useCreateGoal();
+  const { locale, t } = useLocale();
 
   const form = useForm<GoalWizardFormInput, unknown, GoalWizardFormOutput>({
     resolver: zodResolver(goalWizardSchema),
@@ -85,11 +81,11 @@ export function GoalWizard() {
   const onComplete = form.handleSubmit(async (data) => {
     const result = await submit(data);
     if (result.ok) {
-      toast.success("Goal saved (mock). Open the console to see the payload.");
+      toast.success(t("newGoal.successToast"));
       form.reset(defaultValues());
       setStep(1);
     } else {
-      toast.error(result.error);
+      toast.error(t("errors.saveFailed"));
     }
   });
 
@@ -99,7 +95,9 @@ export function GoalWizard() {
         <CardHeader className="gap-3">
           <GoalStepper currentStep={step} />
           <p className="text-muted-foreground text-xs">
-            Step {step} of {STEPS.length} · {STEP_HEADING[stepKey]}
+            {t("newGoal.stepOf", { current: step, total: STEPS.length })}
+            {" · "}
+            {stepTitle(locale, stepKey)}
           </p>
         </CardHeader>
 
@@ -117,7 +115,7 @@ export function GoalWizard() {
               onClick={goBack}
               disabled={step === 1 || isPending}
             >
-              Back
+              {t("newGoal.back")}
             </Button>
             {isLastStep ? (
               <Button
@@ -125,11 +123,11 @@ export function GoalWizard() {
                 onClick={onComplete}
                 disabled={isPending}
               >
-                {isPending ? "Saving…" : "Save goal"}
+                {isPending ? t("newGoal.saving") : t("newGoal.save")}
               </Button>
             ) : (
               <Button type="button" onClick={goNext}>
-                Next
+                {t("newGoal.next")}
               </Button>
             )}
           </div>

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from "next/font/google";
+
 import { ThemeProvider } from "@/providers/theme-provider";
+import { LocaleProvider } from "@/providers/locale-provider";
+import { readServerLocale } from "@/i18n/locale-server";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -22,13 +25,16 @@ export const metadata: Metadata = {
     "Bilingual productivity app built around Minimum Viable Day, day types, and adaptive capacity. BETA scaffold (E0.1).",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await readServerLocale();
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <body
         className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable} antialiased`}
       >
@@ -38,7 +44,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
           <Toaster />
         </ThemeProvider>
       </body>

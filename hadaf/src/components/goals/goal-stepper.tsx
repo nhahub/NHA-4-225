@@ -1,18 +1,23 @@
-import { cn } from "@/lib/utils";
+"use client";
 
-const STEP_LABELS = ["1", "2", "3"] as const;
+import { useLocale } from "@/providers/locale-provider";
+import { cn } from "@/lib/utils";
 
 type GoalStepperProps = {
   currentStep: 1 | 2 | 3;
 };
 
 export function GoalStepper({ currentStep }: GoalStepperProps) {
+  const { t } = useLocale();
+  const labels = ["1", "2", "3"] as const;
+  const total = labels.length;
+
   return (
     <ol
-      aria-label={`Step ${currentStep} of 3`}
+      aria-label={t("newGoal.stepOf", { current: currentStep, total })}
       className="flex items-center justify-center gap-2"
     >
-      {STEP_LABELS.map((label, idx) => {
+      {labels.map((label, idx) => {
         const stepNum = (idx + 1) as 1 | 2 | 3;
         const isActive = stepNum === currentStep;
         const isDone = stepNum < currentStep;
@@ -29,7 +34,7 @@ export function GoalStepper({ currentStep }: GoalStepperProps) {
             >
               {label}
             </span>
-            {idx < STEP_LABELS.length - 1 ? (
+            {idx < labels.length - 1 ? (
               <span
                 aria-hidden="true"
                 className={cn(

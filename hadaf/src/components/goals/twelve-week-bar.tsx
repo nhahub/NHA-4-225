@@ -1,4 +1,7 @@
+"use client";
+
 import { currentWeekIndex } from "@/features/goals/week";
+import { useLocale } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
 
 const TOTAL_WEEKS = 12;
@@ -16,22 +19,24 @@ export function TwelveWeekBar({
   variant = "card",
   className,
 }: TwelveWeekBarProps) {
+  const { t } = useLocale();
   const current = currentWeekIndex(cycleStart, cycleEnd);
   const isComplete = current >= TOTAL_WEEKS;
   const segments = Array.from({ length: TOTAL_WEEKS }, (_, i) => i + 1);
+  const headerLabel = isComplete
+    ? t("commonWeekBar.complete")
+    : t("commonWeekBar.weekOf", { current, total: TOTAL_WEEKS });
 
   return (
     <div
       className={cn("flex flex-col gap-1", className)}
       role="group"
-      aria-label={`Week ${current} of ${TOTAL_WEEKS}`}
+      aria-label={headerLabel}
     >
       {variant === "detail" ? (
         <div className="text-muted-foreground flex items-center justify-between text-xs">
-          <span className="font-medium">12-week cycle</span>
-          <span className="tabular-nums">
-            {isComplete ? "Complete" : `Week ${current} of ${TOTAL_WEEKS}`}
-          </span>
+          <span className="font-medium">{t("goals.cycleLabel")}</span>
+          <span className="tabular-nums">{headerLabel}</span>
         </div>
       ) : null}
       <div

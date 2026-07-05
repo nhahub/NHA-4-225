@@ -1,40 +1,43 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { LocaleToggle } from "@/components/shared/locale-toggle";
+import { createT } from "@/i18n/messages";
+import { readServerLocale } from "@/i18n/locale-server";
 
-/**
- * Landing page — minimal placeholder until E0.6 (App Shell + Theme Toggle)
- * replaces this with the real `/[locale]` layout.
- *
- * Notes:
- * - Uses Tailwind LOGICAL properties (ms-*, me-*, ps-*, pe-*) only.
- *   Never ml-/mr-/pl-/pr-/left-/right- — RTL-ready from day 1 (E0.2).
- * - Uses Shadcn primitives to verify the scaffold + design tokens render.
- * - No framer-motion — motion handled via CSS classes in globals.css.
- */
-export default function Home() {
+export default async function Home() {
+  const locale = await readServerLocale();
+  const t = createT(locale).t;
+
   return (
-    <main className="bg-background text-foreground flex min-h-screen items-center justify-center px-6 py-16">
+    <main className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center gap-4 px-6 py-16">
+      <div className="absolute end-4 top-4">
+        <LocaleToggle />
+      </div>
       <Card className="max-w-xl transition-base">
         <CardHeader>
           <CardTitle className="text-3xl font-semibold tracking-tight">
-            Hadaf · هدف
+            {t("common.appName")} · هدف
           </CardTitle>
-          <CardDescription>
-            Productivity built around Elastic Motivation — Minimum Viable Day,
-            adaptive capacity, and bilingual (AR + EN) parity.
-          </CardDescription>
+          <CardDescription>{t("common.tagline")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="text-muted-foreground text-sm">
-            Sprint 1 — Epic E1 (Goals) is live. The wizard is complete and the
-            goal dashboard is in progress.
+            {locale === "ar"
+              ? "سبرنت ١ — ملحمة E1 (الأهداف) جاهزة. المعالج مكتمل ولوحة الأهداف قيد البناء."
+              : "Sprint 1 — Epic E1 (Goals) is live. The wizard is complete and the goal dashboard is in progress."}
           </p>
           <div className="flex gap-2">
-            <Button render={<Link href="/goals" />}>Open goals dashboard</Button>
+            <Button render={<Link href="/goals" />}>{t("goals.title")}</Button>
             <Button render={<Link href="/goals/new" />} variant="outline">
-              Create a goal
+              {t("goals.newGoal")}
             </Button>
           </div>
         </CardContent>

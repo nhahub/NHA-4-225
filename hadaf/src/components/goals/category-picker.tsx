@@ -3,22 +3,23 @@
 import { useFormContext } from "react-hook-form";
 
 import { cn } from "@/lib/utils";
+import { categoryGlyph, categoryLabel } from "@/features/goals/labels";
 import {
-  CATEGORY_GLYPH_EN,
-  CATEGORY_LABEL_EN,
   GOAL_CATEGORIES,
   type GoalCategory,
 } from "@/features/goals/schemas";
 import type { GoalWizardFormInput } from "@/features/goals/schemas";
+import { useLocale } from "@/providers/locale-provider";
 
 export function CategoryPicker() {
   const { setValue, watch } = useFormContext<GoalWizardFormInput>();
+  const { locale, t } = useLocale();
   const selected = watch("category");
 
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="text-sm font-medium leading-none">
-        Choose a category
+        {t("newGoal.categoryLegend")}
       </legend>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         {GOAL_CATEGORIES.map((value) => {
@@ -41,10 +42,10 @@ export function CategoryPicker() {
               )}
             >
               <span aria-hidden="true" className="text-lg leading-none">
-                {CATEGORY_GLYPH_EN[value]}
+                {categoryGlyph(locale, value)}
               </span>
               <span className="text-foreground text-center font-medium leading-tight">
-                {CATEGORY_LABEL_EN[value]}
+                {categoryLabel(locale, value)}
               </span>
             </button>
           );

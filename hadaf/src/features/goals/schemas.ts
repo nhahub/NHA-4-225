@@ -18,6 +18,14 @@ export const CATEGORY_LABEL_EN: Record<GoalCategory, string> = {
   other: "Other",
 };
 
+export const CATEGORY_LABEL_AR: Record<GoalCategory, string> = {
+  education_work: "تعليم / عمل",
+  family: "عائلة",
+  health: "صحة",
+  religion_spirituality: "روحانيات",
+  other: "أخرى",
+};
+
 export const CATEGORY_GLYPH_EN: Record<GoalCategory, string> = {
   education_work: "📚",
   family: "👨‍👩‍👧",
@@ -40,6 +48,13 @@ export const GOAL_HEALTH_LABEL_EN: Record<GoalHealth, string> = {
   behind: "Behind",
   needs_attention: "Needs attention",
   on_track: "On track",
+};
+
+export const GOAL_HEALTH_LABEL_AR: Record<GoalHealth, string> = {
+  at_risk: "في خطر",
+  behind: "متأخر",
+  needs_attention: "يحتاج اهتمام",
+  on_track: "على المسار",
 };
 
 const milestoneSchema = z.object({
@@ -144,4 +159,10 @@ export const STEP_TITLE_EN: Record<StepKey, string> = {
   what: "What & how you'll measure",
   when: "When & why it matters",
   milestones: "Milestones",
+};
+
+export const STEP_TITLE_AR: Record<StepKey, string> = {
+  what: "الهدف وكيفية قياسه",
+  when: "الموعد ولماذا يهم",
+  milestones: "المعالم",
 };

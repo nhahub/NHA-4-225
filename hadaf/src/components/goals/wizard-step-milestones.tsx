@@ -6,6 +6,7 @@ import { ArrowDownIcon, ArrowUpIcon, PlusIcon, XIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { GoalWizardFormInput } from "@/features/goals/schemas";
+import { useLocale } from "@/providers/locale-provider";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
@@ -22,6 +23,7 @@ export function WizardStepMilestones() {
     register,
     formState: { errors },
   } = useFormContext<GoalWizardFormInput>();
+  const { t } = useLocale();
 
   const { fields, append, remove, move } = useFieldArray({
     control,
@@ -41,26 +43,26 @@ export function WizardStepMilestones() {
   };
 
   return (
-    <section className="flex flex-col gap-4" aria-label="Milestones">
+    <section className="flex flex-col gap-4" aria-label={t("newGoal.stepHeadingMilestones")}>
       <header className="flex flex-col gap-1">
         <h2 className="font-heading text-base font-semibold">
-          Break it into milestones
+          {t("newGoal.stepHeadingMilestones")}
         </h2>
         <p className="text-muted-foreground text-sm">
-          Optional in the MVP — add one or two clear checkpoints if they
-          already exist in your head. You can also add them later.
+          {t("newGoal.stepHeadingMilestonesHint")}
         </p>
       </header>
 
       {fields.length === 0 ? (
         <p className="text-muted-foreground rounded-lg border bg-muted/40 p-3 text-sm">
-          No milestones yet — add one when you have a clear checkpoint.
+          {t("newGoal.noMilestones")}
         </p>
       ) : null}
 
       <ol className="flex flex-col gap-3">
         {fields.map((field, idx) => {
           const err = errors.milestones?.[idx]?.title?.message;
+          const n = idx + 1;
           return (
             <li
               key={field.id}
@@ -70,11 +72,11 @@ export function WizardStepMilestones() {
                 aria-hidden="true"
                 className="text-muted-foreground mt-1.5 w-6 shrink-0 text-center text-xs tabular-nums"
               >
-                {idx + 1}
+                {n}
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <Input
-                  placeholder={`Milestone ${idx + 1}`}
+                  placeholder={t("newGoal.milestonePlaceholder", { n })}
                   autoComplete="off"
                   aria-invalid={Boolean(err) || undefined}
                   {...register(`milestones.${idx}.title` as const)}
@@ -88,7 +90,7 @@ export function WizardStepMilestones() {
                   size="icon-sm"
                   disabled={idx === 0}
                   onClick={() => move(idx, idx - 1)}
-                  aria-label={`Move milestone ${idx + 1} up`}
+                  aria-label={t("newGoal.moveUpAria", { n })}
                 >
                   <ArrowUpIcon />
                 </Button>
@@ -98,7 +100,7 @@ export function WizardStepMilestones() {
                   size="icon-sm"
                   disabled={idx === fields.length - 1}
                   onClick={() => move(idx, idx + 1)}
-                  aria-label={`Move milestone ${idx + 1} down`}
+                  aria-label={t("newGoal.moveDownAria", { n })}
                 >
                   <ArrowDownIcon />
                 </Button>
@@ -107,7 +109,7 @@ export function WizardStepMilestones() {
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => remove(idx)}
-                  aria-label={`Remove milestone ${idx + 1}`}
+                  aria-label={t("newGoal.removeAria", { n })}
                 >
                   <XIcon />
                 </Button>
@@ -126,7 +128,7 @@ export function WizardStepMilestones() {
           disabled={fields.length >= 12}
         >
           <PlusIcon />
-          Add milestone
+          {t("newGoal.addMilestone")}
         </Button>
       </div>
     </section>

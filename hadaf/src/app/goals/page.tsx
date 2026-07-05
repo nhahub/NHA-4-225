@@ -5,7 +5,10 @@ import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyGoalsState } from "@/components/goals/empty-goals-state";
 import { GoalCard } from "@/components/goals/goal-card";
+import { LocaleToggle } from "@/components/shared/locale-toggle";
 import { getGoals } from "@/features/goals/queries";
+import { createT } from "@/i18n/messages";
+import { readServerLocale } from "@/i18n/locale-server";
 
 export const metadata: Metadata = {
   title: "Goals · Hadaf",
@@ -14,6 +17,8 @@ export const metadata: Metadata = {
 };
 
 export default async function GoalsPage() {
+  const locale = await readServerLocale();
+  const t = createT(locale).t;
   const goals = await getGoals();
 
   return (
@@ -21,16 +26,17 @@ export default async function GoalsPage() {
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-2xl font-semibold tracking-tight">
-            Goals
+            {t("goals.title")}
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Your active 12-week goals. Tap one to open its milestones and tasks.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("goals.subtitle")}</p>
         </div>
-        <Button render={<Link href="/goals/new" />}>
-          <PlusIcon aria-hidden="true" />
-          New goal
-        </Button>
+        <div className="flex items-center gap-2">
+          <LocaleToggle />
+          <Button render={<Link href="/goals/new" />}>
+            <PlusIcon aria-hidden="true" />
+            {t("goals.newGoal")}
+          </Button>
+        </div>
       </header>
 
       {goals.length === 0 ? (

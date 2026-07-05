@@ -26,6 +26,7 @@ import {
   toggleMilestoneComplete,
 } from "@/features/goals/milestone-actions";
 import type { Milestone } from "@/features/goals/schemas";
+import { useLocale } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
 
 type OptimisticAction =
@@ -60,6 +61,7 @@ function SortableMilestoneRow({
   milestone: Milestone;
   onToggle: (id: string, next: boolean) => void;
 }) {
+  const { t } = useLocale();
   const {
     attributes,
     listeners,
@@ -74,6 +76,10 @@ function SortableMilestoneRow({
     transition,
   };
 
+  const toggleLabel = milestone.isCompleted
+    ? t("goalDetail.markIncompleteAria", { title: milestone.title })
+    : t("goalDetail.markCompletedAria", { title: milestone.title });
+
   return (
     <li
       ref={setNodeRef}
@@ -85,7 +91,7 @@ function SortableMilestoneRow({
     >
       <button
         type="button"
-        aria-label={`Reorder milestone: ${milestone.title}`}
+        aria-label={t("goalDetail.reorderAria", { title: milestone.title })}
         className="text-muted-foreground hover:text-foreground focus-visible:text-foreground rounded-sm p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         {...attributes}
         {...listeners}
@@ -96,11 +102,7 @@ function SortableMilestoneRow({
         <Checkbox
           checked={milestone.isCompleted}
           onCheckedChange={(next: boolean) => onToggle(milestone.id, next)}
-          aria-label={
-            milestone.isCompleted
-              ? `Mark "${milestone.title}" as not completed`
-              : `Mark "${milestone.title}" as completed`
-          }
+          aria-label={toggleLabel}
         />
         <span
           className={cn(
@@ -122,6 +124,7 @@ export function MilestoneList({
   goalId: string;
   initialMilestones: Milestone[];
 }) {
+  const { t } = useLocale();
   const sorted = [...initialMilestones].sort((a, b) => a.sortOrder - b.sortOrder);
   const [committed, setCommitted] = useState<Milestone[]>(sorted);
   const [optimistic, apply] = useOptimistic(committed, applyOptimistic);
@@ -176,7 +179,7 @@ export function MilestoneList({
   if (optimistic.length === 0) {
     return (
       <p className="text-muted-foreground rounded-lg border bg-muted/40 p-3 text-sm">
-        No milestones yet — this goal has no checkpoints.
+        {t("goalDetail.emptyMilestones")}
       </p>
     );
   }
@@ -186,9 +189,12 @@ export function MilestoneList({
   return (
     <div className="flex flex-col gap-3">
       <div className="text-muted-foreground flex items-center justify-between text-xs">
-        <span className="font-medium">Milestones</span>
+        <span className="font-medium">{t("goalDetail.milestonesLabel")}</span>
         <span className="tabular-nums">
-          {completedCount} of {optimistic.length}
+          {t("goalDetail.milestonesCount", {
+            completed: completedCount,
+            total: optimistic.length,
+          })}
         </span>
       </div>
       <DndContext

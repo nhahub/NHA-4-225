@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { TargetIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/providers/locale-provider";
 
 export function EmptyGoalsState() {
+  const { t } = useLocale();
+
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl border bg-card px-6 py-12 text-center">
       <span
@@ -14,16 +19,13 @@ export function EmptyGoalsState() {
       </span>
       <div className="flex max-w-md flex-col gap-1">
         <h2 className="font-heading text-base font-semibold">
-          No goals yet
+          {t("goals.emptyTitle")}
         </h2>
         <p className="text-muted-foreground text-sm">
-          Start with one 12-week goal. Three short steps — name it, set the
-          cycle, and break it into a few milestones.
+          {t("goals.emptyBody")}
         </p>
       </div>
-      <Button render={<Link href="/goals/new" />}>
-        Create your first goal
-      </Button>
+      <Button render={<Link href="/goals/new" />}>{t("goals.emptyCta")}</Button>
     </div>
   );
 }

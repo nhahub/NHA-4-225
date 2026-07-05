@@ -4,6 +4,7 @@ import { useFormContext } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
 import type { GoalWizardFormInput } from "@/features/goals/schemas";
+import { useLocale } from "@/providers/locale-provider";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
@@ -19,26 +20,26 @@ export function WizardStepWhat() {
     register,
     formState: { errors },
   } = useFormContext<GoalWizardFormInput>();
+  const { t } = useLocale();
 
   return (
-    <section className="flex flex-col gap-4" aria-label="Goal and measure">
+    <section className="flex flex-col gap-4" aria-label={t("newGoal.stepHeadingWhat")}>
       <header className="flex flex-col gap-1">
         <h2 className="font-heading text-base font-semibold">
-          What is the goal, and how will you measure it?
+          {t("newGoal.stepHeadingWhat")}
         </h2>
         <p className="text-muted-foreground text-sm">
-          A specific outcome beats a vague intention. Measurement is what
-          separates goals from wishes.
+          {t("newGoal.stepHeadingWhatHint")}
         </p>
       </header>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="goal-title" className="text-sm font-medium">
-          Goal title
+          {t("newGoal.fields.title")}
         </label>
         <Input
           id="goal-title"
-          placeholder="e.g., Submit my thesis draft"
+          placeholder={t("newGoal.fields.titlePlaceholder")}
           autoComplete="off"
           aria-invalid={Boolean(errors.title) || undefined}
           {...register("title")}
@@ -48,11 +49,12 @@ export function WizardStepWhat() {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="goal-description" className="text-sm font-medium">
-          Description <span className="text-muted-foreground">(optional)</span>
+          {t("newGoal.fields.description")}{" "}
+          <span className="text-muted-foreground">{t("common.optional")}</span>
         </label>
         <Input
           id="goal-description"
-          placeholder="A line or two of context — why this, who it serves"
+          placeholder={t("newGoal.fields.descriptionPlaceholder")}
           autoComplete="off"
           aria-invalid={Boolean(errors.description) || undefined}
           {...register("description")}
@@ -62,11 +64,11 @@ export function WizardStepWhat() {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="goal-measure" className="text-sm font-medium">
-          How will you measure success?
+          {t("newGoal.fields.measure")}
         </label>
         <Input
           id="goal-measure"
-          placeholder="e.g., Final PDF submitted and approved by supervisor"
+          placeholder={t("newGoal.fields.measurePlaceholder")}
           autoComplete="off"
           aria-invalid={Boolean(errors.measure) || undefined}
           {...register("measure")}

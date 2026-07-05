@@ -5,6 +5,7 @@ import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { CategoryPicker } from "@/components/goals/category-picker";
 import type { GoalWizardFormInput } from "@/features/goals/schemas";
+import { useLocale } from "@/providers/locale-provider";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
@@ -25,6 +26,7 @@ export function WizardStepWhen() {
     setValue,
     formState: { errors },
   } = useFormContext<GoalWizardFormInput>();
+  const { t } = useLocale();
 
   const category = watch("category");
   const cycleStart = watch("cycleStart");
@@ -55,21 +57,20 @@ export function WizardStepWhen() {
         : "";
 
   return (
-    <section className="flex flex-col gap-4" aria-label="When and why">
+    <section className="flex flex-col gap-4" aria-label={t("newGoal.stepHeadingWhen")}>
       <header className="flex flex-col gap-1">
         <h2 className="font-heading text-base font-semibold">
-          When will this run, and why does it matter?
+          {t("newGoal.stepHeadingWhen")}
         </h2>
         <p className="text-muted-foreground text-sm">
-          The cycle is exactly 12 weeks. The end date follows the start
-          automatically.
+          {t("newGoal.stepHeadingWhenHint")}
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="cycle-start" className="text-sm font-medium">
-            Cycle start
+            {t("newGoal.fields.cycleStart")}
           </label>
           <Input
             id="cycle-start"
@@ -83,7 +84,10 @@ export function WizardStepWhen() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="cycle-end" className="text-sm font-medium">
-            Cycle end <span className="text-muted-foreground">(12 weeks)</span>
+            {t("newGoal.fields.cycleEnd")}{" "}
+            <span className="text-muted-foreground">
+              {t("newGoal.fields.cycleEndHint")}
+            </span>
           </label>
           <Input
             id="cycle-end"
@@ -101,11 +105,11 @@ export function WizardStepWhen() {
       {category === "other" ? (
         <div className="flex flex-col gap-1.5">
           <label htmlFor="custom-category" className="text-sm font-medium">
-            Custom category name
+            {t("newGoal.fields.customCategory")}
           </label>
           <Input
             id="custom-category"
-            placeholder="e.g., Side project"
+            placeholder={t("newGoal.fields.customCategoryPlaceholder")}
             autoComplete="off"
             aria-invalid={Boolean(errors.customCategory) || undefined}
             {...register("customCategory")}
@@ -116,12 +120,12 @@ export function WizardStepWhen() {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="goal-relevance" className="text-sm font-medium">
-          Why does this matter to you?
+          {t("newGoal.fields.relevance")}
         </label>
         <textarea
           id="goal-relevance"
           rows={3}
-          placeholder="A few honest sentences — this is what carries you on the hard weeks."
+          placeholder={t("newGoal.fields.relevancePlaceholder")}
           className={TEXTAREA_CLASSES}
           aria-invalid={Boolean(errors.relevance) || undefined}
           {...register("relevance")}
