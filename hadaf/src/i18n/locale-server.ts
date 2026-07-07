@@ -1,8 +1,9 @@
 import { cookies } from "next/headers";
 
+import { LOCALE_COOKIE } from "@/i18n/constants";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/messages";
 
-export const LOCALE_COOKIE = "hadaf:locale";
+export { LOCALE_COOKIE };
 
 export async function readServerLocale(): Promise<Locale> {
   try {

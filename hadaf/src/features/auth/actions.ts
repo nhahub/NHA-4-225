@@ -21,6 +21,7 @@ import {
   REFRESH_COOKIE,
   setSession,
 } from "@/lib/auth/session";
+import { safeRedirectPath } from "@/lib/auth/redirect-path";
 import {
   loginSchema,
   registerSchema,
@@ -42,6 +43,7 @@ function firstZodError(error: import("zod").ZodError) {
 
 export async function registerAction(
   input: RegisterInput,
+  next?: string | string[],
 ): Promise<ActionResult<{ userId: string }>> {
   const parsed = registerSchema.safeParse(input);
   if (!parsed.success) {
@@ -74,11 +76,12 @@ export async function registerAction(
   await setSession(user.id, refreshPlain, refreshExp);
   await analyticsRepo.log(user.id, "user_registered", { email: normalized });
 
-  redirect("/");
+  redirect(safeRedirectPath(next));
 }
 
 export async function loginAction(
   input: LoginInput,
+  next?: string | string[],
 ): Promise<ActionResult<{ userId: string }>> {
   const parsed = loginSchema.safeParse(input);
   if (!parsed.success) {
@@ -105,7 +108,7 @@ export async function loginAction(
   await setSession(user.id, refreshPlain, refreshExp);
   await analyticsRepo.log(user.id, "user_logged_in", {});
 
-  redirect("/");
+  redirect(safeRedirectPath(next));
 }
 
 export async function logoutAction(): Promise<ActionResult<{ ok: true }>> {

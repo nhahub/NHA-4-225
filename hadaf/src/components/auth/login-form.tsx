@@ -18,7 +18,11 @@ import {
 import { useLocale } from "@/providers/locale-provider";
 import type { MessageKey } from "@/i18n/messages";
 
-export function LoginForm() {
+type LoginFormProps = {
+  next?: string;
+};
+
+export function LoginForm({ next }: LoginFormProps) {
   const { t } = useLocale();
   const {
     register,
@@ -32,7 +36,7 @@ export function LoginForm() {
   });
 
   const onSubmit = handleSubmit(async (data) => {
-    const result = await loginAction(data);
+    const result = await loginAction(data, next);
     if (!result.success) {
       if (result.errorCode === "VALIDATION" && result.field) {
         setError(result.field as keyof LoginFormInput, {

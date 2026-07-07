@@ -19,7 +19,11 @@ import {
 import { useLocale } from "@/providers/locale-provider";
 import type { MessageKey } from "@/i18n/messages";
 
-export function RegisterForm() {
+type RegisterFormProps = {
+  next?: string;
+};
+
+export function RegisterForm({ next }: RegisterFormProps) {
   const { t } = useLocale();
   const {
     register,
@@ -33,7 +37,7 @@ export function RegisterForm() {
   });
 
   const onSubmit = handleSubmit(async (data) => {
-    const result = await registerAction(data);
+    const result = await registerAction(data, next);
     if (!result.success) {
       if (result.errorCode === "VALIDATION" && result.field) {
         setError(result.field as keyof RegisterFormInput, {
