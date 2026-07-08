@@ -276,11 +276,11 @@ Epic E1 · FR1, FR1.1, FR2, FR3, FR4, FR11 *(+FR5/6/6.2/6.3/7/9/10 shared with E
 > 3-step SMART wizard, 5-goal limit, hybrid-progress domain logic.
 
 **🗄️ Database:**
-- [x] `goal_category` enum (education_work, family, health, religion_spirituality, other)
-- [x] `goal_status` enum (active, completed, archived, replaced)
-- [x] `goals` table (title, description, category, custom_category, measure, relevance, cycle_start, cycle_end, manual_progress, status, deletion_reason, timestamps)
-- [x] `idx_goals_user_status` index
-- [x] `milestones` table (goal_id FK cascade, title, sort_order, is_completed, completed_at)
+- [ ] `goal_category` enum (education_work, family, health, religion_spirituality, other)
+- [ ] `goal_status` enum (active, completed, archived, replaced)
+- [ ] `goals` table (title, description, category, custom_category, measure, relevance, cycle_start, cycle_end, manual_progress, status, deletion_reason, timestamps)
+- [ ] `idx_goals_user_status` index
+- [ ] `milestones` table (goal_id FK cascade, title, sort_order, is_completed, completed_at)
 
 **⚙️ Backend:**
 - [ ] `domain/goal-progress.ts`: `calculateHybridProgress` (tasks 60% + milestones 40%)
@@ -351,12 +351,12 @@ Epic E2 · FR12, FR12.1, FR12.2, FR12.3, FR13, FR14, FR15, FR16, FR17, FR18, FR1
 > `tasks` table, Quick Add sheet, auto-type detection, points preview.
 
 **🗄️ Database:**
-- [x] `task_type` enum (scheduled, flexible, quick)
-- [x] `task_difficulty` enum (easy, medium, hard)
-- [x] `task_priority` enum (high, medium, low)
-- [x] `task_status` enum (pending, completed, postponed)
-- [x] `tasks` table (goal_id FK nullable, title, description, type, difficulty, priority, date, time_block_start/end, planned_duration_minutes, actual_duration_minutes, checklist JSONB, status, points_earned, completed_at, timestamps)
-- [x] `idx_tasks_user_date_priority`, `idx_tasks_user_goal` indexes
+- [ ] `task_type` enum (scheduled, flexible, quick)
+- [ ] `task_difficulty` enum (easy, medium, hard)
+- [ ] `task_priority` enum (high, medium, low)
+- [ ] `task_status` enum (pending, completed, postponed)
+- [ ] `tasks` table (goal_id FK nullable, title, description, type, difficulty, priority, date, time_block_start/end, planned_duration_minutes, actual_duration_minutes, checklist JSONB, status, points_earned, completed_at, timestamps)
+- [ ] `idx_tasks_user_date_priority`, `idx_tasks_user_goal` indexes
 
 **⚙️ Backend:**
 - [ ] `domain/task-type.ts`: `detectTaskType` (time block → scheduled; duration only → flexible; neither → quick)
@@ -444,9 +444,9 @@ Epic E3 · FR34, FR34.1, FR35, FR36, FR36.1, FR37
 > `habits`+`habit_logs` tables, Boolean+Counter, MVD on Light Days.
 
 **🗄️ Database:**
-- [x] `habit_type` enum (boolean, counter, quit)
-- [x] `habits` table (title, category, type, frequency JSONB, target_value, mvd_value, mvd_description, is_spiritual, is_archived, timestamps)
-- [x] `habit_logs` table (habit_id FK cascade, date, value, is_mvd, is_relapse) + `UNIQUE(habit_id, date)` + `idx_habit_logs_habit_date`
+- [ ] `habit_type` enum (boolean, counter, quit)
+- [ ] `habits` table (title, category, type, frequency JSONB, target_value, mvd_value, mvd_description, is_spiritual, is_archived, timestamps)
+- [ ] `habit_logs` table (habit_id FK cascade, date, value, is_mvd, is_relapse) + `UNIQUE(habit_id, date)` + `idx_habit_logs_habit_date`
 
 **⚙️ Backend:**
 - [ ] `domain/scoring.ts`: `calculateHabitPoints` (boolean_full=5, boolean_mvd=3)
@@ -553,9 +553,9 @@ Epic E4 · FR44, FR45, FR46, FR47
 > `daily_summaries` table, 4-color progress bar, 5 Day States.
 
 **🗄️ Database:**
-- [x] `day_type` enum (work, light, off)
-- [x] `day_state` enum (legendary, amazing, perfect, good_enough, low)
-- [x] `daily_summaries` table (user_id, date, day_type, tasks_completed, habits_completed, points_earned, daily_target, day_state, summary_shown) + `UNIQUE(user_id, date)`
+- [ ] `day_type` enum (work, light, off)
+- [ ] `day_state` enum (legendary, amazing, perfect, good_enough, low)
+- [ ] `daily_summaries` table (user_id, date, day_type, tasks_completed, habits_completed, points_earned, daily_target, day_state, summary_shown) + `UNIQUE(user_id, date)`
 
 **⚙️ Backend:**
 - [ ] `domain/day-state.ts`: `calculateDayState` — ≥150% legendary / ≥120% amazing / ≥100% perfect / ≥50% good_enough / <50% low
