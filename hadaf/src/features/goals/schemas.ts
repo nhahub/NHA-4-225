@@ -131,9 +131,55 @@ export const goalSchema = goalWizardSchema.extend({
   createdAt: z.coerce.date(),
   progress: z.number().min(0).max(1),
   health: z.enum(GOAL_HEALTH),
+  /**
+   * 0-100 when overridden, null when computed. The domain layer applies
+   * this in `calculateHybridProgress`; the UI surfaces it as a "Manual"
+   * badge + revert button per FR7.
+   */
+  manualProgress: z.number().int().min(0).max(100).nullable(),
 });
 
 export type Goal = z.infer<typeof goalSchema>;
+
+// ──────────────────────────────────────────────────────────────────────
+// Server-action input schemas (E1-2).
+// All take strict UUIDs and small-bounded values so a malformed client
+// payload is rejected before it ever reaches the repository.
+// ──────────────────────────────────────────────────────────────────────
+
+export const softDeleteGoalSchema = z.object({
+  goalId: z.string().uuid(),
+  reason: z
+    .string()
+    .min(2, "Give a brief reason (at least 2 characters)")
+    .max(500, "Keep the reason under 500 characters"),
+});
+export type SoftDeleteGoalInput = z.infer<typeof softDeleteGoalSchema>;
+
+export const toggleMilestoneSchema = z.object({
+  milestoneId: z.string().uuid(),
+  next: z.boolean(),
+});
+export type ToggleMilestoneInput = z.infer<typeof toggleMilestoneSchema>;
+
+export const reorderMilestonesSchema = z.object({
+  goalId: z.string().uuid(),
+  orderedMilestoneIds: z
+    .array(z.string().uuid())
+    .min(1, "Reorder payload cannot be empty"),
+});
+export type ReorderMilestonesInput = z.infer<typeof reorderMilestonesSchema>;
+
+export const overrideProgressSchema = z.object({
+  goalId: z.string().uuid(),
+  /**
+   * 0–100 when overriding, or null to revert to the computed value.
+   * We accept `null` explicitly here — the wizard schema rejects it
+   * because manual override is a separate concern.
+   */
+  value: z.number().int().min(0).max(100).nullable(),
+});
+export type OverrideProgressInput = z.infer<typeof overrideProgressSchema>;
 
 export const STEP_FIELDS = {
   what: ["title", "description", "measure"] as const,

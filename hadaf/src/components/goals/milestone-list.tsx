@@ -23,8 +23,8 @@ import { GripVerticalIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   reorderMilestones,
-  toggleMilestoneComplete,
-} from "@/features/goals/milestone-actions";
+  toggleMilestone,
+} from "@/features/goals/actions";
 import type { Milestone } from "@/features/goals/schemas";
 import { useLocale } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
@@ -139,12 +139,16 @@ export function MilestoneList({
 
   const onToggle = (id: string, next: boolean) => {
     startTransition(async () => {
+      const previous = committed;
       apply({ kind: "toggle", id, next });
-      await toggleMilestoneComplete({
-        goalId,
+      const result = await toggleMilestone({
         milestoneId: id,
-        nextCompleted: next,
+        next,
       });
+      if (!result.ok) {
+        setCommitted(previous);
+        return;
+      }
       setCommitted((prev) =>
         prev.map((m) =>
           m.id === id
@@ -170,8 +174,16 @@ export function MilestoneList({
     const orderedIds = reordered.map((m) => m.id);
 
     startTransition(async () => {
+      const previous = committed;
       apply({ kind: "reorder", orderedIds });
-      await reorderMilestones({ goalId, orderedMilestoneIds: orderedIds });
+      const result = await reorderMilestones({
+        goalId,
+        orderedMilestoneIds: orderedIds,
+      });
+      if (!result.ok) {
+        setCommitted(previous);
+        return;
+      }
       setCommitted(reordered.map((m, i) => ({ ...m, sortOrder: i })));
     });
   };
