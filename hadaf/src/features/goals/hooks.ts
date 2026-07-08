@@ -2,11 +2,10 @@
 
 import { useCallback, useState } from "react";
 import type { GoalWizardFormOutput } from "./schemas";
-
-const STORAGE_KEY = "hadaf:draft-goal";
+import { createGoal } from "./actions";
 
 export type CreateGoalResult =
-  | { ok: true; data: GoalWizardFormOutput }
+  | { ok: true }
   | { ok: false; error: string };
 
 export function useCreateGoal() {
@@ -19,12 +18,14 @@ export function useCreateGoal() {
       setIsPending(true);
       setError(null);
       try {
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(input));
-          console.log("[useCreateGoal:mock] payload ->", input);
+        const res = await createGoal(input);
+        if (res.ok) {
+          setData(input);
+          return { ok: true };
+        } else {
+          setError(res.error || "Failed to create goal");
+          return { ok: false, error: res.error || "Failed to create goal" };
         }
-        setData(input);
-        return { ok: true, data: input };
       } catch (e) {
         const message = e instanceof Error ? e.message : "Unknown error";
         setError(message);

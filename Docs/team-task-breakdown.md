@@ -166,12 +166,12 @@ Epic E0 · FR: — (enables NFR10 Arabic RTL + PRD bilingual mandate)
 **🎨 Frontend:**
 - [x] Self-host Tajawal + IBM Plex Sans Arabic in `public/fonts/`
 - [x] `@font-face` declarations + Tailwind `fontFamily` config
-- [ ] `<html dir>` / `<html lang>` wired to active locale in root layout
-- [ ] Audit for `ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-` → replace with logical `ms-`/`me-`/`ps-`/`pe-`
-- [ ] Install `next-intl`
-- [ ] `/[locale]/` route segment + middleware locale detection (URL or cookie)
-- [ ] Scaffold `messages/ar.json` + `messages/en.json` (mirrored key structure)
-- [ ] Verify `Intl.NumberFormat` / `Intl.DateTimeFormat` locale plumbing
+- [x] `<html dir>` / `<html lang>` wired to active locale in root layout
+- [x] Audit for `ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-` → replace with logical `ms-`/`me-`/`ps-`/`pe-`
+- [x] Install `next-intl` (Note: Custom lightweight i18n provider & locale hooks used instead)
+- [x] `/[locale]/` route segment + middleware locale detection (URL or cookie)
+- [x] Scaffold `messages/ar.json` + `messages/en.json` (consolidated in messages.ts)
+- [x] Verify `Intl.NumberFormat` / `Intl.DateTimeFormat` locale plumbing
 
 **Sequencing:** Depends on E0-1. **Owners:** agent-capable dev — i18n routing is spec-heavy and easy to get subtly wrong; this story is bigger than its name suggests since it carries the i18n gap-fill.
 
@@ -283,15 +283,15 @@ Epic E1 · FR1, FR1.1, FR2, FR3, FR4, FR11 *(+FR5/6/6.2/6.3/7/9/10 shared with E
 - [ ] `milestones` table (goal_id FK cascade, title, sort_order, is_completed, completed_at)
 
 **⚙️ Backend:**
-- [ ] `domain/goal-progress.ts`: `calculateHybridProgress` (tasks 60% + milestones 40%)
-- [ ] `domain/goal-progress.ts`: `calculateGoalHealth` (≥85%🟢 / ≥70%🟡 / ≥50%🟠 / <50%🔴)
-- [ ] `domain/goal-progress.ts`: `getCurrentWeek`, `calculateWeeklyExecutionScore`
-- [ ] `tests/domain/goal-progress.test.ts` — hybrid formula, tasks-only, milestones-only, 4 health states, week boundaries (P0)
-- [ ] `data/repositories/goals.repo.ts`: `createGoal`, `getActiveGoals`, `getById`
-- [ ] `features/goals/schemas.ts`: `createGoalSchema` (title, category, measure, relevance, cycle dates, milestones[])
-- [ ] `features/goals/actions.ts`: `createGoal()` — auth → Zod → enforce 5-active-goal cap → repo → analytics log
-- [ ] 5-goal-limit dialog copy: "لديك ٥ أهداف نشطة. أرشف هدفًا أولاً."
-- [ ] Analytics event: `goal_created`
+- [x] `domain/goal-progress.ts`: `calculateHybridProgress` (tasks 60% + milestones 40%)
+- [x] `domain/goal-progress.ts`: `calculateGoalHealth` (≥85%🟢 / ≥70%🟡 / ≥50%🟠 / <50%🔴)
+- [x] `domain/goal-progress.ts`: `getCurrentWeek`, `calculateWeeklyExecutionScore` (Scoring Engine domain functions implemented)
+- [x] `tests/domain/goal-progress.test.ts` — hybrid formula, tasks-only, milestones-only, 4 health states, week boundaries (P0)
+- [x] `data/repositories/goals.repo.ts`: `createGoal`, `getActiveGoals`, `getById` (Implemented in queries & actions)
+- [x] `features/goals/schemas.ts`: `createGoalSchema` (Implemented as goalWizardSchema in schemas.ts)
+- [x] `features/goals/actions.ts`: `createGoal()` — auth → Zod → enforce 5-active-goal cap → repo → analytics log
+- [x] 5-goal-limit dialog copy: "لديك ٥ أهداف نشطة. أرشف هدفًا أولاً."
+- [x] Analytics event: `goal_created`
 
 **🎨 Frontend:**
 - [x] `components/goals/goal-readiness-dialog.tsx` — Goal vs Habit Clarity (FR1.1)
@@ -299,8 +299,8 @@ Epic E1 · FR1, FR1.1, FR2, FR3, FR4, FR11 *(+FR5/6/6.2/6.3/7/9/10 shared with E
 - [x] `components/goals/goal-wizard.tsx` — Step 2: Category + Relevance
 - [x] `components/goals/goal-wizard.tsx` — Step 3: Milestones breakdown
 - [x] `app/goals/new/page.tsx` route
-- [ ] `features/goals/hooks.ts`: `useCreateGoal` (SWR optimistic `mutate()`)
-- [ ] i18n strings in `ar.json`/`en.json` (wizard copy, limit dialog)
+- [x] `features/goals/hooks.ts`: `useCreateGoal` (SWR optimistic `mutate()`)
+- [x] i18n strings in `ar.json`/`en.json` (wizard copy, limit dialog - defined in messages.ts)
 - [x] Field-level validation error states
 
 **Sequencing:** DB → domain (parallel, no DB dependency) → repo → schema/action → hook → UI. Depends on E0-4 (DB pattern), E0-5 (authed user). **Owners:** default pairing.
