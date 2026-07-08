@@ -36,7 +36,7 @@ export function GoalCard({ goal }: { goal: Goal }) {
 
   return (
     <Link
-      href={`/goals/${goal.id}`}
+      href={`/app/goals/${goal.id}`}
       aria-label={t("goals.ariaOpenGoal", { title: goal.title })}
       className={cn(
         "group block rounded-xl outline-none",

@@ -34,7 +34,7 @@ export default async function GoalsPage() {
         </div>
         <div className="flex items-center gap-2">
           <LocaleToggle />
-          <Button render={<Link href="/goals/new" />}>
+          <Button render={<Link href="/app/goals/new" />}>
             <PlusIcon aria-hidden="true" />
             {t("goals.newGoal")}
           </Button>
