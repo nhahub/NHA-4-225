@@ -68,7 +68,7 @@ export default async function GoalDetailPage({ params }: RouteParams) {
   return (
     <main className="bg-background text-foreground mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
       <div className="flex items-center justify-between gap-2">
-        <Button render={<Link href="/app/goals" />} variant="ghost" size="sm">
+        <Button nativeButton={false} render={<Link href="/app/goals" />} variant="ghost" size="sm">
           <ArrowLeftIcon aria-hidden="true" />
           {t("goalDetail.backToGoals")}
         </Button>
