@@ -144,245 +144,284 @@ npm install -D @types/node vitest
 | Language | TypeScript strict, Next.js App Router, Turbopack |
 | Styling | Tailwind CSS (cheat sheet provided for team) + Shadcn UI (limited to 8 components) + HSL CSS variables (light/dark) |
 | Motion | CSS Transitions only |
-| Testing | Vitest (domain unit tests) + manual testing |
+| Testing | Vitest |
 
----
+### 3.1 Database Schema (8 Collections)
 
-## 3. Core Architecture
+Instead of a SQL-based relational schema, Hadaf uses a document-oriented MongoDB schema managed through Mongoose models. Relationships are maintained via ObjectIDs.
 
-### 3.1 Database Schema (8 Tables)
+```javascript
+// ═══════════════════════════════════════
+// USERS COLLECTION
+// ═══════════════════════════════════════
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  name: { type: String },
+  avatarUrl: { type: String },
+  passwordHash: { type: String, required: true },
+  refreshToken: { type: String },
+  refreshTokenExp: { type: Date },
+  onboardingCompleted: { type: Boolean, default: false },
+  settings: {
+    work_hours_start: { type: String, default: "09:00" },
+    work_hours_end: { type: String, default: "17:00" },
+    day_start: { type: String, default: "04:00" },
+    off_days: { type: [String], default: ["friday", "saturday"] },
+    theme: { type: String, enum: ["light", "dark", "system"], default: "light" },
+    language: { type: String, enum: ["ar", "en"], default: "ar" },
+    notifications: {
+      time_block_reminder: { type: Boolean, default: true }
+    }
+  }
+}, { timestamps: true });
 
-```sql
--- ═══════════════════════════════════════
--- USERS
--- ═══════════════════════════════════════
-CREATE TABLE users (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email       TEXT NOT NULL UNIQUE,
-  name        TEXT,
-  avatar_url  TEXT,
-  settings    JSONB NOT NULL DEFAULT '{
-    "work_hours_start": "09:00",
-    "work_hours_end": "17:00",
-    "day_start": "04:00",
-    "off_days": ["friday", "saturday"],
-    "theme": "light",
-    "language": "ar",
-    "notifications": { "time_block_reminder": true }
-  }',
-  refresh_token       TEXT,
-  refresh_token_exp   TIMESTAMPTZ,
-  onboarding_completed BOOLEAN DEFAULT FALSE,
-  created_at  TIMESTAMPTZ DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ DEFAULT NOW()
-);
+// ═══════════════════════════════════════
+// GOALS COLLECTION
+// ═══════════════════════════════════════
+const goalSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  title: { type: String, required: true },
+  description: { type: String },
+  category: { 
+    type: String, 
+    enum: ['education_work', 'family', 'health', 'religion_spirituality', 'other'], 
+    required: true 
+  },
+  customCategory: { type: String },
+  measure: { type: String, required: true },
+  relevance: { type: String },
+  cycleStart: { type: Date, required: true },
+  cycleEnd: { type: Date, required: true },
+  manualProgress: { type: Number },
+  status: { 
+    type: String, 
+    enum: ['active', 'completed', 'archived', 'replaced'], 
+    default: 'active',
+    index: true
+  },
+  deletionReason: { type: String }
+}, { timestamps: true });
 
--- ═══════════════════════════════════════
--- GOALS
--- ═══════════════════════════════════════
-CREATE TYPE goal_category AS ENUM ('education_work', 'family', 'health', 'religion_spirituality', 'other');
-CREATE TYPE goal_status AS ENUM ('active', 'completed', 'archived', 'replaced');
+// Composite index for fast goal list queries
+goalSchema.index({ userId: 1, status: 1 });
 
-CREATE TABLE goals (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title           TEXT NOT NULL,
-  description     TEXT,
-  category        goal_category NOT NULL,
-  custom_category TEXT,
-  measure         TEXT NOT NULL,
-  relevance       TEXT,
-  cycle_start     DATE NOT NULL,
-  cycle_end       DATE NOT NULL,
-  manual_progress INTEGER,
-  status          goal_status NOT NULL DEFAULT 'active',
-  deletion_reason TEXT,
-  created_at      TIMESTAMPTZ DEFAULT NOW(),
-  updated_at      TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX idx_goals_user_status ON goals(user_id, status);
+// Cascade delete milestones and nullify tasks on goal delete
+goalSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
+  await Promise.all([
+    mongoose.model('Milestone').deleteMany({ goalId: this._id }),
+    mongoose.model('Task').updateMany({ goalId: this._id }, { $unset: { goalId: "" } })
+  ]);
+  next();
+});
 
--- ═══════════════════════════════════════
--- MILESTONES
--- ═══════════════════════════════════════
-CREATE TABLE milestones (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  goal_id       UUID NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
-  title         TEXT NOT NULL,
-  sort_order    INTEGER NOT NULL DEFAULT 0,
-  is_completed  BOOLEAN NOT NULL DEFAULT FALSE,
-  completed_at  TIMESTAMPTZ,
-  created_at    TIMESTAMPTZ DEFAULT NOW()
-);
+// ═══════════════════════════════════════
+// MILESTONES COLLECTION
+// ═══════════════════════════════════════
+const milestoneSchema = new mongoose.Schema({
+  goalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal', required: true, index: true },
+  title: { type: String, required: true },
+  sort_order: { type: Number, default: 0 },
+  is_completed: { type: Boolean, default: false },
+  completed_at: { type: Date }
+}, { timestamps: true });
 
--- ═══════════════════════════════════════
--- TASKS — No sort_order column
--- Sort: scheduled by time_block_start, others by priority + created_at
--- ═══════════════════════════════════════
-CREATE TYPE task_type AS ENUM ('scheduled', 'flexible', 'quick');
-CREATE TYPE task_difficulty AS ENUM ('easy', 'medium', 'hard');
-CREATE TYPE task_priority AS ENUM ('high', 'medium', 'low');
-CREATE TYPE task_status AS ENUM ('pending', 'completed', 'postponed');
+// Index for ordering milestones within a specific goal
+milestoneSchema.index({ goalId: 1, sort_order: 1 });
 
-CREATE TABLE tasks (
-  id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id                  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  goal_id                  UUID REFERENCES goals(id) ON DELETE SET NULL,
-  title                    TEXT NOT NULL,
-  description              TEXT,
-  type                     task_type NOT NULL DEFAULT 'quick',
-  difficulty               task_difficulty NOT NULL DEFAULT 'medium',
-  priority                 task_priority NOT NULL DEFAULT 'medium',
-  date                     DATE NOT NULL DEFAULT CURRENT_DATE,
-  time_block_start         TIME,
-  time_block_end           TIME,
-  planned_duration_minutes INTEGER,
-  actual_duration_minutes  INTEGER,
-  checklist                JSONB DEFAULT '[]',
-  status                   task_status NOT NULL DEFAULT 'pending',
-  points_earned            INTEGER NOT NULL DEFAULT 0,
-  completed_at             TIMESTAMPTZ,
-  created_at               TIMESTAMPTZ DEFAULT NOW(),
-  updated_at               TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX idx_tasks_user_date_priority ON tasks(user_id, date, priority);
-CREATE INDEX idx_tasks_user_goal ON tasks(user_id, goal_id);
+// ═══════════════════════════════════════
+// TASKS COLLECTION
+// ═══════════════════════════════════════
+const taskSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  goalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal', index: true },
+  title: { type: String, required: true },
+  description: { type: String },
+  type: { type: String, enum: ['scheduled', 'flexible', 'quick'], default: 'quick' },
+  difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' },
+  priority: { type: String, enum: ['high', 'medium', 'low'], default: 'medium', index: true },
+  date: { type: String, required: true, index: true }, // Format: YYYY-MM-DD
+  timeBlockStart: { type: String }, // Format: HH:MM
+  timeBlockEnd: { type: String },
+  plannedDurationMinutes: { type: Number },
+  actualDurationMinutes: { type: Number },
+  checklist: [{
+    title: { type: String, required: true },
+    is_completed: { type: Boolean, default: false }
+  }],
+  status: { type: String, enum: ['pending', 'completed', 'postponed'], default: 'pending' },
+  pointsEarned: { type: Number, default: 0 },
+  completedAt: { type: Date }
+}, { timestamps: true });
 
--- ═══════════════════════════════════════
--- HABITS
--- ═══════════════════════════════════════
-CREATE TYPE habit_type AS ENUM ('boolean', 'counter', 'quit');
+// Index for query sorting: scheduled by priority + date
+taskSchema.index({ userId: 1, date: 1, priority: -1 });
 
-CREATE TABLE habits (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title           TEXT NOT NULL,
-  category        goal_category NOT NULL,
-  type            habit_type NOT NULL DEFAULT 'boolean',
-  frequency       JSONB NOT NULL DEFAULT '{"type": "daily"}',
-  target_value    INTEGER,
-  mvd_value       INTEGER,
-  mvd_description TEXT,
-  is_spiritual    BOOLEAN NOT NULL DEFAULT FALSE,
-  is_archived     BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at      TIMESTAMPTZ DEFAULT NOW(),
-  updated_at      TIMESTAMPTZ DEFAULT NOW()
-);
+// ═══════════════════════════════════════
+// HABITS COLLECTION
+// ═══════════════════════════════════════
+const habitSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  title: { type: String, required: true },
+  category: { 
+    type: String, 
+    enum: ['education_work', 'family', 'health', 'religion_spirituality', 'other'], 
+    required: true 
+  },
+  type: { type: String, enum: ['boolean', 'counter', 'quit'], default: 'boolean' },
+  frequency: {
+    type: { type: String, default: "daily" } // Frequency config (e.g. daily, weekly)
+  },
+  targetValue: { type: Number },
+  mvdValue: { type: Number },
+  mvdDescription: { type: String },
+  isSpiritual: { type: Boolean, default: false },
+  isArchived: { type: Boolean, default: false }
+}, { timestamps: true });
 
--- ═══════════════════════════════════════
--- HABIT LOGS
--- ═══════════════════════════════════════
-CREATE TABLE habit_logs (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  habit_id    UUID NOT NULL REFERENCES habits(id) ON DELETE CASCADE,
-  date        DATE NOT NULL,
-  value       INTEGER NOT NULL DEFAULT 0,
-  is_mvd      BOOLEAN NOT NULL DEFAULT FALSE,
-  is_relapse  BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at  TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(habit_id, date)
-);
-CREATE INDEX idx_habit_logs_habit_date ON habit_logs(habit_id, date);
+// ═══════════════════════════════════════
+// HABIT LOGS COLLECTION
+// ═══════════════════════════════════════
+const habitLogSchema = new mongoose.Schema({
+  habitId: { type: mongoose.Schema.Types.ObjectId, ref: 'Habit', required: true, index: true },
+  date: { type: String, required: true, index: true }, // Format: YYYY-MM-DD
+  value: { type: Number, default: 0 },
+  isMvd: { type: Boolean, default: false },
+  isRelapse: { type: Boolean, default: false }
+}, { timestamps: { createdAt: true, updatedAt: false } });
 
--- ═══════════════════════════════════════
--- DAILY SUMMARIES
--- ═══════════════════════════════════════
-CREATE TYPE day_type AS ENUM ('work', 'light', 'off');
-CREATE TYPE day_state AS ENUM ('legendary', 'amazing', 'perfect', 'good_enough', 'low');
+// Prevent duplicate log for same habit on same date
+habitLogSchema.index({ habitId: 1, date: 1 }, { unique: true });
 
-CREATE TABLE daily_summaries (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  date              DATE NOT NULL,
-  day_type          day_type NOT NULL DEFAULT 'work',
-  tasks_completed   INTEGER NOT NULL DEFAULT 0,
-  habits_completed  INTEGER NOT NULL DEFAULT 0,
-  points_earned     INTEGER NOT NULL DEFAULT 0,
-  daily_target      INTEGER NOT NULL DEFAULT 0,
-  day_state         day_state,
-  summary_shown     BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at        TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, date)
-);
+// ═══════════════════════════════════════
+// DAILY SUMMARIES COLLECTION
+// ═══════════════════════════════════════
+const dailySummarySchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  date: { type: String, required: true, index: true }, // Format: YYYY-MM-DD
+  dayType: { type: String, enum: ['work', 'light', 'off'], default: 'work' },
+  tasksCompleted: { type: Number, default: 0 },
+  habitsCompleted: { type: Number, default: 0 },
+  pointsEarned: { type: Number, default: 0 },
+  dailyTarget: { type: Number, default: 0 },
+  dayState: { 
+    type: String, 
+    enum: ['legendary', 'amazing', 'perfect', 'good_enough', 'low'] 
+  },
+  summaryShown: { type: Boolean, default: false }
+}, { timestamps: true });
 
--- ═══════════════════════════════════════
--- ANALYTICS EVENTS
--- ═══════════════════════════════════════
-CREATE TABLE analytics_events (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  event_type  TEXT NOT NULL,
-  event_data  JSONB,
-  created_at  TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX idx_analytics_user_created ON analytics_events(user_id, created_at);
+dailySummarySchema.index({ userId: 1, date: 1 }, { unique: true });
+
+// ═══════════════════════════════════════
+// ANALYTICS EVENTS COLLECTION
+// ═══════════════════════════════════════
+const analyticsEventSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  eventType: { type: String, required: true },
+  eventData: { type: mongoose.Schema.Types.Map, of: mongoose.Schema.Types.Mixed },
+  createdAt: { type: Date, default: Date.now, index: true }
+});
+
+analyticsEventSchema.index({ userId: 1, createdAt: -1 });
 ```
-
-**Indexes summary:**
-
-| Table | Index | Purpose |
-|---|---|---|
-| `goals` | `(user_id, status)` | Active goals query |
-| `tasks` | `(user_id, date, priority)` | Daily task list |
-| `tasks` | `(user_id, goal_id)` | Goal-linked tasks |
-| `habit_logs` | `(habit_id, date)` UNIQUE | Prevent duplicates |
-| `daily_summaries` | `(user_id, date)` UNIQUE | Prevent duplicates |
-| `analytics_events` | `(user_id, created_at)` | Event queries |
-
-**Caching:** Server Components = Initial Fetch. Client = SWR (client-side mutations/optimistic only, no polling). Static config = `lib/constants.ts`.
-
-**Soft-Delete:** Goals → `status`, Tasks → `status`, Habits → `is_archived`. No hard deletes.
 
 ### 3.2 Authentication & Security
 
+Authentication is structured around standard JSON Web Tokens (JWT) and Bcrypt hashing, decoupled from edge execution context.
+
 ```
-Login: Email/Password (register + login), password hashed with bcrypt
+Login: Email/Password flow, password hashed using bcryptjs (cost 10)
 Tokens:
-├── Access Token: JWT via jose, 15min, httpOnly cookie
-├── Refresh Token: 7-day, stored hashed in DB, rotated on use
-└── Edge Middleware: validates on every /app/* request
+├── Access Token: Short-lived JWT (15 min), signed on server
+├── Refresh Token: 7-day token, stored hashed in User model, rotated on use
+└── Cookie Transport: Delivered via httpOnly secure cookies
 ```
 
-- Stateless JWT — fits serverless
-- Refresh token rotation prevents theft
-- On token reuse (theft indicator): invalidate all user tokens
-- Middleware detects expired access token → silent refresh; if fails → redirect to `/login?redirect={currentPath}`
-- Rate limiting: 100 req/min per user, in-memory `Map` (sufficient for 100 users)
-- `habits.is_spiritual` column exists but unused — seeded as `false`
+* **Cross-Origin Cookie Configuration**: The Express backend must deliver the authentication JWT cookies with the following configurations:
+  * `httpOnly: true` (prevents client-side scripts from reading the token)
+  * `sameSite: "none"` (allows browser to pass the cookie cross-origin from Next.js client)
+  * `secure: true` (requires HTTPS context. Note: browsers treat localhost as secure)
+* **CORS Origin Policy Binding**: If cookies are transmitted, CORS must strictly map to `process.env.FRONTEND_URL` and enable credentials. Wildcard origins (`*`) are prohibited:
+  ```javascript
+  app.use(cors({
+    origin: process.env.FRONTEND_URL, // e.g. http://localhost:3000
+    credentials: true
+  }));
+  ```
+* **CSRF Mitigation (Custom Headers)**: State-changing requests (`POST`, `PUT`, `PATCH`, `DELETE`) are protected by validating custom client-side headers. If the `X-Requested-With` header is absent, the backend rejects the request:
+  ```javascript
+  app.use((req, res, next) => {
+    const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+    if (isStateChanging && req.headers['x-requested-with'] !== 'XMLHttpRequest') {
+      return res.status(403).json({ success: false, errorCode: 'AUTH', error: 'errors.csrfDetected' });
+    }
+    next();
+  });
+  ```
+* **Refresh Token Rotation**: Each token refresh request invalidates the old refresh token and issues a new pair. If token reuse is detected (indicating token theft), all active refresh sessions for the user are invalidated.
+* **Rate Limiting**: Configured via backend Express rate limiter middleware (e.g. 100 requests per minute per user ID/IP address).
 
-### 3.3 API Pattern — Server Actions
+**Indexes summary:**
 
-Every mutation follows this flow:
+### 3.3 API Pattern — MVC REST Controller
+
+Backend endpoints follow a standard Model-View-Controller (MVC) API pattern built with Express.js:
 
 ```
-1. 'use server' directive
-2. Authenticate (getAuthUser() from cookie)
-3. Validate input with Zod schema
-4. Call domain logic (pure function from domain/)
-5. Persist via repository (from data/repositories/)
-6. Log analytics event
-7. Return typed ActionResult<T>
+Request ➔ Routes ➔ Auth Middleware ➔ Controller (Zod Validation) ➔ Mongoose Models ➔ JSON Response
 ```
+
+Every endpoint returns a standardized JSON contract matching this format:
 
 ```typescript
-type ActionResult<T> =
+type ApiResponse<T> =
   | { success: true; data: T }
-  | { success: false; error: string; errorCode: 'VALIDATION' | 'AUTH' | 'DB_ERROR' | 'RATE_LIMIT' | 'UNKNOWN'; field?: string; shouldRetry?: boolean }
+  | { success: false; error: string; errorCode: 'VALIDATION' | 'AUTH' | 'DB_ERROR' | 'RATE_LIMIT' | 'UNKNOWN'; field?: string }
 ```
 
-**Error Handling:**
+* **Express Routes Mapping**:
+  * `/api/auth/*`: Signup, Login, Logout, Refresh endpoints.
+  * `/api/user/settings`: PATCH endpoint to update language (RTL/LTR), theme, and work targets.
+  * `/api/goals/*`: SMART Goal dashboard queries and wizard mutations.
+  * `/api/tasks/*` and `/api/habits/*`: Everyday action inputs.
+* **Global Error Handling & Route Fallbacks**: The global Express error-handler middleware and route fallbacks catch unmatched paths and parse MongoDB/Mongoose specific exceptions into a clean validation response layout instead of returning raw database traces:
+  ```javascript
+  // Express fallback for unmatched routes (placed right before error handler)
+  app.use((req, res, next) => {
+    res.status(404).json({
+      success: false,
+      errorCode: 'UNKNOWN',
+      error: 'errors.routeNotFound'
+    });
+  });
 
-| Error Type | User Sees |
-|---|---|
-| Validation | Field-level error message |
-| Auth failure | Redirect to login |
-| DB failure (auto-retry 3×) | Error Toast: "فشل الحفظ. [حاول مرة أخرى]" |
-| Neon cold start | Loading Skeleton (2-5s) |
-| Network offline | Persistent banner: "لا يوجد اتصال" |
-| 5th goal creation | Dialog: "لديك ٥ أهداف نشطة. أرشف هدفًا أولاً." |
-| Destructive action | Confirmation Dialog before execution |
+  // Express global error-handler.js snippet
+  app.use((err, req, res, next) => {
+    // Mongoose Schema Validation Failures
+    if (err.name === 'ValidationError') {
+      const field = Object.keys(err.errors)[0];
+      return res.status(400).json({
+        success: false,
+        errorCode: 'VALIDATION',
+        error: err.errors[field].message || 'errors.validationFailed',
+        field
+      });
+    }
 
-**Data Freshness:** SWR `mutate()` after every action. No polling. Same scoring function runs client & server.
+    // MongoDB Duplicate Key (Code 11000)
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyValue)[0];
+      return res.status(400).json({
+        success: false,
+        errorCode: 'VALIDATION',
+        error: `auth.errors.${field}Exists`, // e.g. auth.errors.emailExists
+        field
+      });
+    }
+    
+    res.status(500).json({ success: false, errorCode: 'UNKNOWN', error: 'errors.internalServer' });
+  });
+  ```
 
 ### 3.4 Frontend Architecture
 
@@ -390,55 +429,38 @@ type ActionResult<T> =
 
 | State | Solution |
 |---|---|
-| Server data (tasks, goals, habits) | Server Components (initial fetch) + SWR (optimistic mutations) |
+| Server data (tasks, goals, habits) | SWR hooks performing client-side queries fetching from `process.env.NEXT_PUBLIC_API_URL` with credentials enabled. |
 | UI state (modals, forms) | React `useState` / `useReducer` |
 | Day Type | React Context (`DayTypeProvider`) |
-| Auth | Edge Middleware + SWR user hook |
+| Auth | React auth context calling backend endpoints |
 | Forms | React Hook Form + Zod |
 | Theme | CSS variables + `data-theme` attribute |
-| **Language (i18n)** | **`next-intl` from day 1.** Locale stored in URL (`/ar/...` and `/en/...`) + user preference in `users.settings.language`. `<html dir>` and `<html lang>` set from locale. Bilingual parity — no language is fallback. |
+| **Language (i18n)** | Custom cookie-based `LocaleProvider` (Arabic primary RTL, English first-class LTR). |
 
-**i18n Architecture:**
-
-| Concern | Solution |
-|---|---|
-| String catalog | `messages/ar.json` and `messages/en.json` — flat key structure, mirrored 1:1 |
-| Server Components | `getTranslations()` from `next-intl/server` |
-| Client Components | `useTranslations()` from `next-intl` |
-| Routing | `/[locale]/...` segment — middleware sets locale from URL or cookie |
-| Number formatting | `Intl.NumberFormat(locale)` — Arabic numerals for `ar`, Western for `en` |
-| Date formatting | `Intl.DateTimeFormat(locale)` |
-| Direction | `<html dir="rtl">` for Arabic, `dir="ltr"` for English |
-| Logical CSS | Tailwind `ms-`/`me-`/`ps-`/`pe-` everywhere — works in both directions |
-| Iconography | `lucide-react` (mostly directional-neutral) + custom SVGs that flip for RTL when needed |
-| Voice/Tone consistency | Single `copy-brief.md` doc guides both languages — non-formal but high quality. AI-assisted translation via the same agent preserves tone. |
-
-**Component Types:**
-
-| Type | Location | Rules |
-|---|---|---|
-| Server Components | `app/` | Data fetching, layouts |
-| Client Components | `components/` + `features/` | All interactive UI — `"use client"` |
-| Shadcn Base | `components/ui/` | No business logic |
-| Shared | `components/shared/` | Empty states, skeletons, error boundary |
-
-**Motion:** CSS Transitions only. Tokens: `width 500ms ease-out`, `opacity 300ms ease`, `transform 200ms ease-out`. Shimmer `1500ms infinite linear`. `prefers-reduced-motion` disables all.
-
-**RTL:** Tailwind logical properties (`ms-`/`me-`/`ps-`/`pe-`). `dir="rtl"` on `<html>`. No `left`/`right` CSS. Progress bars fill right-to-left. 12-week bar: Week 1 on right.
+**API Fetcher Guideline**:
+Frontend data mutations must target absolute backend addresses via environment variables. Relative routes to the Next.js server are prohibited:
+```typescript
+// client/src/lib/api.ts
+export const fetcher = (url: string) => 
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+    credentials: 'include' // Crucial for cross-origin httpOnly cookies
+  }).then(res => res.json());
+```
 
 ### 3.5 Infrastructure
 
-**CI/CD (GitHub Actions):** `npm install → npm run lint → npm run type-check → npm run test → npm run build`
+**CI/CD (GitHub Actions):** Runs test checks on frontend and backend separate scripts.
 
 **Environment Variables:**
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | Neon connection string (with `-pooler`) |
-| `JWT_SECRET` | jose signing key |
-| `NEXT_PUBLIC_APP_URL` | Base URL for client |
+| Variable | Scope | Purpose |
+|---|---|---|
+| `MONGODB_URI` | Server | MongoDB Connection String |
+| `JWT_SECRET` | Server | jsonwebtoken signature key |
+| `NEXT_PUBLIC_API_URL` | Client | Absolute backend server URL |
+| `PORT` | Server | Express listener port (default `5000`) |
 
-**Monitoring:** Vercel built-in analytics + function logs + `analytics_events` table + client Error Boundary.
+**Monitoring**: Global Express error handler logs + client-side Error Boundary alerts.
 
 ---
 
@@ -563,97 +585,71 @@ export function useTasks(date: string) {
 
 ```
 hadaf/
-├── .github/workflows/ci.yml
-├── public/fonts/                         # Tajawal, IBM Plex Sans Arabic
-├── scripts/seed.ts                       # Demo account + test data
-├── src/
-│   ├── app/
-│   │   ├── globals.css                   # Tailwind + HSL tokens + CSS transitions
-│   │   ├── layout.tsx                    # Root layout (dir, lang, font, theme)
-│   │   ├── page.tsx                      # Landing → redirect
-│   │   ├── (auth)/
-│   │   │   ├── login/page.tsx
-│   │   │   └── register/page.tsx
-│   │   └── app/                          # Protected routes
-│   │       ├── layout.tsx                # App shell + providers
-│   │       ├── page.tsx                  # Home
-│   │       ├── goals/
-│   │       │   ├── page.tsx              # Dashboard
-│   │       │   ├── new/page.tsx          # SMART Wizard
-│   │       │   └── [id]/page.tsx         # Detail
-│   │       ├── habits/page.tsx
-│   │       ├── more/
-│   │       │   ├── page.tsx              # More menu
-│   │       │   ├── analytics/page.tsx
-│   │       │   └── settings/page.tsx
-│   │       └── onboarding/page.tsx
-│   ├── features/                         # APPLICATION LAYER
-│   │   ├── auth/    (actions, schemas, types)
-│   │   ├── onboarding/ (actions, hooks, schemas)
-│   │   ├── goals/   (actions, hooks, schemas, types)
-│   │   ├── tasks/   (actions, hooks, schemas, types)
-│   │   ├── habits/  (actions, hooks, schemas, types)
-│   │   ├── scoring/ (actions, hooks, types)
-│   │   ├── capacity/ (hooks, types)
-│   │   ├── analytics/ (actions, hooks)
-│   │   └── settings/ (actions, hooks)
-│   ├── domain/                           # PURE TS — ZERO framework imports
-│   │   ├── scoring.ts
-│   │   ├── goal-progress.ts
-│   │   ├── capacity.ts
-│   │   ├── day-state.ts
-│   │   ├── task-type.ts
-│   │   └── types.ts
-│   ├── data/
-│   │   ├── db/ (schema.ts, client.ts, migrations/)
-│   │   └── repositories/ (users, goals, tasks, habits, daily-summaries, analytics)
-│   ├── components/
-│   │   ├── ui/                           # Shadcn (no business logic)
-│   │   ├── shared/ (empty-state, loading-skeleton, error-toast, error-boundary, contribution-pulse, day-state-badge, category-badge)
-│   │   ├── layouts/ (app-shell, sidebar, bottom-nav)
-│   │   ├── goals/ (goal-card, goal-wizard, goal-readiness-dialog, goal-detail, goal-progress-ring, goal-health-dot, milestone-list, twelve-week-bar)
-│   │   ├── tasks/ (task-card, task-list, quick-add-sheet, smart-complete-dialog, manual-complete-dialog, checklist, backlog-ribbon)
-│   │   ├── habits/ (habit-card, habit-list, habit-counter, mvd-indicator)
-│   │   ├── scoring/ (progress-bar, daily-summary-toast)
-│   │   ├── home/ (adaptive-greeting, daily-overview)
-│   │   └── onboarding/ (onboarding-wizard, goal-readiness-step, habits-step, settings-step)
-│   ├── hooks/ (use-day-type, use-locale, use-media-query)
-│   ├── providers/ (day-type, locale, auth)
-│   ├── lib/ (i18n/number-format, auth/{jwt,session}, constants)
-│   ├── middleware.ts                      # JWT + rate limiting
-│   └── types/globals.d.ts
-├── tests/domain/ (scoring, goal-progress, capacity, day-state, task-type)
-├── drizzle.config.ts
-├── vitest.config.ts
-├── tailwind.config.ts
-├── tsconfig.json
-├── next.config.ts
-├── .env.local / .env.example
-└── package.json
+├── client/                               # Next.js Frontend App
+│   ├── public/fonts/                     # Fonts (Tajawal, IBM Plex Sans Arabic)
+│   ├── src/
+│   │   ├── app/                          # Pages & Layouts (App Router)
+│   │   │   ├── globals.css               # Tailwind + HSL tokens + CSS transitions
+│   │   │   ├── layout.tsx                # Root layout (dir, lang, font, theme)
+│   │   │   ├── page.tsx                  # Landing ➔ Redirect to /app
+│   │   │   ├── (auth)/                   # Login, Register pages
+│   │   │   └── app/                      # Authenticated Routes (wrapped in AppShell)
+│   │   │       ├── goals/                # Goals List, SMART Wizard, Detail pages
+│   │   │       └── more/                 # Settings & Analytics
+│   │   ├── components/                   # Reusable client components
+│   │   │   ├── ui/                       # Radix / shadcn primitives
+│   │   │   ├── shared/                   # Language switcher, theme toggle, states
+│   │   │   └── layouts/                  # Sidebar, BottomNav, AppShell
+│   │   ├── features/                     # Frontend Hook Slices (SWR query, validations)
+│   │   ├── providers/                    # Context providers (Theme, Locale)
+│   │   ├── i18n/                         # i18n translation catalogs & formatters
+│   │   └── lib/                          # Client-side utility functions
+│   ├── package.json
+│   └── tsconfig.json
+│
+└── server/                               # Node.js / Express Backend (MVC in pure JS)
+    ├── src/
+    │   ├── config/                       # Mongoose connection & configs
+    │   │   └── db.js
+    │   ├── models/                       # M (Model): Mongoose collections
+    │   │   ├── User.js
+    │   │   ├── Goal.js
+    │   │   ├── Milestone.js
+    │   │   ├── Task.js
+    │   │   ├── Habit.js
+    │   │   ├── HabitLog.js
+    │   │   ├── DailySummary.js
+    │   │   └── AnalyticsEvent.js
+    │   ├── controllers/                  # C (Controller): Express handlers
+    │   │   ├── auth.controller.js
+    │   │   ├── user.controller.js        # User settings update
+    │   │   ├── goals.controller.js
+    │   │   ├── milestones.controller.js  # Milestone status/order mutations
+    │   │   ├── tasks.controller.js
+    │   │   └── habits.controller.js
+    │   ├── routes/                       # Express Endpoints
+    │   │   ├── auth.routes.js
+    │   │   ├── user.routes.js
+    │   │   ├── goals.routes.js
+    │   │   ├── milestones.routes.js      # Milestone routes
+    │   │   ├── tasks.routes.js
+    │   │   └── habits.routes.js
+    │   ├── middleware/                   # Express custom middleware
+    │   │   ├── auth.js                   # JWT parse & injection
+    │   │   ├── rate-limiter.js
+    │   │   └── error-handler.js          # Mongoose code 11000 exception handling
+    │   ├── utils/                        # Password hashing & JWT sign/verify
+    │   └── server.js                     # Express bootstrap
+    └── package.json
 ```
 
 ---
 
-## 6. Domain Logic Specifications
+## 6. Business Logic Specifications (Backend Utils)
 
-> **Rule:** Everything in `src/domain/` is pure TypeScript. Zero imports from React, Next.js, Drizzle, or any framework. Every function is deterministic and unit-testable.
+All core mathematical calculations and business rules are handled by pure, unit-testable JavaScript utility files under **`hadaf/server/src/utils/`**. These utilities have zero database or HTTP framework dependencies.
 
-### 6.1 Domain Types (`domain/types.ts`)
-
-```typescript
-export type TaskType = 'scheduled' | 'flexible' | 'quick'
-export type TaskDifficulty = 'easy' | 'medium' | 'hard'
-export type TaskPriority = 'high' | 'medium' | 'low'
-export type TaskStatus = 'pending' | 'completed' | 'postponed'
-export type HabitType = 'boolean' | 'counter' | 'quit'
-export type GoalCategory = 'education_work' | 'family' | 'health' | 'religion_spirituality' | 'other'
-export type GoalStatus = 'active' | 'completed' | 'archived' | 'replaced'
-export type GoalHealth = 'on_track' | 'needs_attention' | 'behind' | 'at_risk'
-export type DayType = 'work' | 'light' | 'off'
-export type DayState = 'legendary' | 'amazing' | 'perfect' | 'good_enough' | 'low'
-```
-
-### 6.2 Scoring (`domain/scoring.ts`)
+### 6.1 Scoring (`server/src/utils/scoring.js`)
 
 **Formula:** `(actual_duration / 10) × difficulty_multiplier × accuracy_bonus × streak_bonus`
 
@@ -669,7 +665,7 @@ export type DayState = 'legendary' | 'amazing' | 'perfect' | 'good_enough' | 'lo
 
 **Key functions:** `calculateTaskPoints(input)`, `calculateCounterHabitPoints(value, target, mvd)`, `calculateHabitPoints(type, isMvd)`, `predictTaskPoints(type, difficulty, planned)`
 
-### 6.3 Goal Progress (`domain/goal-progress.ts`)
+### 6.2 Goal Progress (`server/src/utils/goal-progress.js`)
 
 **Hybrid Progress (FR6):** `(tasks × 60%) + (milestones × 40%)`
 
@@ -677,7 +673,7 @@ export type DayState = 'legendary' | 'amazing' | 'perfect' | 'good_enough' | 'lo
 
 **Key functions:** `calculateHybridProgress(input)`, `calculateGoalHealth(actual, week, total)`, `getCurrentWeek(cycleStart, today)`, `calculateWeeklyExecutionScore(completed, total)`
 
-### 6.4 Capacity (`domain/capacity.ts`)
+### 6.3 Capacity (`server/src/utils/capacity.js`)
 
 ```
 capacity = (work_end - work_start - lunch) × 0.80
@@ -687,7 +683,7 @@ if off_day: capacity = 0
 
 **Key functions:** `calculateDailyCapacity(input)`, `calculatePlannedTime(tasks)`, `parseTimeToMinutes(time)`
 
-### 6.5 Day State (`domain/day-state.ts`)
+### 6.4 Day State (`server/src/utils/day-state.js`)
 
 | Ratio | State |
 |---|---|
@@ -701,7 +697,7 @@ if off_day: capacity = 0
 
 **Key functions:** `calculateDayState(points, target)`, `calculateAdaptiveDailyTarget(recent, dayType)`
 
-### 6.6 Task Type Detection (`domain/task-type.ts`)
+### 6.5 Task Type Detection (`server/src/utils/task-type.js`)
 
 ```
 if time_block_start AND time_block_end → 'scheduled'

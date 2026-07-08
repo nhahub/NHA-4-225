@@ -22,13 +22,13 @@
 ## 1. How to use this doc
 
 **Lane definitions:**
-- **🗄️ Database** — `data/db/schema.ts` additions (tables/enums/indexes) + `drizzle-kit generate`.
-- **⚙️ Backend** — `domain/*.ts` (pure logic + Vitest), `data/repositories/*.repo.ts`, `features/*/schemas.ts` (Zod), `features/*/actions.ts` (Server Actions), analytics logging.
-- **🎨 Frontend** — `components/*`, `app/*` routes, `features/*/hooks.ts` (SWR), i18n strings (AR+EN), empty/loading/error states for that screen.
+- **🗄️ Database** — MongoDB collections & Mongoose schema additions in `hadaf/server/src/models/*.js`.
+- **⚙️ Backend** — `routes/*.js` (Express endpoints), `controllers/*.js` (Express MVC handler logic), backend utils (pure logic + Vitest), custom middlewares (auth, error-handler), analytics logging.
+- **🎨 Frontend** — Next.js UI (`components/*`, `app/*` routes), frontend hooks calling `process.env.NEXT_PUBLIC_API_URL` via SWR, i18n strings (AR+EN), empty/loading/error states for that screen.
 
 A lane marked `_None_` means genuinely no work in that layer for this story — not an oversight. Items tagged **[PRD gap-fill]** were found by reading the full PRD and were absent from `Epics.md`'s original AC — see §2 for the full accounting.
 
-**Default build order inside a story:** DB schema → Domain logic (parallel-safe, no DB dependency) → Repository → Zod schema + Server Action → SWR hook → UI component. Each story states its own **Sequencing** if it deviates.
+**Default build order inside a story:** Mongoose model schema ➔ Domain logic (parallel-safe, no DB dependency) ➔ Express Controller & Route ➔ Frontend SWR API fetcher ➔ UI component. Each story states its own **Sequencing** if it deviates.
 
 **Default owner pairing** (per `Scope.md` §8.1): **Database + Backend** → one of the 2 agent-capable devs, dispatching the BMAD `backend`/`ba` subagent roles (spec-heavy, well-scoped, verifiable via Vitest). **Frontend** → an entry-level dev (manual implementation) once the Backend lane has defined the action/hook contract, or an agent-capable dev dispatching the `frontend` role. Each story states **Owners** only where it deviates from this default.
 

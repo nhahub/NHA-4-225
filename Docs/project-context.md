@@ -44,28 +44,21 @@ per this order, and if the conflict isn't resolved by it, stop and ask instead o
 These resolve live contradictions in the documents and take priority over what's written there
 until the docs themselves are patched:
 
-- **Single `hadaf/` app**, not an npm workspace split. A `hadaf-UI`/`hadaf-BE` split was tried and
-  reverted. Backend lives under `hadaf/src/data/` (db + repositories) and `hadaf/src/domain/`
-  (pure TS, no framework imports).
-- **Auth is Email/Password** (bcrypt + JWT via `jose` + refresh rotation), **not Google OAuth**.
-  `Architecture.md §3.2` still says "Google OAuth only" — that section is stale until its
-  remediation patch lands; trust this file instead.
+- **Client-Server split inside `hadaf/`**: The codebase is split into `hadaf/client/` (Next.js client-side UI) and `hadaf/server/` (Node.js/Express MVC backend in pure JavaScript).
+- **Auth is Email/Password** (bcryptjs + JWT via `jsonwebtoken` + refresh rotation stored in cookies with `sameSite: 'none'` and `secure: true`), **not Google OAuth**.
 
 ## Technology Stack & Conventions
 
-- Next.js 15 (App Router, Turbopack, **TypeScript strict**)
-- Tailwind v4 + shadcn v4 + `@base-ui/react` (component set is intentionally limited — don't add
-  new UI libraries)
-- Drizzle ORM + Neon Postgres (use the `-pooler` connection string)
-- JWT via `jose` (Edge-compatible), bcrypt for password hashing
-- SWR for data fetching — optimistic updates via `mutate()`, no polling
-- Vitest for domain unit tests (the `domain/` layer is pure TS and must stay unit-testable
-  without framework imports)
-- `next-intl` for i18n — URL structure `/[locale]/...` (e.g. `/ar/goals`, `/en/goals`), messages
-  in `messages/ar.json` + `messages/en.json`. Arabic is the default locale.
-- Layering: `domain/` (pure business logic) → `data/repositories/` (Drizzle queries) →
-  `features/` (feature-scoped hooks/components) → `components/` (shared UI). Follow
-  `Architecture.md` for exact naming conventions and where new files belong.
+- **Frontend**: Next.js 15 (App Router, Turbopack, **TypeScript strict**) located inside `hadaf/client/`.
+- **Backend**: Node.js/Express REST API in **pure JavaScript** located inside `hadaf/server/`.
+- **Tailwind v4 + shadcn v4 + `@base-ui/react`** (component set is intentionally limited — don't add new UI libraries).
+- **MongoDB + Mongoose ODM** (8 collections: User, Goal, Milestone, Task, Habit, HabitLog, DailySummary, AnalyticsEvent).
+- **JWT via `jsonwebtoken` + `bcryptjs`** for password hashing (cookie-based session delivery with `sameSite: 'none'` and `secure: true` flags).
+- **SWR for data fetching** — optimistic updates via `mutate()` calling backend routes mapped to `process.env.NEXT_PUBLIC_API_URL`.
+- **Express Global Error Handling** — dedicated catch blocks in `error-handler.js` for MongoDB/Mongoose specific execution exceptions (like duplicate key code `11000`).
+- **Vitest for unit testing** (the backend `utils/` calculations are pure JavaScript and remain unit-testable).
+- **Custom Locale Provider** cookie-based translation layer for i18n. Arabic is the default locale.
+- **Backend MVC Layering**: `routes/` (Express endpoint mappings) ➔ `controllers/` (request logic and validations) ➔ `models/` (Mongoose schemas/DB layer).
 - Vercel deployment: preview per PR, production on `main`.
 
 ## Non-Negotiable Guardrails

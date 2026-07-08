@@ -108,12 +108,12 @@ Set up all architectural layers.
 **AC:** `app/`, `features/`, `domain/`, `data/`, `components/`, `lib/`, `hooks/` exist. `domain/` is framework-agnostic.
 
 ### E0-4: Database Connection & Analytics Schema
-Connect Neon PostgreSQL via Drizzle ORM and create the basic tables.
-**AC:** Connect to Neon. Create `analytics_events` table for telemetry.
+Connect MongoDB via Mongoose and create the basic schemas.
+**AC:** Connect to MongoDB. Create `analytics_events` schema/collection for telemetry.
 
 ### E0-5: Email/Password Authentication
 Sign in/up with Email and Password and establish the user.
-**AC:** Create `users` table. Email/password login via `jose` (JWT). Refresh token rotation. Analytics event logged on login/register.
+**AC:** Create `User` schema. Email/password login via `jsonwebtoken` (JWT). Refresh token rotation. Analytics event logged on login/register.
 
 ### E0-6: App Shell & Edge Middleware
 Responsive app shell and protected routes.
