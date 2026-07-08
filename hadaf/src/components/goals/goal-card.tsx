@@ -57,6 +57,16 @@ export function GoalCard({ goal }: { goal: Goal }) {
               <h3 className="font-heading line-clamp-1 text-base font-semibold">
                 {goal.title}
               </h3>
+              {goal.manualProgress !== null ? (
+                <span
+                  className={cn(
+                    "bg-accent text-accent-foreground shrink-0 rounded-full px-1.5 py-0.5 text-[0.6rem] font-semibold tracking-wide uppercase",
+                  )}
+                  aria-label={t("goalDetail.manualBadge")}
+                >
+                  {t("goalDetail.manualBadge")}
+                </span>
+              ) : null}
             </div>
             <GoalProgressRing progress={goal.progress} size={40} strokeWidth={3} />
           </div>
