@@ -25,7 +25,7 @@ export function EmptyGoalsState() {
           {t("goals.emptyBody")}
         </p>
       </div>
-      <Button render={<Link href="/goals/new" />}>{t("goals.emptyCta")}</Button>
+      <Button nativeButton={false} render={<Link href="/app/goals/new" />}>{t("goals.emptyCta")}</Button>
     </div>
   );
 }

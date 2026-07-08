@@ -1,32 +1,5 @@
-import { HomeShell } from "@/components/home/home-shell";
-import { getGoals } from "@/features/goals/queries";
-import { getTodaySnapshot } from "@/features/day/queries";
-import { createT } from "@/i18n/messages";
-import { readServerLocale } from "@/i18n/locale-server";
-import type { Metadata } from "next";
-
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await readServerLocale();
-  const t = createT(locale).t;
-  return {
-    title: locale === "ar" ? `${t("common.appName")} · ${t("home.title")}` : `${t("home.title")} · ${t("common.appName")}`,
-    description: t("common.tagline"),
-  };
-}
+import { redirect } from "next/navigation";
 
 export default async function Home() {
-  const [snapshot, goals] = await Promise.all([
-    getTodaySnapshot(),
-    getGoals(),
-  ]);
-
-  return (
-    <HomeShell
-      initialTasks={snapshot.tasks}
-      initialHabits={snapshot.habits}
-      backlogItems={snapshot.backlog}
-      dayType={snapshot.dayType}
-      hasGoals={goals.length > 0}
-    />
-  );
+  redirect("/app");
 }

@@ -21,7 +21,7 @@ export default async function GoalNotFound() {
         </p>
       </div>
       <div className="flex items-center gap-2">
-        <Button render={<Link href="/goals" />} variant="outline">
+        <Button nativeButton={false} render={<Link href="/app/goals" />} variant="outline">
           <ArrowLeftIcon aria-hidden="true" />
           {t("goalDetail.notFoundCta")}
         </Button>
