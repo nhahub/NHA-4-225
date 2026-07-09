@@ -1,11 +1,11 @@
 # 📄 وثيقة متطلبات المنتج (PRD) — هدف (Hadaf) v2.0 — MVP
 
-> **آخر تحديث:** يونيو ٢٠٢٦
-> **النطاق:** المرحلة الأولى — MVP فقط (٢٠ يومًا، ٥ أفراد: ٢ متوسط + ٣ مبتدئ، ٢ منهم يستخدمون الوكلاء)
+> **آخر تحديث:** يوليو ٢٠٢٦
+> **النطاق:** المرحلة الأولى — MVP فقط (٥ أيام، ٥ أفراد: ٢ متوسط + ٣ مبتدئ، ٢ منهم يستخدمون الوكلاء). واجهة الـ client مستوردة من كود Impulse — راجع `Docs/Impulse-Migration-Plan.md`
 > **اللغة:** ثنائي اللغة بمستوى أول — العربية (RTL) والإنجليزية (LTR) كلاهما أساسي
 > **النبرة:** غير رسمية لكن بجودة عالية — محادثة ودودة وأنيقة، بعيدة عن الجمود المؤسسي
 > **المنهجية:** Agile + BMAD (أدوار وكلاء: محلل أعمال، مدير منتج، مصمم، مطور واجهات، مطور خلفية، اختبارات) + تطوير بالوكلاء
-> **التسليم:** تطبيق مباشر على Vercel + مستودع كود عام + فيديو عرض سينمائي (١-٣ دقائق)
+> **التسليم:** تطبيق مباشر (client على Vercel/Netlify، server على Render/Railway) + مستودع كود عام + فيديو عرض سينمائي (١-٣ دقائق)
 
 ---
 
@@ -118,9 +118,9 @@
 
 | Epic | النطاق المشمول |
 |---|---|
-| **البنية التحتية** | Auth (JWT + Email/Password — bcrypt)، UI Shell (responsive)، Sidebar/Bottom Nav، Theme (dark/light)، Language toggle (AR/EN + RTL)، حفظ عند كل إجراء (Save on Action)، Confirmation Dialogs قبل الحذف، قاعدة البيانات (Neon + Drizzle)، CI/CD (GitHub Actions + Vercel)، جدول analytics_events |
+| **البنية التحتية** | Auth (JWT + Email/Password — bcrypt)، UI Shell (responsive، واجهة مستوردة من Impulse)، Sidebar/Bottom Nav، Theme (dark/light)، Language toggle (AR/EN + RTL)، حفظ عند كل إجراء (Save on Action)، Confirmation Dialogs قبل الحذف، قاعدة البيانات (MongoDB + Mongoose)، CI/CD (GitHub Actions + نشر client على Vercel/Netlify وserver على Render/Railway)، جدول analytics_events |
 | **Epic 1: الأهداف** | معالج SMART (٣ خطوات)، حوار Goal vs Habit (FR1.1)، ٥ فئات، المراحل (Milestones)، تقدم Hybrid (FR6)، Goal Health بصري (🟢🟡🟠🔴)، تجاوز يدوي بـ Slider، حد ٣-٥ أهداف، حذف بسبب (soft-delete)، تغيير/استبدال هدف نص الدورة، لوحة أهداف بصرية (حلقات + شريط ١٢ أسبوع)، مؤشر التنفيذ الأسبوعي |
-| **Epic 2: المهام** | ٣ أنواع مهام بالكشف التلقائي (Scheduled/Flexible/Quick)، ٣ أنواع إكمال (Smart/Manual/Quick)، Time Blocking، Checklist بسيط داخل المهام، نظام الـ Backlog (لا auto-rollover)، Quick Add FAB، الإكمال الجزئي (Partial Snaps)، Time Cap (٣×)، ترتيب: Priority → Time |
+| **Epic 2: المهام** | ٣ أنواع مهام بالكشف التلقائي (Scheduled/Flexible/Quick)، ٣ أنواع إكمال (Smart/Manual/Quick)، Time Blocking، Checklist بسيط داخل المهام، نظام الـ Backlog (لا auto-rollover)، Quick Add (على شاشة Home فقط — بدون FAB)، الإكمال الجزئي (Partial Snaps)، Time Cap (٣×)، ترتيب: Priority → Time |
 | **Epic 3: العادات — أساسي** | Boolean + Counter، MVD (Minimum Viable Day)، تكرار مرن، عادات الإقلاع (auto-counter + تسجيل انتكاسة يدوي)، مكتبة عادات مقترحة (بدون عادات دينية)، فصل العادات عن المهام تمامًا |
 | **Epic 4: التقييم — أساسي** | نظام النقاط العادل (المعادلة الكاملة)، هدف يومي تكيفي، Progress Bar ديناميكي اللون، Day States (Legendary/Amazing/Perfect/Good Enough/Low)، نبضة المساهمة بسيطة ("+X% نحو [هدف]" — نص فقط بدون animation) |
 | **Epic 6: الإعدادات** | Day Types (Work/Light/Off)، بداية اليوم، ساعات العمل، Theme، Language، تخصيص إشعارات أساسي |
@@ -530,23 +530,24 @@
 
 | الطبقة | التقنية | السبب |
 |---|---|---|
-| **Frontend** | Next.js 15 (App Router) + Tailwind CSS + Shadcn UI (محدود) | SSR/SSG، إعداد cheat sheet للـ Tailwind وتثبيت مكونات Shadcn الضرورية فقط |
+| **Frontend** | Vite 7 + React 19 + React Router 7 + Tailwind CSS (واجهة مستوردة من كود Impulse) + Shadcn UI (محدود) | إعادة استخدام كود Impulse يوفر وقت التطوير — راجع `Docs/Impulse-Migration-Plan.md` |
 | **Motion** | CSS Transitions فقط | أبسط، أسرع، بدون dependency إضافي |
-| **Backend** | Next.js Server Actions (Vercel Serverless) | بدون خادم منفصل |
-| **قاعدة بيانات** | PostgreSQL (Neon free tier) + Drizzle ORM | `@neondatabase/serverless` مع `-pooler` |
-| **مصادقة** | JWT via `jose` + Email/Password (bcrypt) | `jose` للـ JWT (Edge)، bcrypt للـ password (Node runtime) |
-| **State / Freshness** | Server Components (Initial fetch) + SWR (Optimistic updates) | تقليل عدد الـ hooks، SWR للـ mutations فقط |
+| **Backend** | Express.js (خادم Node.js منفصل) | بنية MVC تقليدية (routes → controllers → models) |
+| **قاعدة بيانات** | MongoDB + Mongoose ODM | ٨ مجموعات (collections) عبر ObjectID |
+| **مصادقة** | JWT via `jsonwebtoken` + Email/Password (bcryptjs) | خادم Node.js عادي وليس Edge Runtime، فلا حاجة لـ `jose` |
+| **State / Freshness** | TanStack React Query (Optimistic updates) + Zustand (auth/UI/date state) | مستوردة من Impulse، بدون polling |
 | **Validation** | Zod (client + server) | توحيد التحقق |
-| **Testing** | Vitest (domain unit tests) | اختبارات سريعة للمنطق |
+| **Testing** | Vitest (client + server) | اختبارات سريعة للمنطق، مستمرة من إعداد Impulse على الـ client |
 | **إدارة الحزم** | npm | أقل مشاكل، documentation أكثر، سيوفر وقت debugging (بدلاً من pnpm) |
-| **البنية التحتية** | CI/CD (GitHub Actions) → Vercel auto-deploy | نشر تلقائي |
+| **البنية التحتية** | CI/CD (GitHub Actions) → نشر الـ client على Vercel/Netlify والـ server على مضيف Node دائم (Render/Railway) | خادم Express مستقل لا يتوافق مع نموذج Vercel الـ serverless/static |
 
 ### ٧.٣ النشر (Free Tier)
 
 | الخدمة | الدور | الحد المجاني | ملاحظات |
 |---|---|---|---|
-| **Vercel** | Frontend & Backend (Serverless) | مجاني | — |
-| **Neon** | PostgreSQL | مجاني — ٥١٢ MB، auto-suspend | ⚠️ Cold start ٢-٥ ثوانٍ. يُعالج بـ Loading Skeleton |
+| **Vercel / Netlify** | Frontend (Client SPA) | مجاني | — |
+| **Render / Railway** | Backend (Express Server) | مجاني | ⚠️ ينام بعد فترة خمول — Cold start ٢-٥ ثوانٍ. يُعالج بـ Loading Skeleton |
+| **MongoDB Atlas** | قاعدة بيانات (M0 free tier) | مجاني — ٥١٢ MB | — |
 | **GitHub** | مستودع + CI/CD | مجاني | — |
 
 ### ٧.٤ خصائص المنصة
@@ -588,8 +589,8 @@
 - المستخدمون يستخدمون متصفحات حديثة (Chrome/Firefox/Safari/Edge ≥ 100)
 - المستخدمون يتحدثون العربية (RTL)
 - Email/Password كافٍ للتسجيل (register + login؛ bcrypt للهاش، JWT للجلسات)
-- الـ Neon free tier يكفي لـ ١٠٠ مستخدم
-- الـ Vercel free tier يكفي للنشر
+- الـ MongoDB Atlas free tier يكفي لـ ١٠٠ مستخدم
+- الـ Vercel/Netlify (client) والـ Render/Railway (server) free tiers تكفي للنشر
 
 ### القيود
 
@@ -609,11 +610,11 @@
 
 | المخاطرة | الاحتمال | التأثير | التخفيف |
 |---|---|---|---|
-| Neon cold start (٢-٥ ثوانٍ) | عالي | متوسط | Loading Skeletons + SWR cache |
-| فريق طلاب يتعلم Next.js | مؤكد | عالي | تقسيم المهام بحجم صغير + CI/CD صارم |
+| Backend cold start (٢-٥ ثوانٍ، مضيف Node مجاني) | عالي | متوسط | Loading Skeletons + React Query cache |
+| فريق طلاب يتعلم MongoDB/Express | منخفض | متوسط | إعادة استخدام واجهة Impulse توفر وقتًا لتعلم الـ backend — راجع `Docs/Impulse-Migration-Plan.md` |
 | تغيير المتطلبات أثناء التطوير | متوسط | متوسط | نطاق MVP محدد بوضوح |
-| Vercel free tier limits | منخفض | متوسط | لا polling + optimized queries |
-| JWT security | منخفض | عالي | `jose` + refresh token rotation |
+| حدود الـ free tier (client/server hosts) | منخفض | متوسط | لا polling + optimized queries |
+| JWT security | منخفض | عالي | `jsonwebtoken` + refresh token rotation |
 
 ---
 

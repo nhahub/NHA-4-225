@@ -111,7 +111,7 @@ Rule: Errors are recoverable. Always show a retry action.
 
 ### 5.1 Color System: "Capacity-Aware Atmospheric Hierarchy"
 
-> ⚠️ **SUPERSEDED.** Color and typography are now owned by `/DESIGN.md` (the "Quiet Navigator" OKLCH system). The hex values below are historical and MUST NOT be used in code.
+> ⚠️ **SUPERSEDED.** Color and typography are now owned by `hadaf/client/DESIGN.md`, authored Day 1 of the build and seeded from the Impulse codebase's Violet OKLCH tokens (see `Docs/Impulse-Migration-Plan.md`), refined from there. The hex values below are historical and MUST NOT be used in code.
 
 #### Core Tokens
 
@@ -153,7 +153,7 @@ Rule: Errors are recoverable. Always show a retry action.
 
 ### 5.2 Typography System
 
-> ⚠️ **SUPERSEDED.** Color and typography are now owned by `/DESIGN.md` (the "Quiet Navigator" OKLCH system). The hex values below are historical and MUST NOT be used in code.
+> ⚠️ **SUPERSEDED.** Color and typography are now owned by `hadaf/client/DESIGN.md`, authored Day 1 of the build and seeded from the Impulse codebase's Violet OKLCH tokens (see `Docs/Impulse-Migration-Plan.md`), refined from there. The hex values below are historical and MUST NOT be used in code.
 
 | Role | Font | Weight | Usage |
 |---|---|---|---|
@@ -243,7 +243,7 @@ graph TD
     C2 --> D
 
     D --> E{Loading state?}
-    E -- "Neon cold start" --> F["Loading Skeleton 2-3 seconds"]
+    E -- "Backend cold start" --> F["Loading Skeleton 2-3 seconds"]
     F --> G[Data loaded]
     E -- "Data cached" --> G
 
@@ -396,7 +396,7 @@ Every empty screen has:
 - Match final layout shape
 - Shimmer animation (1500ms)
 - Respects `prefers-reduced-motion`
-- Handle Neon cold start (2-5 seconds)
+- Handle backend cold start (2-5 seconds, free-tier Node host)
 
 ### 9.3 Error States
 

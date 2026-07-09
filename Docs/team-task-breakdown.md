@@ -10,9 +10,11 @@
 ## 0. Doc accuracy notes (read once)
 
 - **`Docs/Scope.md` is stale.** It still describes an old 34-story/~115 SP horizontal split (an `INF` epic, isolated "Goals repository" stories, etc.). That structure was replaced after a 2026-06-29 implementation-readiness review flagged it as horizontal/technical slicing. This breakdown is built from the **current** `Docs/Epics.md` (25 stories, vertically sliced) and matches `sprint-status.yaml`.
-- **`Docs/Epics.md` has an internal mismatch**: its title says "26 vertically-sliced stories, ~145 SP," but its own Epic Overview table sums to 25 stories / ~94 SP. 145 appears to be a broader velocity budget (includes brand/i18n/illustration/demo-video work that isn't in the 25 numbered stories); 94 is the real per-story SP sum, before the gap-fill in §2 below.
+- **`Docs/Epics.md`'s Epic Overview table sums to 25 stories / ~94 SP**, while `Docs/team-task-assignments.md`'s per-story sum is ~99 SP after gap-fill (see §2 below) — treat 99 as authoritative; the two are close enough that this is a rounding/gap-fill difference, not a scope disagreement.
+- **Client stack changed mid-project**: this breakdown, `Epics.md`, and `Architecture.md` were originally written for a Next.js client; the team has since decided to import the client UI from the Impulse codebase (Vite + React Router + React Query + Zustand) — see `Docs/Impulse-Migration-Plan.md`. The **Database** and **Backend** lanes below were never Next.js-specific and are unaffected. The **Frontend** lane descriptions throughout this doc have been updated to match; if you spot a leftover Next.js/SWR reference in a Frontend checklist item (e.g. an `app/[locale]/.../page.tsx` path or "Server Component"), treat it as stale and follow `Docs/Impulse-Migration-Plan.md`'s client tree instead (routes live in `features/{name}/pages/`, wired through `app/router.tsx`).
+- **Backend file-pattern references are also partly stale.** Many Backend checklist items below still say `features/{name}/actions.ts` (Next.js Server Actions) or `data/repositories/{name}.repo.ts` (Drizzle repository layer) — an architecture this project no longer uses. The current pattern, per `Architecture.md` §3.3/§4.2, is Express MVC: `server/src/routes/{name}Routes.js` → `server/src/controllers/{name}Controller.js` → Mongoose model calls directly (no separate repository layer) → pure logic in `server/src/utils/{name}.js`. Read every `actions.ts`/`*.repo.ts` mention in this doc as shorthand for "the controller function that does this," not a literal file to create.
 - **`Docs/UX-Design-Specification.md` §8.7 says "Language (Arabic-only in MVP)."** This contradicts the bilingual-parity mandate stated everywhere else (PRD, Scope, Architecture, Epics). The UX spec is a known-stale baseline — this breakdown assumes **bilingual AR+EN parity**.
-- **i18n technical setup has no explicit story.** Nothing in `Epics.md` mentions `next-intl`, `/[locale]/` routing, or the `messages/ar.json`/`en.json` catalog, though `Architecture.md` §3.4 mandates it as day-1 infrastructure. Placed inside **E0-2**.
+- **i18n technical setup has no explicit story.** Nothing in `Epics.md` mentions the `LocaleProvider`, cookie-based locale detection, or the `ar.ts`/`en.ts` dictionary catalog, though `Architecture.md` §3.4 mandates it as day-1 infrastructure. Placed inside **E0-2**.
 - **`FR54` is referenced but never defined.** `PRD.md` §11's phase-allocation appendix lists `FR54` under Epic 6, but §5 (the actual FR definitions) jumps from FR53 straight to the "نظام أنواع الأيام" heading and FR55 — FR54 itself is never written anywhere in the PRD's body. This is a gap in the source PRD, not in this breakdown; flagging for your awareness since I can't guess what it was meant to say.
 - Per-story SP is **relative effort weight**, not a schedule — there's no calendar target being fit here. Splits sum correctly to each epic's total (verified in §2).
 - **FR references** come from `Epics.md` §5 and a full read of `PRD.md` §5/§11. Infrastructure/polish stories mostly aren't tied to a specific FR — marked `—` or tagged to the relevant NFR instead.
@@ -24,11 +26,11 @@
 **Lane definitions:**
 - **🗄️ Database** — MongoDB collections & Mongoose schema additions in `hadaf/server/src/models/*.js`.
 - **⚙️ Backend** — `routes/*.js` (Express endpoints), `controllers/*.js` (Express MVC handler logic), backend utils (pure logic + Vitest), custom middlewares (auth, error-handler), analytics logging.
-- **🎨 Frontend** — Next.js UI (`components/*`, `app/*` routes), frontend hooks calling `process.env.NEXT_PUBLIC_API_URL` via SWR, i18n strings (AR+EN), empty/loading/error states for that screen.
+- **🎨 Frontend** — Vite/React UI (`components/*`, `features/*/pages/`), UI base imported from the Impulse codebase (see `Docs/Impulse-Migration-Plan.md`), frontend hooks calling `import.meta.env.VITE_API_URL` via TanStack React Query, i18n strings (AR+EN), empty/loading/error states for that screen.
 
 A lane marked `_None_` means genuinely no work in that layer for this story — not an oversight. Items tagged **[PRD gap-fill]** were found by reading the full PRD and were absent from `Epics.md`'s original AC — see §2 for the full accounting.
 
-**Default build order inside a story:** Mongoose model schema ➔ Domain logic (parallel-safe, no DB dependency) ➔ Express Controller & Route ➔ Frontend SWR API fetcher ➔ UI component. Each story states its own **Sequencing** if it deviates.
+**Default build order inside a story:** Mongoose model schema ➔ Domain logic (parallel-safe, no DB dependency) ➔ Express Controller & Route ➔ Frontend React Query API hook ➔ UI component. Each story states its own **Sequencing** if it deviates.
 
 **Default owner pairing** (per `Scope.md` §8.1): **Database + Backend** → one of the 2 agent-capable devs, dispatching the BMAD `backend`/`ba` subagent roles (spec-heavy, well-scoped, verifiable via Vitest). **Frontend** → an entry-level dev (manual implementation) once the Backend lane has defined the action/hook contract, or an agent-capable dev dispatching the `frontend` role. Each story states **Owners** only where it deviates from this default.
 
@@ -47,7 +49,7 @@ A lane marked `_None_` means genuinely no work in that layer for this story — 
 | E0-3 | Layered Architecture Setup | 1 | 2 | **Ziad** | E0-1 |
 | E0-4 | Database Connection & Analytics Schema | 1 | 3 | **Ziad** | E0-3 |
 | E0-5 | Email/Password Authentication | 1 | 5 | **Mustafa** | E0-4 |
-| E0-6 | App Shell & Edge Middleware | 1 | 4 † | **Ziad** | E0-5 |
+| E0-6 | App Shell & Route Guards | 1 | 4 † | **Ziad** | E0-5 |
 | E1-1 | SMART Goal Wizard & Foundation | 1 | 6 | **Mustafa** | E0-4, E0-5 |
 | E1-2 | Goal Dashboard & Detail View | 2 | 8 † | **Hamza** | E1-1 (+ E2-2 for heat map data) |
 | E2-1 | Task Engine & Auto-Type Creation | 2 | 6 | **Mustafa** | E1-1 |
@@ -85,7 +87,7 @@ The first pass of this doc was built from `Epics.md`'s AC bullets. Because this 
 |---|---|---|---|
 | Weekly heat map — 3rd required Goal Dashboard visual (only the 12-week bar and progress rings had made it into `Epics.md`'s AC) | FR8 | E1-2 | +1 |
 | Search & Filter for tasks and goals — an entire scoped feature with no owning story anywhere in `Epics.md` | §3 scope table, §7.4 "PT6" | E1-2 (+1), E2-3 (+1) | +2 |
-| Language switcher UI — `next-intl` routing exists, but nothing gives the user an on-screen way to actually switch languages | §3 Infrastructure row | E0-6 | +1 |
+| Language switcher UI — the `LocaleProvider` from E0-2 exists, but nothing gives the user an on-screen way to actually switch languages | §3 Infrastructure row | E0-6 | +1 |
 | Notification preferences toggle | Epic 6 scope row (§3) | E4-1 | +1 |
 | "Manual" badge + revert-to-computed option on the progress override slider | FR7 | E1-2 | folded into the +1 above |
 | Contribution Pulse exact spec: text-only, CSS fade over 3s, positioned inline above the completed task card (not a generic "animation") | FR6.1 | E2-2 | refinement, no SP |
@@ -99,7 +101,7 @@ The first pass of this doc was built from `Epics.md`'s AC bullets. Because this 
 
 ### 2.2 One conflict I found but did not resolve myself
 
-`Architecture.md` §5 lists a route `app/app/more/analytics/page.tsx`, and `UX-Design-Specification.md` §8.1 lists a 5th desktop sidebar item, "Overview," alongside Home/Goals/Habits/Settings. But no FR requires a standalone analytics page — `FR60` is explicitly *the Home screen's own* daily overview widget (PRD §5, Epic 7: "النظام يعرض Overview يومي **في الشاشة الرئيسية**"), and no story in `Epics.md` builds a separate page. Two legitimate resolutions:
+An earlier draft of `Architecture.md` §5 listed a standalone analytics route, and `UX-Design-Specification.md` §8.1 lists a 5th desktop sidebar item, "Overview," alongside Home/Goals/Habits/Settings (the current `Architecture.md` §5 and `Docs/Impulse-Migration-Plan.md`'s Routing Map don't carry a dedicated analytics/overview route either — this conflict predates and is independent of the client-stack migration). But no FR requires a standalone analytics page — `FR60` is explicitly *the Home screen's own* daily overview widget (PRD §5, Epic 7: "النظام يعرض Overview يومي **في الشاشة الرئيسية**"), and no story in `Epics.md` builds a separate page. Two legitimate resolutions:
 
 - **(a)** "Overview" is just an alias for Home — delete the dead route reference and the extra sidebar item.
 - **(b)** It's real, deferred scope (e.g. a weekly-trends/goal-history deep-dive) that was never written up — in which case it needs actual acceptance criteria before anyone builds it.
@@ -140,18 +142,20 @@ All 5 of the MVP-required analytics events from PRD §2.3 (`login`, `task_comple
 
 #### E0-1 — Project Scaffold & Design System Foundation *(~2 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (infra)
-> Initialize Next.js project with Tailwind, Shadcn UI, and CSS design tokens.
+> Copy the Impulse client codebase into `hadaf/client/`, rebrand it, resolve its 3 pre-existing merge conflicts, and establish CSS design tokens. **This story's approach changed from "scaffold from scratch" to "adapt from Impulse" — see `Docs/Impulse-Migration-Plan.md` for the full reuse map; the items below reflect the current plan, not the checked-off items from an earlier from-scratch draft.**
 
 **🗄️ Database:** _None._
 **⚙️ Backend:** _None._
 **🎨 Frontend:**
-- [x] `npx create-next-app@latest` — Turbopack, App Router, TypeScript, Tailwind, ESLint, `src/` dir, `@/*` alias
-- [x] `npx shadcn@latest init` with CSS variables (HSL)
-- [x] `npx shadcn@latest add button dialog sheet input select toast progress card`
-- [x] HSL color tokens (light + dark) in `app/globals.css`
-- [x] CSS transition utility tokens defined (confirm `framer-motion` is never installed)
-- [x] Clean default boilerplate out of `page.tsx`
-- [x] `npm run dev` runs clean — no lint/type errors
+- [ ] Copy Impulse's `frontend/` into `hadaf/client/`, `npm install`
+- [ ] Resolve the 3 merge conflicts: `features/auth/api/authApi.ts`, `features/tasks/api/taskApi.ts`, `shared/lib/api-client.ts`
+- [ ] Remove duplicate `shared/api/apiClient.ts` if present
+- [ ] `npx shadcn@latest add alert-dialog sheet tabs dropdown-menu progress tooltip` (primitives Impulse doesn't already have)
+- [ ] `hadaf/client/DESIGN.md` created, seeded from Impulse's Violet OKLCH tokens
+- [ ] OKLCH color tokens (light + dark) applied to the client's global stylesheet
+- [ ] CSS transition utility tokens confirmed (Framer Motion is not a dependency — Impulse doesn't ship it)
+- [ ] Rebrand: app name, favicon, metadata Impulse → Hadaf
+- [ ] `npm run dev` runs clean — no lint/type errors
 
 **Sequencing:** First story, no dependencies. **Owners:** default pairing (Frontend-only story).
 
@@ -159,41 +163,37 @@ Epic E0 · FR: — (infra)
 
 #### E0-2 — Typography & RTL Foundation *(~3 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (enables NFR10 Arabic RTL + PRD bilingual mandate)
-> Tajawal + IBM Plex Sans Arabic, RTL support, **bilingual i18n scaffold (gap-fill, see §0)**.
+> Tajawal + IBM Plex Sans Arabic, convert Impulse's physical CSS to logical (RTL), **bilingual i18n scaffold (gap-fill, see §0)**.
 
 **🗄️ Database:** _None._
 **⚙️ Backend:** _None._
 **🎨 Frontend:**
-- [x] Self-host Tajawal + IBM Plex Sans Arabic in `public/fonts/`
-- [x] `@font-face` declarations + Tailwind `fontFamily` config
-- [x] `<html dir>` / `<html lang>` wired to active locale in root layout
-- [x] Audit for `ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-` → replace with logical `ms-`/`me-`/`ps-`/`pe-`
-- [x] Install `next-intl` (Note: Custom lightweight i18n provider & locale hooks used instead)
-- [x] `/[locale]/` route segment + middleware locale detection (URL or cookie)
-- [x] Scaffold `messages/ar.json` + `messages/en.json` (consolidated in messages.ts)
-- [x] Verify `Intl.NumberFormat` / `Intl.DateTimeFormat` locale plumbing
+- [ ] Self-host Tajawal + IBM Plex Sans Arabic in `public/fonts/`
+- [ ] `@font-face` declarations + Tailwind `fontFamily` config
+- [ ] `<html dir>` / `<html lang>` wired to active locale in `App.tsx`/`providers.tsx`
+- [ ] Convert every Impulse component's physical CSS (`ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-`/`text-left`/`text-right`/`border-l`/`border-r`) to logical equivalents (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`/`text-start`/`text-end`/`border-s`/`border-e`) per the RTL Conversion Checklist in `Docs/Impulse-Migration-Plan.md`
+- [ ] `providers/LocaleProvider.tsx` — cookie-based locale state, AR default
+- [ ] `i18n/ar.ts` + `i18n/en.ts` dictionaries + `useTranslation` hook
+- [ ] Verify `Intl.NumberFormat` / `Intl.DateTimeFormat` locale plumbing
 
-**Sequencing:** Depends on E0-1. **Owners:** agent-capable dev — i18n routing is spec-heavy and easy to get subtly wrong; this story is bigger than its name suggests since it carries the i18n gap-fill.
+**Sequencing:** Depends on E0-1. **Owners:** agent-capable dev — i18n + a full-codebase RTL conversion pass is spec-heavy and easy to get subtly wrong; this story is bigger than its name suggests since it carries the i18n gap-fill and the RTL conversion of every reused Impulse component.
 
 ---
 
 #### E0-3 — Layered Architecture Setup *(~2 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (infra)
-> All architectural layers exist; `domain/` is framework-agnostic.
+> All architectural layers exist on both client and server; `server/src/utils/` is framework-agnostic.
 
-**🗄️ Database:**
-- [x] Create `data/db/` folder
-- [x] `drizzle.config.ts` skeleton (no tables yet)
+**🗄️ Database:** _None (see E0-4)._
 
 **⚙️ Backend:**
-- [x] Create `features/`, `domain/`, `data/repositories/` folders
-- [x] `lib/constants.ts`
-- [x] `vitest.config.ts` + `tests/domain/` folder
-- [x] Document/enforce: zero React/Next.js/Drizzle imports inside `domain/`
+- [ ] Create `server/src/{models,controllers,routes,middleware,utils}/` folders
+- [ ] `server/vitest.config.ts` + `server/tests/` folder
+- [ ] Document/enforce: zero Express/Mongoose/React imports inside `server/src/utils/`
 
 **🎨 Frontend:**
-- [x] Create `components/{ui,shared,layouts}/` folders
-- [x] Create `hooks/`, `providers/` folders
+- [ ] Confirm Impulse's existing `components/{ui,shared,layouts}/`, `features/`, `providers/`, `stores/`, `lib/` folders carry over as-is
+- [ ] Create `providers/DayTypeProvider.tsx`, `i18n/` folders (Hadaf-specific, no Impulse equivalent)
 
 **Sequencing:** Depends on E0-1. **Owners:** default pairing.
 
@@ -201,23 +201,22 @@ Epic E0 · FR: — (infra)
 
 #### E0-4 — Database Connection & Analytics Schema *(~3 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (infra; underlies every KPI in §2.4)
-> Connect Neon PostgreSQL via Drizzle, create the `analytics_events` table.
+> Connect MongoDB via Mongoose, create the `AnalyticsEvent` collection.
 
 **🗄️ Database:**
-- [x] Provision Neon project (free tier)
-- [x] `DATABASE_URL` with `-pooler` suffix in `.env.local` + `.env.example`
-- [x] `data/db/schema.ts`: `analytics_events` table (id, user_id FK, event_type, event_data JSONB, created_at)
-- [x] `idx_analytics_user_created` index
-- [x] `data/db/client.ts` — Drizzle client via `@neondatabase/serverless`
-- [x] First `drizzle-kit generate` + `drizzle-kit push`
+- [ ] Provision MongoDB Atlas project (free/M0 tier)
+- [ ] `MONGODB_URI` in `server/.env` + `server/.env.example`
+- [ ] `server/src/models/AnalyticsEvent.js`: Mongoose schema (userId ref, eventType, eventData Map, createdAt)
+- [ ] `idx_analytics_user_created` compound index (`{ userId: 1, createdAt: -1 }`)
+- [ ] `server/src/config/db.js` — Mongoose connection setup
 
 **⚙️ Backend:**
-- [x] `data/repositories/analytics.repo.ts`: `log(userId, eventType, eventData)`
-- [x] Connectivity smoke test
+- [ ] Analytics logging helper: `AnalyticsEvent.create({ userId, eventType, eventData })`
+- [ ] Connectivity smoke test
 
 **🎨 Frontend:** _None._
 
-**Sequencing:** Depends on E0-3 (needs `data/db/` folder). **Owners:** default pairing (Database+Backend only).
+**Sequencing:** Depends on E0-3 (needs `server/src/` folders). **Owners:** default pairing (Database+Backend only).
 
 ---
 
@@ -226,46 +225,45 @@ Epic E0 · FR: — (NFR6 Security: HTTPS/JWT)
 > Sign in/up with Email and Password, establish the user, JWT session.
 
 **🗄️ Database:**
-- [x] `users` table: id, email (unique), password_hash, name, avatar_url, `settings` JSONB (defaults per Architecture §3.1, including `language` and `theme`), `refresh_token`, `refresh_token_exp`, `onboarding_completed`, timestamps
+- [ ] `server/src/models/User.js`: Mongoose schema (email unique, passwordHash, name, avatarUrl, `settings` sub-document per Architecture §3.1 including `language` and `theme`, `refreshToken`, `refreshTokenExp`, `onboardingCompleted`, timestamps)
 
 **⚙️ Backend:**
-- [x] `lib/auth/jwt.ts` — sign/verify via `jose`, HS256, 15min access token
-- [x] `lib/auth/session.ts` — `getAuthUser()` from httpOnly cookie
-- [x] `lib/auth/password.ts` — hash and verify passwords (e.g. bcrypt or argon2)
-- [x] `app/api/auth/login/route.ts` & `app/api/auth/register/route.ts` — Email/password flows (Implemented via Server Actions)
-- [x] `data/repositories/users.repo.ts`: `findByEmail`, `create`, `updateRefreshToken`
-- [x] Refresh token: 7-day, stored hashed, rotated on use
-- [x] Token-reuse detection → invalidate all user tokens
-- [x] Analytics event: `login` & `register`
+- [ ] `server/src/utils/jwt.js` — sign/verify via `jsonwebtoken`, HS256, 15min access token
+- [ ] `server/src/middleware/auth.js` — verify JWT from Authorization header/cookie, attach `req.user`
+- [ ] `server/src/utils/password.js` — hash and verify passwords via `bcryptjs`
+- [ ] `server/src/routes/authRoutes.js` + `server/src/controllers/authController.js` — register/login/refresh/logout endpoints
+- [ ] Refresh token: 7-day, stored hashed, rotated on use, httpOnly cookie (`sameSite: 'none'`, `secure: true`)
+- [ ] Token-reuse detection → invalidate all user tokens
+- [ ] Analytics event: `login` & `register`
 
 **🎨 Frontend:**
-- [x] `app/login/page.tsx` & `app/register/page.tsx` — Email/password forms
-- [x] `providers/auth.tsx`
-- [x] Redirect-after-login handling (`?redirect={path}`)
+- [ ] Adapt Impulse's `features/auth/pages/LoginPage.tsx` (sliding dual-panel) — bilingual labels, RTL layout
+- [ ] Adapt Impulse's `features/auth/stores/useAuthStore.ts` (Zustand persist) — point to Express endpoints, add refresh rotation
+- [ ] Redirect-after-login handling (`?redirect={path}`)
 
 **Sequencing:** Depends on E0-4 (DB conn pattern established). **Owners:** default pairing; highest-SP E0 story — keep one owner across DB+Backend for continuity.
 
 ---
 
-#### E0-6 — App Shell & Edge Middleware *(~4 SP †)* · 👤 **Ziad**
+#### E0-6 — App Shell & Route Guards *(~4 SP †)* · 👤 **Ziad**
 Epic E0 · FR: — (NFR6/7/8/10; language switcher is **[PRD gap-fill]**, §3 Infrastructure row)
 > Responsive app shell, protected routes, and a real way to switch languages.
 
 **🗄️ Database:** _None._
 **⚙️ Backend:**
-- [x] `src/middleware.ts` — validate JWT on every `/app/*` request (Edge runtime)
-- [x] Silent-refresh on expired access token; redirect to `/login?redirect={path}` if refresh fails
-- [x] Rate limiting — in-memory `Map`, 100 req/min/user
+- [ ] Confirm `server/src/middleware/auth.js` (from E0-5) protects every `/api/*` route that requires a session
+- [ ] Silent-refresh on expired access token endpoint; client redirects to `/login?redirect={path}` if refresh fails
+- [ ] Rate limiting — in-memory `Map`, 100 req/min/user
 
 **🎨 Frontend:**
-- [x] `components/layouts/app-shell.tsx`
-- [x] `components/layouts/sidebar.tsx` — desktop >1024px, fixed right for RTL (Home/Goals/Habits/Settings — see §2.2 re: "Overview")
-- [x] `components/layouts/bottom-nav.tsx` — mobile <768px, 4 items (🏠 الرئيسية | 🎯 الأهداف | ✅ العادات | ⋯ المزيد)
-- [x] Dark/Light theme toggle (`next-themes`, `data-theme` attribute)
-- [x] **[PRD gap-fill]** Language switcher control, visible from any screen in the shell (toggle AR ↔ EN; writes to `users.settings.language` via E4-1's `updateSettings` action and updates the `/[locale]/` route)
-- [x] Keyboard navigation / focus states (a11y pass)
+- [ ] `app/router.tsx` — `RequireAuth` / `RedirectIfAuth` React Router guards
+- [ ] Adapt Impulse's `components/layouts/Sidebar.tsx` — desktop >1024px, fixed right for RTL (Home/Goals/Habits/Settings — see §2.2 re: "Overview"), converted to logical CSS (E0-2)
+- [ ] New `components/layouts/BottomNav.tsx` — mobile <768px, 4 items (🏠 الرئيسية | 🎯 الأهداف | ✅ العادات | ⋯ المزيد)
+- [ ] Adapt Impulse's `ThemeProvider` — Dark/Light toggle, `data-theme` attribute
+- [ ] **[PRD gap-fill]** Language switcher control, visible from any screen in the shell (toggle AR ↔ EN; writes to `users.settings.language` via E4-1's settings endpoint and updates `LocaleProvider`)
+- [ ] Keyboard navigation / focus states (a11y pass)
 
-**Sequencing:** Depends on E0-5 (needs JWT to protect routes) and E0-2 (locale routing must exist before the switcher can flip it). **Owners:** default pairing.
+**Sequencing:** Depends on E0-5 (needs JWT to protect routes) and E0-2 (locale provider must exist before the switcher can flip it). **Owners:** default pairing.
 
 ---
 
@@ -298,8 +296,8 @@ Epic E1 · FR1, FR1.1, FR2, FR3, FR4, FR11 *(+FR5/6/6.2/6.3/7/9/10 shared with E
 - [x] `components/goals/goal-wizard.tsx` — Step 1: Goal + Measure
 - [x] `components/goals/goal-wizard.tsx` — Step 2: Category + Relevance
 - [x] `components/goals/goal-wizard.tsx` — Step 3: Milestones breakdown
-- [x] `app/goals/new/page.tsx` route
-- [x] `features/goals/hooks.ts`: `useCreateGoal` (SWR optimistic `mutate()`)
+- [x] `features/goals/pages/` route wiring (via `app/router.tsx`)
+- [ ] `features/goals/hooks/useCreateGoal.ts` (React Query mutation, optimistic cache update)
 - [x] i18n strings in `ar.json`/`en.json` (wizard copy, limit dialog - defined in messages.ts)
 - [x] Field-level validation error states
 
@@ -331,12 +329,12 @@ Epic E1 · FR8, FR11.2, FR11.3 *(+FR5/6/6.2/6.3/7/9/10 shared with E1-1)*. Heat 
 - [ ] `components/goals/goal-progress-ring.tsx` (SVG)
 - [ ] `components/goals/goal-health-dot.tsx` (🟢🟡🟠🔴)
 - [ ] **[PRD gap-fill]** `components/goals/weekly-heatmap.tsx` — the 3rd required Goal Dashboard visual per FR8; cell intensity = task-completion density per week
-- [ ] `app/[locale]/app/goals/page.tsx` — Dashboard + Weekly Execution Score
+- [ ] `features/goals/pages/GoalDashboardPage.tsx` (route `/goals`) — Dashboard + Weekly Execution Score
 - [ ] **[PRD gap-fill]** Basic search/filter input on the Dashboard (client-side, filters by title/category — no new DB query needed for MVP's "basic" bar, PT6)
 - [ ] Empty state (no goals)
 - [ ] `components/goals/goal-detail.tsx` — ring, health dot, category, measure, relevance, cycle dates, total time invested
 - [ ] `components/goals/milestone-list.tsx` — checkable + reorderable
-- [ ] `app/[locale]/app/goals/[id]/page.tsx`
+- [ ] `features/goals/pages/GoalDetailPage.tsx` (route `/goals/:id`)
 - [ ] Manual progress override slider **+ "Manual" badge + "revert to computed value" option** (FR7 — the override must be visibly distinguishable and reversible)
 - [ ] Delete-goal confirmation dialog (reason required — depends on POL-4 primitive; stub inline for now)
 
@@ -463,8 +461,8 @@ Epic E3 · FR34, FR34.1, FR35, FR36, FR36.1, FR37
 - [ ] `components/habits/habit-counter.tsx` — `[+]`/`[-]` stepper
 - [ ] Boolean habit toggle (`✅`/`☐`)
 - [ ] `components/habits/mvd-indicator.tsx` — reads `DayTypeProvider`; Light Day → MVD version, Off Day → essential-only
-- [ ] `app/[locale]/app/habits/page.tsx`
-- [ ] `features/habits/hooks.ts`: `useHabits`, `useLogHabit` (optimistic)
+- [ ] `features/habits/pages/HabitsPage.tsx` (route `/habits`)
+- [ ] `features/habits/hooks/`: `useHabits`, `useLogHabit` (React Query, optimistic)
 - [ ] Free-text habit name input (no suggested-library chips here — that's ONB-2 only)
 
 **Sequencing:** Depends on E0-4 only — independent of E1/E2, can run in parallel with them. **Owners:** default pairing; good candidate for the 2nd agent-capable dev to own in parallel with whoever owns E2.
@@ -510,7 +508,7 @@ Epic E4 · FR53, FR55, FR55.1, FR55.2, FR55.3. Notification toggle is **[PRD gap
 - [ ] `data/repositories/users.repo.ts`: extend with `updateSettings`
 
 **🎨 Frontend:**
-- [ ] `app/[locale]/app/more/settings/page.tsx`
+- [ ] `features/settings/pages/SettingsPage.tsx` (route `/settings`)
 - [ ] Day Type config per weekday (Work/Light/Off)
 - [ ] Work-hours start/end pickers
 - [ ] Day-start time picker — **default 04:00, valid range 01:00–06:00, validated in the Zod schema** (FR55.2 — don't leave this an open time field, an out-of-range value breaks the whole day-boundary concept)
@@ -582,7 +580,7 @@ Epic HOME · FR60, FR84, FR84.1
 
 **🗄️ Database:** _None new — reads `daily_summaries.summary_shown`._
 **⚙️ Backend:**
-- [ ] Greeting-scenario decision logic (has-tasks / no-tasks-has-goals / new-user / no-goals) — no dedicated `features/home/` module in the architecture plan; implement in the Home Server Component or extend `features/analytics/`
+- [ ] Greeting-scenario decision logic (has-tasks / no-tasks-has-goals / new-user / no-goals) — implement as an Express endpoint/controller feeding `features/home/`'s React Query hook, or extend the analytics controller
 - [ ] Mark `summary_shown=true` on first render after day start
 - [ ] Compute yesterday's daily-summary if not already stored
 
@@ -602,12 +600,12 @@ Epic HOME · FR: — (layout assembly, no new FR)
 > Assemble greeting → tasks → habits → backlog → progress bar.
 
 **🗄️ Database:** _None._
-**⚙️ Backend:**
-- [ ] `app/[locale]/app/page.tsx` Server Component — parallel initial fetch: today's tasks, today's habits, backlog count, daily summary
+**⚙️ Backend:** _None new — reuses existing task/habit/backlog/summary endpoints._
 
 **🎨 Frontend:**
+- [ ] `features/home/pages/HomePage.tsx` (route `/`) — parallel React Query fetch on mount: today's tasks, today's habits, backlog count, daily summary
 - [ ] `components/home/daily-overview.tsx` — compose: Greeting → Today's Tasks → Habits → Backlog Ribbon → Progress Bar (exact order)
-- [ ] Full-page loading skeleton (Neon cold start 2–5s)
+- [ ] Full-page loading skeleton (backend cold start 2–5s, see `Architecture.md` §1.3)
 - [ ] Mobile + desktop responsive layout
 
 **Sequencing:** Depends on HOME-1, E2-3, E3-1, E4-2 — this is the last story that can land in this phase, since it integrates all of them. **Owners:** Mostly integration work (low new-logic risk, high integration-correctness risk) — good paired task for one agent-capable + one entry-level dev together.
@@ -630,7 +628,7 @@ Epic ONB · FR: — (reuses FR1.1 dialog + E1-1 wizard)
 **🎨 Frontend:**
 - [ ] `components/onboarding/onboarding-wizard.tsx` — stepper shell (Step 1/3, 2/3, 3/3)
 - [ ] `components/onboarding/goal-readiness-step.tsx` — wraps E1-1's Goal-vs-Habit dialog + wizard, cannot be skipped
-- [ ] `app/[locale]/app/onboarding/page.tsx`
+- [ ] `features/onboarding/pages/OnboardingPage.tsx` (route `/onboarding`)
 
 **Sequencing:** Depends on E1-1. **Owners:** mostly wiring existing E1-1 components → entry-level dev.
 
@@ -693,7 +691,7 @@ Epic POL · FR: — (positive-messaging principle)
 ---
 
 #### POL-2 — Loading Skeletons for Every Data Area *(~2 SP)* · 👤 **Mohamed**
-Epic POL · FR: — (Neon cold-start handling)
+Epic POL · FR: — (backend cold-start handling)
 
 **🗄️ Database:** _None._ **⚙️ Backend:** _None._
 **🎨 Frontend:**

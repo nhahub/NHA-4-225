@@ -1,7 +1,7 @@
 ---
 project_name: 'Hadaf (NHA-4-225)'
 user_name: 'Mostafa'
-date: '2026-07-07'
+date: '2026-07-09'
 sections_completed: ['source_of_truth_hierarchy', 'settled_decisions', 'technology_stack', 'guardrails', 'anti_hallucination', 'review_requirement']
 existing_patterns_found: 6
 ---
@@ -34,7 +34,11 @@ per this order, and if the conflict isn't resolved by it, stop and ask instead o
    `Epics.md` ever disagree again, trust `Epics.md`.
 4. **`Docs/Architecture.md`** — schema (8 tables), layered folder structure, naming conventions,
    ADRs. Very reliable for deriving exact file paths per story.
-5. **`_bmad-output/implementation-artifacts/sprint-status.yaml`** and
+5. **`Docs/Impulse-Migration-Plan.md`** — authority for exactly which client-side pieces are
+   copied from the Impulse codebase vs. built new, the component reuse map, and the RTL
+   conversion checklist. The backend is untouched by this doc — it just follows `Architecture.md`
+   §3 as already written.
+6. **`_bmad-output/implementation-artifacts/sprint-status.yaml`** and
    **`Docs/team-task-breakdown.md`** — authority for what has actually been built so far. Docs
    describe intent; these describe reality. Check them before claiming a story is done, in
    progress, or not started.
@@ -44,31 +48,35 @@ per this order, and if the conflict isn't resolved by it, stop and ask instead o
 These resolve live contradictions in the documents and take priority over what's written there
 until the docs themselves are patched:
 
-- **Client-Server split inside `hadaf/`**: The codebase is split into `hadaf/client/` (Next.js client-side UI) and `hadaf/server/` (Node.js/Express MVC backend in pure JavaScript).
+- **Client-Server split inside `hadaf/`**: The codebase is split into `hadaf/client/` (Vite + React SPA, UI base imported from the Impulse codebase) and `hadaf/server/` (Node.js/Express MVC backend in pure JavaScript).
 - **Auth is Email/Password** (bcryptjs + JWT via `jsonwebtoken` + refresh rotation stored in cookies with `sameSite: 'none'` and `secure: true`), **not Google OAuth**.
+- **Client UI is imported from Impulse, backend is not**: see `Docs/Impulse-Migration-Plan.md`. The backend stack below was never in question — only the client framework/data-fetching/state layer changed (Next.js/SWR → Vite/React Router/React Query).
 
 ## Technology Stack & Conventions
 
-- **Frontend**: Next.js 15 (App Router, Turbopack, **TypeScript strict**) located inside `hadaf/client/`.
+- **Frontend**: Vite 7 + React 19 + React Router 7 (**TypeScript strict**) located inside `hadaf/client/`. UI component base (`ui/`, layouts, CVA patterns) imported from Impulse — see `Docs/Impulse-Migration-Plan.md`.
 - **Backend**: Node.js/Express REST API in **pure JavaScript** located inside `hadaf/server/`.
-- **Tailwind v4 + shadcn v4 + `@base-ui/react`** (component set is intentionally limited — don't add new UI libraries).
+- **Tailwind v4** (CVA-based components from Impulse) **+ shadcn v4 additions** where Impulse doesn't already cover a primitive (AlertDialog, Sheet, Tabs, DropdownMenu, Progress, Tooltip) — component set is intentionally limited, don't add new UI libraries.
 - **MongoDB + Mongoose ODM** (8 collections: User, Goal, Milestone, Task, Habit, HabitLog, DailySummary, AnalyticsEvent).
 - **JWT via `jsonwebtoken` + `bcryptjs`** for password hashing (cookie-based session delivery with `sameSite: 'none'` and `secure: true` flags).
-- **SWR for data fetching** — optimistic updates via `mutate()` calling backend routes mapped to `process.env.NEXT_PUBLIC_API_URL`.
+- **TanStack React Query v5 for data fetching** — optimistic updates via mutations calling backend routes mapped to `VITE_API_URL`. (Not SWR — that was a stale reference from an earlier Next.js-era draft.)
+- **Zustand** for client auth/UI/date state (from Impulse) + React Context for DayType/Locale/Theme providers.
 - **Express Global Error Handling** — dedicated catch blocks in `error-handler.js` for MongoDB/Mongoose specific execution exceptions (like duplicate key code `11000`).
-- **Vitest for unit testing** (the backend `utils/` calculations are pure JavaScript and remain unit-testable).
+- **Vitest for unit testing** (the backend `utils/` calculations are pure JavaScript and remain unit-testable; Impulse's Vitest client setup carries over too).
 - **Custom Locale Provider** cookie-based translation layer for i18n. Arabic is the default locale.
 - **Backend MVC Layering**: `routes/` (Express endpoint mappings) ➔ `controllers/` (request logic and validations) ➔ `models/` (Mongoose schemas/DB layer).
-- Vercel deployment: preview per PR, production on `main`.
+- Deployment: client on Vercel/Netlify (preview per PR, production on `main`); server on a persistent Node host (Render/Railway — a standalone Express+MongoDB process doesn't fit Vercel's serverless/static model). See `Docs/Impulse-Migration-Plan.md` Day 5.
 
 ## Non-Negotiable Guardrails
 
 **Color**
-- Use only the OKLCH tokens already defined in `src/app/globals.css`. Never introduce a raw hex
-  color.
-- Compute real WCAG contrast for any new fill before assigning its text color — the
-  "saturated color → white text" heuristic is wrong for this palette (primary teal and accent
-  brass both take dark ink text, not white). Don't skip this check.
+- Use only the OKLCH tokens defined in `hadaf/client/DESIGN.md` (authored Day 1, seeded from
+  Impulse's Violet OKLCH tokens and refined during the build) and mirrored into the client's
+  global stylesheet. Never introduce a raw hex color. `DESIGN.md` is the sole authority here —
+  once it exists, trust it over any color name mentioned elsewhere in this doc set.
+- Compute real WCAG contrast for any new fill before assigning its text color — never assume a
+  saturated color automatically takes white text. Don't skip this check for any token, including
+  ones inherited from Impulse.
 - The 5 status colors (progress/health) mean progress/health ONLY — never decorative, never used
   for brand.
 
@@ -104,9 +112,11 @@ until the docs themselves are patched:
   asserting a story is done, in progress, or not started.
 - If two sources still conflict after applying the Source-of-Truth Hierarchy above, say so
   explicitly and ask — do not guess or silently pick one.
-- Treat `Docs/Scope.md`, `UX-Design-Specification.md §5.1/§5.2/§8.7`, and
-  `Architecture.md §3.2` as known-stale — do not cite them as current without flagging the
-  staleness.
+- Treat `Docs/Scope.md` and `UX-Design-Specification.md §5.1/§5.2/§8.7` as known-stale — do not
+  cite them as current without flagging the staleness. `Architecture.md` has been fully
+  reconciled with the Vite/React Query client + Express/MongoDB server stack (see
+  `Docs/Impulse-Migration-Plan.md`) and no longer carries stale sections as of this doc's last
+  update.
 
 ## Review Requirement
 

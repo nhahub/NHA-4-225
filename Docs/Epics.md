@@ -1,9 +1,10 @@
-# 📋 Hadaf (هدف) — Epic Breakdown v2.0 — MVP
+# 📋 Hadaf (هدف) — Epic Breakdown v2.1 — MVP
 
 > **Generated from:** PRD v2.0 MVP + UX Design Spec v2.0
-> **Date:** يونيو ٢٠٢٦
-> **Scope:** MVP (Phase 1) — 20 days, 5 team members (2 juniors + 3 entry-level, 2 agent-capable)
-> **26 vertically-sliced stories, ~145 SP (recalibrated for human + agent velocity)**
+> **Date:** يوليو ٢٠٢٦
+> **Scope:** MVP (Phase 1) — 5 days, 5 team members (2 juniors + 3 entry-level, 2 agent-capable)
+> **25 vertically-sliced stories, ~99 SP** (see `Docs/team-task-assignments.md` for the authoritative per-story SP/owner breakdown; the per-epic sums below total ~94 SP before that doc's gap-fill)
+> **Client stack:** UI imported from the Impulse codebase (Vite + React Router + React Query + Zustand) — see `Docs/Impulse-Migration-Plan.md`
 > **Bilingual:** Arabic (RTL) + English (LTR) at parity
 > **Submission:** Live deployed + repo + demo video
 
@@ -27,61 +28,63 @@ Every story respects these constraints:
 | **No Prayer Features** | Phase 2 |
 | **No Phoenix Bond** | Phase 2 |
 | **No Weekly Review** | Phase 2 |
-| **SWR + Optimistic Updates** | No polling — `mutate()` after every action |
+| **React Query + Optimistic Updates** | No polling — cache invalidation after every action |
 | **Browser Notifications only** | No FCM |
 
-### 1.2 Team Capacity (20 days, 5 humans + agents)
+### 1.2 Team Capacity (5 days, 5 humans + agents)
 
-| Sprint | Days | Velocity | Focus |
-|---|---|---|---|
-| Sprint 0 | 1-2 | ~20 SP | Foundation + Brand + i18n + Illustrations + Deploy |
-| Sprint 1 | 3-7 | ~35 SP | Project Setup + Identity + Goal Management |
-| Sprint 2 | 8-12 | ~42 SP | Task Management + Habit Tracking |
-| Sprint 3 | 13-16 | ~31 SP | Capacity & Scoring + Home Screen |
-| Sprint 4 | 17-20 | ~17 SP | Onboarding + Polish + Demo Video + Final Deploy |
-| **Total** | **20 days** | **~145 SP** | |
+| Day | Velocity | Focus |
+|---|---|---|
+| Day 1 | ~20 SP | Foundation — scaffold (client copied from Impulse + server from scratch), design tokens, i18n, RTL conversion, merge-conflict resolution |
+| Day 2 | ~24 SP | Project Setup & Identity wrap-up + Goal Management + Habit/Settings/Task Engine starts |
+| Day 3 | ~28 SP | Task Completion + Goal Dashboard + Habits UI + Capacity + Scoring Engine |
+| Day 4 | ~17 SP | Home Screen + Onboarding starts + Task List/Scoring wrap-up |
+| Day 5 | ~10 SP | Onboarding finish + all Polish stories + deploy |
+| **Total** | **~99 SP** | See `Docs/team-task-assignments.md` for the per-person day-by-day plan |
 
-**Velocity assumptions:** 2 agent-capable humans dispatch BMAD-role subagents (`ba`, `pm`, `designer`, `frontend`, `backend`, `qa`). 3 entry-level humans do manual work, illustration, copy, QA. Agents deliver ~3–5× human-only velocity on well-scoped tasks. Human + agent pairing handles the rest.
+**Velocity assumptions:** 2 agent-capable humans dispatch BMAD-role subagents (`ba`, `pm`, `designer`, `frontend`, `backend`, `qa`). 3 entry-level humans do manual work, illustration, copy, QA. Agents deliver ~3–5× human-only velocity on well-scoped tasks. Human + agent pairing handles the rest. Reusing Impulse's client codebase (see `Docs/Impulse-Migration-Plan.md`) is what makes the 5-day timeline viable — Day 1 is largely adaptation, not from-scratch scaffolding.
 
 ---
 
 ## 2. MVP Epic Overview (Vertically Sliced)
 
-| Epic ID | Epic Name | Stories | Total SP | Sprint |
+| Epic ID | Epic Name | Stories | Total SP | Day |
 |---|---|---|---|---|
-| **E0** | Project Setup & Identity | 6 | 18 | Sprint 1 |
-| **E1** | Goal Management | 2 | 12 | Sprint 1-2 |
-| **E2** | Task Management & Time Blocking | 3 | 16 | Sprint 2 |
-| **E3** | Habit Tracking | 2 | 8 | Sprint 2 |
-| **E4** | Capacity & Scoring | 3 | 12 | Sprint 3 |
-| **HOME** | Home Screen | 2 | 8 | Sprint 3 |
-| **ONB** | Onboarding | 3 | 9 | Sprint 4 |
-| **POL** | System States & Polish | 4 | 11 | Sprint 4 |
+| **E0** | Project Setup & Identity | 6 | 18 | Day 1-2 |
+| **E1** | Goal Management | 2 | 12 | Day 2-3 |
+| **E2** | Task Management & Time Blocking | 3 | 16 | Day 2-4 |
+| **E3** | Habit Tracking | 2 | 8 | Day 2-3 |
+| **E4** | Capacity & Scoring | 3 | 12 | Day 2-4 |
+| **HOME** | Home Screen | 2 | 8 | Day 4 |
+| **ONB** | Onboarding | 3 | 9 | Day 4-5 |
+| **POL** | System States & Polish | 4 | 11 | Day 5 |
 | | **TOTAL** | **25** | **~94** | |
 
-*(Note: Original SP was ~115 without Foundation, re-sliced SP is slightly lower due to avoiding redundant backend/frontend isolated stories).*
+*(Note: the per-epic SP sum here is ~94; `Docs/team-task-assignments.md` carries the authoritative ~99 SP per-story total after gap-fill — see that doc's §5.)*
 
 ---
 
-## 3. Sprint Plan (20 days, bilingual)
+## 3. Day Plan (5 days, bilingual)
 
-| Sprint | Days | Focus | Stories |
-|---|---|---|---|
-| **Sprint 0** | 1-2 | Foundation & Brand | Scaffold, tokens, i18n, fonts, 10 illustrations, Vercel deploy |
-| **Sprint 1** | 3-7 | Setup, Auth & Goals | E0-1 through E0-6, E1-1 |
-| **Sprint 2** | 8-12 | Tasks & Habits | E1-2, E2-1, E2-2, E2-3, E3-1, E3-2 |
-| **Sprint 3** | 13-16 | Capacity, Gamification & Home | E4-1, E4-2, E4-3, HOME-1, HOME-2 |
-| **Sprint 4** | 17-20 | Onboarding + Polish + Demo | ONB-1, ONB-2, ONB-3, POL-1, POL-2, POL-3, POL-4 + demo video |
+Full per-person breakdown lives in `Docs/team-task-assignments.md`; this is the epic-level view.
 
-### Sprint Demos
+| Day | Focus | Stories |
+|---|---|---|
+| **Day 1** | Foundation & Brand | Client scaffold (copied from Impulse, merge conflicts resolved), server scaffold, DB connection, `DESIGN.md` + tokens, i18n + RTL conversion, E0-5 (Auth) starts |
+| **Day 2** | Setup, Auth & Goals | E0-6, E1-1, E3-1, E4-1, E2-1 starts |
+| **Day 3** | Tasks & Habits | E1-2, E2-1 finishes → E2-2, E2-3 starts, E3-2, E4-2, E4-3 starts |
+| **Day 4** | Capacity, Scoring & Home | E2-3 finishes, E4-3 finishes, HOME-1, HOME-2, ONB-1/ONB-2/ONB-3 start |
+| **Day 5** | Onboarding + Polish + Ship | ONB-1/ONB-2/ONB-3 finish, POL-1, POL-2, POL-3, POL-4, deploy (client + server) |
 
-| Sprint | What We Demo |
+### Day-by-Day Demos
+
+| Day | What We Demo |
 |---|---|
-| **Sprint 0** | Vercel preview deploys "Coming soon" landing → brand mark visible → language toggle works (AR ↔ EN) → 10 illustrations shipped → design tokens applied |
-| **Sprint 1** | Login (Email/Password) → responsive shell → dark/light theme → Goal creation wizard (both languages) |
-| **Sprint 2** | Create goal → create linked task (auto-type) → complete tasks → track Boolean/Counter habits → see MVD toggle |
-| **Sprint 3** | See Daily Capacity gauge → Progress bar with 4 colors → 5 day states → Daily Pulse card on Home |
-| **Sprint 4** | Full end-to-end user journey in both languages → all polish states → Lighthouse ≥ 85 desktop / ≥ 75 mobile → demo video → live on production |
+| **Day 1** | App shell reachable → brand mark visible → language toggle works (AR ↔ EN) → RTL renders correctly → design tokens applied |
+| **Day 2** | Login (Email/Password) → responsive shell → dark/light theme → Goal creation wizard (both languages) |
+| **Day 3** | Create goal → create linked task (auto-type) → complete tasks → track Boolean/Counter habits → see MVD toggle |
+| **Day 4** | See Daily Capacity gauge → Progress bar with 4 colors → 5 day states → Daily Pulse card on Home |
+| **Day 5** | Full end-to-end user journey in both languages → all polish states → Lighthouse ≥ 85 desktop / ≥ 75 mobile → live on production (client + server) |
 
 ---
 
@@ -96,16 +99,16 @@ Every story respects these constraints:
 **Goal:** Establish the foundation, design system, and user authentication.
 
 ### E0-1: Project Scaffold & Design System Foundation
-Initialize Next.js project with Tailwind, Shadcn UI, and CSS design tokens.
-**AC:** `create-next-app` (Turbopack), Shadcn UI initialized, HSL CSS variables, CSS transitions defined, App runs locally.
+Copy the Impulse client codebase into `hadaf/client/`, rebrand it, and establish CSS design tokens (see `Docs/Impulse-Migration-Plan.md` for the reuse map).
+**AC:** Client scaffold runs locally (Vite dev server), 3 pre-existing merge conflicts resolved, `DESIGN.md` created (seeded from Impulse's Violet OKLCH tokens), OKLCH CSS variables, CSS transitions defined.
 
 ### E0-2: Typography & RTL Foundation
-Configure Tajawal + IBM Plex Sans Arabic fonts with RTL support.
-**AC:** Fonts self-hosted, `<html> dir="rtl"`, Tailwind logical properties used.
+Configure Tajawal + IBM Plex Sans Arabic fonts with RTL support, and convert Impulse's physical CSS properties to logical ones.
+**AC:** Fonts self-hosted, `<html> dir="rtl">`, all `ml-`/`mr-`/`left-`/`right-` classes converted to Tailwind logical properties (`ms-`/`me-`/`start-`/`end-`) per the RTL Conversion Checklist in `Docs/Impulse-Migration-Plan.md`.
 
 ### E0-3: Layered Architecture Setup
-Set up all architectural layers.
-**AC:** `app/`, `features/`, `domain/`, `data/`, `components/`, `lib/`, `hooks/` exist. `domain/` is framework-agnostic.
+Set up all architectural layers on both client and server.
+**AC:** Client: `app/`, `features/`, `components/`, `providers/`, `lib/`, `stores/`, `i18n/` exist (Impulse's existing feature-slice layout, extended). Server: `models/`, `controllers/`, `routes/`, `middleware/`, `utils/` exist. `server/src/utils/` is framework-agnostic (zero Express/Mongoose imports).
 
 ### E0-4: Database Connection & Analytics Schema
 Connect MongoDB via Mongoose and create the basic schemas.
@@ -113,11 +116,11 @@ Connect MongoDB via Mongoose and create the basic schemas.
 
 ### E0-5: Email/Password Authentication
 Sign in/up with Email and Password and establish the user.
-**AC:** Create `User` schema. Email/password login via `jsonwebtoken` (JWT). Refresh token rotation. Analytics event logged on login/register.
+**AC:** Create `User` schema. Email/password login via `jsonwebtoken` (JWT). Refresh token rotation. Analytics event logged on login/register. Client `useAuthStore` (Zustand, from Impulse) wired to the new endpoints.
 
-### E0-6: App Shell & Edge Middleware
+### E0-6: App Shell & Route Guards
 Responsive app shell and protected routes.
-**AC:** Edge Middleware validates JWT on `/app/*`. Mobile Bottom Nav, Desktop Sidebar. Dark/Light Theme toggle. A11y keyboard navigation.
+**AC:** Client-side `RequireAuth`/`RedirectIfAuth` route guards (React Router) call the Express `auth.js` middleware-protected endpoints to validate the session. Mobile Bottom Nav, Desktop Sidebar. Dark/Light Theme toggle. A11y keyboard navigation.
 
 ---
 
@@ -227,7 +230,7 @@ Illustration + CTA for every empty screen.
 
 ### POL-2: Loading Skeletons for Every Data Area
 Skeleton loading states matching final layout.
-**AC:** Shimmer animation (1500ms). Handle Neon cold starts gracefully.
+**AC:** Shimmer animation (1500ms). Handle backend cold starts gracefully (free-tier Node host sleeps on inactivity — see `Architecture.md` §1.3).
 
 ### POL-3: Error Toasts with Retry
 Error handling with retry for all failed actions.
