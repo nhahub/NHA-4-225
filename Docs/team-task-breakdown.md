@@ -12,7 +12,7 @@
 - **`Docs/Scope.md` is stale.** It still describes an old 34-story/~115 SP horizontal split (an `INF` epic, isolated "Goals repository" stories, etc.). That structure was replaced after a 2026-06-29 implementation-readiness review flagged it as horizontal/technical slicing. This breakdown is built from the **current** `Docs/Epics.md` (25 stories, vertically sliced) and matches `sprint-status.yaml`.
 - **`Docs/Epics.md`'s Epic Overview table sums to 25 stories / ~94 SP**, while `Docs/team-task-assignments.md`'s per-story sum is ~99 SP after gap-fill (see §2 below) — treat 99 as authoritative; the two are close enough that this is a rounding/gap-fill difference, not a scope disagreement.
 - **Client stack changed mid-project**: this breakdown, `Epics.md`, and `Architecture.md` were originally written for a Next.js client; the team has since decided to import the client UI from the Impulse codebase (Vite + React Router + React Query + Zustand) — see `Docs/Impulse-Migration-Plan.md`. The **Database** and **Backend** lanes below were never Next.js-specific and are unaffected. The **Frontend** lane descriptions throughout this doc have been updated to match; if you spot a leftover Next.js/SWR reference in a Frontend checklist item (e.g. an `app/[locale]/.../page.tsx` path or "Server Component"), treat it as stale and follow `Docs/Impulse-Migration-Plan.md`'s client tree instead (routes live in `features/{name}/pages/`, wired through `app/router.tsx`).
-- **Backend file-pattern references are also partly stale.** Many Backend checklist items below still say `features/{name}/actions.ts` (Next.js Server Actions) or `data/repositories/{name}.repo.ts` (Drizzle repository layer) — an architecture this project no longer uses. The current pattern, per `Architecture.md` §3.3/§4.2, is Express MVC: `server/src/routes/{name}Routes.js` → `server/src/controllers/{name}Controller.js` → Mongoose model calls directly (no separate repository layer) → pure logic in `server/src/utils/{name}.js`. Read every `actions.ts`/`*.repo.ts` mention in this doc as shorthand for "the controller function that does this," not a literal file to create.
+- **Backend file-pattern references are also partly stale.** Many Backend checklist items below still say `features/{name}/actions.ts` (Next.js Server Actions) or `data/repositories/{name}.repo.ts` (Drizzle repository layer) — an architecture this project no longer uses. The current pattern, per `Architecture.md` §3.3/§4.2, is Express MVC: `server/routes/{name}Routes.js` → `server/controllers/{name}Controller.js` → Mongoose model calls directly (no separate repository layer) → pure logic in `server/utils/{name}.js`. Read every `actions.ts`/`*.repo.ts` mention in this doc as shorthand for "the controller function that does this," not a literal file to create.
 - **`Docs/UX-Design-Specification.md` §8.7 says "Language (Arabic-only in MVP)."** This contradicts the bilingual-parity mandate stated everywhere else (PRD, Scope, Architecture, Epics). The UX spec is a known-stale baseline — this breakdown assumes **bilingual AR+EN parity**.
 - **i18n technical setup has no explicit story.** Nothing in `Epics.md` mentions the `LocaleProvider`, cookie-based locale detection, or the `ar.ts`/`en.ts` dictionary catalog, though `Architecture.md` §3.4 mandates it as day-1 infrastructure. Placed inside **E0-2**.
 - **`FR54` is referenced but never defined.** `PRD.md` §11's phase-allocation appendix lists `FR54` under Epic 6, but §5 (the actual FR definitions) jumps from FR53 straight to the "نظام أنواع الأيام" heading and FR55 — FR54 itself is never written anywhere in the PRD's body. This is a gap in the source PRD, not in this breakdown; flagging for your awareness since I can't guess what it was meant to say.
@@ -24,7 +24,7 @@
 ## 1. How to use this doc
 
 **Lane definitions:**
-- **🗄️ Database** — MongoDB collections & Mongoose schema additions in `hadaf/server/src/models/*.js`.
+- **🗄️ Database** — MongoDB collections & Mongoose schema additions in `hadaf/server/models/*.js`.
 - **⚙️ Backend** — `routes/*.js` (Express endpoints), `controllers/*.js` (Express MVC handler logic), backend utils (pure logic + Vitest), custom middlewares (auth, error-handler), analytics logging.
 - **🎨 Frontend** — Vite/React UI (`components/*`, `features/*/pages/`), UI base imported from the Impulse codebase (see `Docs/Impulse-Migration-Plan.md`), frontend hooks calling `import.meta.env.VITE_API_URL` via TanStack React Query, i18n strings (AR+EN), empty/loading/error states for that screen.
 
@@ -151,7 +151,7 @@ Epic E0 · FR: — (infra)
 - [ ] Resolve the 3 merge conflicts: `features/auth/api/authApi.ts`, `features/tasks/api/taskApi.ts`, `shared/lib/api-client.ts`
 - [ ] Remove duplicate `shared/api/apiClient.ts` if present
 - [ ] `npx shadcn@latest add alert-dialog sheet tabs dropdown-menu progress tooltip` (primitives Impulse doesn't already have)
-- [ ] `hadaf/client/DESIGN.md` created, seeded from Impulse's Violet OKLCH tokens
+- [ ] OKLCH design tokens converted from Impulse's Violet hex scale directly in `tailwind.config.js`/global stylesheet — no separate design-system document
 - [ ] OKLCH color tokens (light + dark) applied to the client's global stylesheet
 - [ ] CSS transition utility tokens confirmed (Framer Motion is not a dependency — Impulse doesn't ship it)
 - [ ] Rebrand: app name, favicon, metadata Impulse → Hadaf
@@ -182,14 +182,14 @@ Epic E0 · FR: — (enables NFR10 Arabic RTL + PRD bilingual mandate)
 
 #### E0-3 — Layered Architecture Setup *(~2 SP)* · 👤 **Ziad**
 Epic E0 · FR: — (infra)
-> All architectural layers exist on both client and server; `server/src/utils/` is framework-agnostic.
+> All architectural layers exist on both client and server; `server/utils/` is framework-agnostic.
 
 **🗄️ Database:** _None (see E0-4)._
 
 **⚙️ Backend:**
-- [ ] Create `server/src/{models,controllers,routes,middleware,utils}/` folders
+- [ ] Create `server/{models,controllers,routes,middleware,utils}/` folders
 - [ ] `server/vitest.config.ts` + `server/tests/` folder
-- [ ] Document/enforce: zero Express/Mongoose/React imports inside `server/src/utils/`
+- [ ] Document/enforce: zero Express/Mongoose/React imports inside `server/utils/`
 
 **🎨 Frontend:**
 - [ ] Confirm Impulse's existing `components/{ui,shared,layouts}/`, `features/`, `providers/`, `stores/`, `lib/` folders carry over as-is
@@ -205,10 +205,10 @@ Epic E0 · FR: — (infra; underlies every KPI in §2.4)
 
 **🗄️ Database:**
 - [ ] Provision MongoDB Atlas project (free/M0 tier)
-- [ ] `MONGODB_URI` in `server/.env` + `server/.env.example`
-- [ ] `server/src/models/AnalyticsEvent.js`: Mongoose schema (userId ref, eventType, eventData Map, createdAt)
+- [ ] `MONGO_URL` in `server/.env.local` + `server/.env.example`
+- [ ] `server/models/AnalyticsEvent.js`: Mongoose schema (userId ref, eventType, eventData Map, createdAt)
 - [ ] `idx_analytics_user_created` compound index (`{ userId: 1, createdAt: -1 }`)
-- [ ] `server/src/config/db.js` — Mongoose connection setup
+- [ ] `server/config/db.js` — Mongoose connection setup
 
 **⚙️ Backend:**
 - [ ] Analytics logging helper: `AnalyticsEvent.create({ userId, eventType, eventData })`
@@ -216,7 +216,7 @@ Epic E0 · FR: — (infra; underlies every KPI in §2.4)
 
 **🎨 Frontend:** _None._
 
-**Sequencing:** Depends on E0-3 (needs `server/src/` folders). **Owners:** default pairing (Database+Backend only).
+**Sequencing:** Depends on E0-3 (needs `server/` folders). **Owners:** default pairing (Database+Backend only).
 
 ---
 
@@ -225,13 +225,13 @@ Epic E0 · FR: — (NFR6 Security: HTTPS/JWT)
 > Sign in/up with Email and Password, establish the user, JWT session.
 
 **🗄️ Database:**
-- [ ] `server/src/models/User.js`: Mongoose schema (email unique, passwordHash, name, avatarUrl, `settings` sub-document per Architecture §3.1 including `language` and `theme`, `refreshToken`, `refreshTokenExp`, `onboardingCompleted`, timestamps)
+- [ ] `server/models/User.js`: Mongoose schema (email unique, passwordHash, name, avatarUrl, `settings` sub-document per Architecture §3.1 including `language` and `theme`, `refreshToken`, `refreshTokenExp`, `onboardingCompleted`, timestamps)
 
 **⚙️ Backend:**
-- [ ] `server/src/utils/jwt.js` — sign/verify via `jsonwebtoken`, HS256, 15min access token
-- [ ] `server/src/middleware/auth.js` — verify JWT from Authorization header/cookie, attach `req.user`
-- [ ] `server/src/utils/password.js` — hash and verify passwords via `bcryptjs`
-- [ ] `server/src/routes/authRoutes.js` + `server/src/controllers/authController.js` — register/login/refresh/logout endpoints
+- [ ] `server/utils/jwt.js` — sign/verify via `jsonwebtoken`, HS256, 15min access token
+- [ ] `server/middleware/auth.js` — verify JWT from Authorization header/cookie, attach `req.user`
+- [ ] `server/utils/password.js` — hash and verify passwords via `bcryptjs`
+- [ ] `server/routes/authRoutes.js` + `server/controllers/authController.js` — register/login/refresh/logout endpoints
 - [ ] Refresh token: 7-day, stored hashed, rotated on use, httpOnly cookie (`sameSite: 'none'`, `secure: true`)
 - [ ] Token-reuse detection → invalidate all user tokens
 - [ ] Analytics event: `login` & `register`
@@ -251,7 +251,7 @@ Epic E0 · FR: — (NFR6/7/8/10; language switcher is **[PRD gap-fill]**, §3 In
 
 **🗄️ Database:** _None._
 **⚙️ Backend:**
-- [ ] Confirm `server/src/middleware/auth.js` (from E0-5) protects every `/api/*` route that requires a session
+- [ ] Confirm `server/middleware/auth.js` (from E0-5) protects every `/api/*` route that requires a session
 - [ ] Silent-refresh on expired access token endpoint; client redirects to `/login?redirect={path}` if refresh fails
 - [ ] Rate limiting — in-memory `Map`, 100 req/min/user
 

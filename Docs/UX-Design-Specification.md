@@ -111,7 +111,11 @@ Rule: Errors are recoverable. Always show a retry action.
 
 ### 5.1 Color System: "Capacity-Aware Atmospheric Hierarchy"
 
-> ⚠️ **SUPERSEDED.** Color and typography are now owned by `hadaf/client/DESIGN.md`, authored Day 1 of the build and seeded from the Impulse codebase's Violet OKLCH tokens (see `Docs/Impulse-Migration-Plan.md`), refined from there. The hex values below are historical and MUST NOT be used in code.
+> ⚠️ **SUPERSEDED.** Color and typography are now owned by the client's own token layer —
+> `hadaf/client/tailwind.config.js` + global stylesheet — converted to OKLCH from the Impulse
+> codebase's Violet hex tokens during E0-1 (see `Docs/Impulse-Migration-Plan.md`). There is no
+> separate design-system document. The hex values below are historical and MUST NOT be used in
+> code.
 
 #### Core Tokens
 
@@ -153,7 +157,11 @@ Rule: Errors are recoverable. Always show a retry action.
 
 ### 5.2 Typography System
 
-> ⚠️ **SUPERSEDED.** Color and typography are now owned by `hadaf/client/DESIGN.md`, authored Day 1 of the build and seeded from the Impulse codebase's Violet OKLCH tokens (see `Docs/Impulse-Migration-Plan.md`), refined from there. The hex values below are historical and MUST NOT be used in code.
+> ⚠️ **SUPERSEDED.** Color and typography are now owned by the client's own token layer —
+> `hadaf/client/tailwind.config.js` + global stylesheet — converted to OKLCH from the Impulse
+> codebase's Violet hex tokens during E0-1 (see `Docs/Impulse-Migration-Plan.md`). There is no
+> separate design-system document. The hex values below are historical and MUST NOT be used in
+> code.
 
 | Role | Font | Weight | Usage |
 |---|---|---|---|

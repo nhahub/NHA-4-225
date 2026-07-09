@@ -21,7 +21,7 @@ This migration reuses Impulse for **the client only**. The backend is **not** to
 | Backend framework | **`Architecture.md` §3.3, unchanged** → Express (MVC: routes → controllers → models) | |
 | Backend DB | **`Architecture.md` §3.1, unchanged** → MongoDB + Mongoose, 8 collections | |
 | Backend auth | **`Architecture.md` §3.2, unchanged** → JWT (`jsonwebtoken`) + `bcryptjs`, httpOnly cookies, refresh rotation | |
-| Backend business logic | **`Architecture.md` §6, unchanged** → pure JS utils in `server/src/utils/` | |
+| Backend business logic | **`Architecture.md` §6, unchanged** → pure JS utils in `server/utils/` | |
 
 ---
 
@@ -31,7 +31,7 @@ This migration reuses Impulse for **the client only**. The backend is **not** to
 |---|----------|------------|
 | 1 | **Client Framework** | **Vite + React Router** (Impulse as-is; easier approach, matches team experience) |
 | 2 | **Client Data Fetching** | **Keep React Query** (TanStack React Query v5, already wired in Impulse) — this is the client-side counterpart to the server's documented Express/Mongoose API, not a replacement for anything on the backend |
-| 3 | **Colors** | **Seed from Impulse's Violet OKLCH tokens.** `hadaf/client/DESIGN.md` is authored Day 1 (Khaled) starting from these tokens and becomes the sole design authority from that point forward — refine freely during the build once it exists |
+| 3 | **Colors** | **Convert Impulse's Violet hex tokens to OKLCH.** Done directly in `hadaf/client/tailwind.config.js` + global stylesheet during E0-1 (Khaled) — there is no separate `DESIGN.md` document; the token layer itself is the sole design authority from that point forward. Refine freely during the build. |
 | 4 | **Victory Dialog** | **Keep but redesign** — remove cartoon trophy/confetti, make it mature and elegant. Keep the score-breakdown concept. Align naming with the product docs: the completion micro-feedback is the **Contribution Pulse** (text/CSS fade), and the redesigned dialog is its expanded form — not a new "victory" concept and not a departure from the no-mascot/no-confetti voice guardrail in `project-context.md` |
 | 5 | **Islamic Quote** | **Keep** — it's a motivational/wisdom section, distinct from a prayer app |
 
@@ -150,48 +150,50 @@ NHA-4-225/
 │   │   ├── package.json
 │   │   ├── tailwind.config.js          # Updated: OKLCH colors, Tajawal+IBM Plex, logical properties
 │   │   ├── vite.config.ts
-│   │   ├── tsconfig.json
-│   │   └── DESIGN.md                   # [NEW] Design system authority — authored Day 1, seeded from Impulse Violet
+│   │   └── tsconfig.json
+│   │       # No separate design-system file — OKLCH tokens live directly in tailwind.config.js
+│   │       # + the global stylesheet, converted from Impulse's Violet hex scale during E0-1.
 │   │
 │   └── server/                         # Express/MongoDB backend — per Architecture.md §3, unchanged by this plan
-│       ├── src/
-│       │   ├── config/
-│       │   │   └── db.js              # Mongoose connection
-│       │   ├── models/                # 8 Mongoose models
-│       │   │   ├── User.js
-│       │   │   ├── Goal.js
-│       │   │   ├── Milestone.js
-│       │   │   ├── Task.js
-│       │   │   ├── Habit.js
-│       │   │   ├── HabitLog.js
-│       │   │   ├── DailySummary.js
-│       │   │   └── AnalyticsEvent.js
-│       │   ├── controllers/
-│       │   │   ├── authController.js
-│       │   │   ├── goalController.js
-│       │   │   ├── taskController.js
-│       │   │   ├── habitController.js
-│       │   │   ├── scoringController.js
-│       │   │   └── settingsController.js
-│       │   ├── routes/
-│       │   │   ├── authRoutes.js
-│       │   │   ├── goalRoutes.js
-│       │   │   ├── taskRoutes.js
-│       │   │   ├── habitRoutes.js
-│       │   │   └── settingsRoutes.js
-│       │   ├── middleware/
-│       │   │   ├── auth.js            # JWT verification
-│       │   │   ├── rateLimiter.js     # In-memory rate limiting (100 req/min)
-│       │   │   └── errorHandler.js    # Global error handler (11000, ValidationError)
-│       │   ├── utils/                 # Pure business logic (testable)
-│       │   │   ├── scoring.js         # calculateTaskPoints, calculateHabitPoints, predictTaskPoints
-│       │   │   ├── goalProgress.js    # calculateHybridProgress, calculateGoalHealth
-│       │   │   ├── capacity.js        # calculateDailyCapacity, calculatePlannedTime
-│       │   │   ├── dayState.js        # calculateDayState, calculateAdaptiveDailyTarget
-│       │   │   └── taskType.js        # detectTaskType, calculateBlockDuration
-│       │   └── server.js              # Express bootstrap
+│       ├── config/
+│       │   └── db.js                  # Mongoose connection
+│       ├── models/                    # 8 Mongoose models (+ co-located Zod schemas)
+│       │   ├── User.js
+│       │   ├── Goal.js
+│       │   ├── Milestone.js
+│       │   ├── Task.js
+│       │   ├── Habit.js
+│       │   ├── HabitLog.js
+│       │   ├── DailySummary.js
+│       │   └── AnalyticsEvent.js
+│       ├── controllers/
+│       │   ├── authController.js
+│       │   ├── goalController.js
+│       │   ├── taskController.js
+│       │   ├── habitController.js
+│       │   ├── scoringController.js
+│       │   └── settingsController.js
+│       ├── routes/
+│       │   ├── authRoutes.js
+│       │   ├── goalRoutes.js
+│       │   ├── taskRoutes.js
+│       │   ├── habitRoutes.js
+│       │   └── settingsRoutes.js
+│       ├── middleware/
+│       │   ├── auth.js                # JWT verification
+│       │   └── rateLimiter.js         # In-memory rate limiting (100 req/min)
+│       ├── utils/                     # Pure business logic (testable) + error pipeline
+│       │   ├── appError.js
+│       │   ├── catchAsync.js
+│       │   ├── errorHandler.js        # Global error handler (11000, ValidationError)
+│       │   ├── scoring.js             # calculateTaskPoints, calculateHabitPoints, predictTaskPoints
+│       │   ├── goalProgress.js        # calculateHybridProgress, calculateGoalHealth
+│       │   ├── capacity.js            # calculateDailyCapacity, calculatePlannedTime
+│       │   ├── dayState.js            # calculateDayState, calculateAdaptiveDailyTarget
+│       │   └── taskType.js            # detectTaskType, calculateBlockDuration
+│       ├── app.js                     # Express bootstrap
 │       ├── package.json
-│       └── .env
+│       └── .env.local
 │
 ├── CLAUDE.md                           # AI agent rules (update with settled decisions)
 └── README.md
@@ -388,7 +390,7 @@ This is the migration-execution view of `Docs/team-task-assignments.md`'s 5-day 
 | **Mustafa** | Project scaffold + Auth | Copy Impulse → hadaf/client/. Resolve 3 merge conflicts (`authApi.ts`, `taskApi.ts`, `api-client.ts`). Rebrand Impulse→Hadaf. Rewire auth API to Express endpoints. Refresh token rotation. |
 | **Ziad** | Backend foundation | Express server setup. MongoDB connection. All 8 Mongoose models. Auth routes (register, login, refresh, logout). CORS + CSRF middleware. |
 | **Hamza** | RTL + i18n conversion | Convert ALL physical→logical CSS in every component. Set up `<html lang="ar" dir="rtl">`. Create LocaleProvider + AR/EN dictionaries. Wire language toggle. |
-| **Khaled** | Design system | Create `DESIGN.md`, seeded from Impulse's Violet OKLCH tokens. Convert tailwind.config to OKLCH tokens. Install Tajawal+IBM Plex fonts. Update index.css. Test both themes. |
+| **Khaled** | Design tokens | Convert Impulse's Violet hex tokens to OKLCH directly in `tailwind.config.js` + global stylesheet (no separate design-system document). Install Tajawal+IBM Plex fonts. Test both themes. |
 | **Mohamed** | App shell + Bottom Nav | Build BottomNav component. Update Sidebar nav items (Home, Goals, Habits, Settings). Prepare Settings page skeleton. Study remaining docs. |
 
 ### Day 2: Core Features Begin
@@ -507,7 +509,7 @@ Also remove the duplicate `src/shared/api/apiClient.ts` (legacy leftover), if pr
 | Document | What changed |
 |----------|---------------|
 | `CLAUDE.md` | Stack line updated: client = Vite+React Router+React Query+Zustand (UI from Impulse); server = Express/MongoDB (unchanged). Points to this file. |
-| `Docs/project-context.md` | Tech stack section rewritten to Vite/React Router/React Query/Zustand; palette guardrail points to Impulse-Violet-seeded `DESIGN.md`; stale-doc flags refreshed. |
+| `Docs/project-context.md` | Tech stack section rewritten to Vite/React Router/React Query/Zustand; palette guardrail points to the client's own OKLCH token layer (no `DESIGN.md`); stale-doc flags refreshed. |
 | `Docs/Architecture.md` | §0.1/§1.2/§1.3/§1.4/§2/§3.4/§3.5/§4/§9/§10/§11 rewritten to remove Next.js/Drizzle/Neon/jose/SWR/Edge references; §3.1/§3.2/§3.3/§6 (schema, auth, API pattern, business logic) untouched. Story count 34→25. |
 | `Docs/Epics.md` | Timeline reframed to 5 days/25 stories; SWR→React Query; stale scaffold/layer/Edge Middleware references fixed. |
 | `Docs/team-task-assignments.md` | Reconciled with this plan's Day 1 split; "Edge Middleware" language fixed. |
@@ -525,7 +527,7 @@ Also remove the duplicate `src/shared/api/apiClient.ts` (legacy leftover), if pr
 | Team unfamiliar with MongoDB | Low | 🟡 Medium | Ziad owns all backend solo. Others only call API hooks. |
 | 3 merge conflicts in Impulse | Low | 🟢 Low | Resolve morning of Day 1 before any feature work. |
 | 25 stories too many for 5 days | High | 🔴 High | Impulse reuse saves ~30%. If behind by Day 3, cut: ONB (manual setup instead) and POL-2/POL-4. |
-| No `DESIGN.md` exists yet | Low | 🟡 Medium | Khaled creates it Day 1, seeded from Impulse Violet, as part of E0-1. |
+| Design tokens not yet converted | Low | 🟡 Medium | Khaled converts Impulse's Violet hex scale to OKLCH directly in `tailwind.config.js`/stylesheet, Day 1, as part of E0-1. No separate document to author. |
 | Backend host not yet chosen | Medium | 🟡 Medium | Default to Render/Railway; confirm with team before Day 5 deploy. Client (Vercel) and server (Node host) are separate deploys — do not assume a single Vercel deploy covers both. |
 
 ---

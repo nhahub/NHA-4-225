@@ -70,7 +70,7 @@ Full per-person breakdown lives in `Docs/team-task-assignments.md`; this is the 
 
 | Day | Focus | Stories |
 |---|---|---|
-| **Day 1** | Foundation & Brand | Client scaffold (copied from Impulse, merge conflicts resolved), server scaffold, DB connection, `DESIGN.md` + tokens, i18n + RTL conversion, E0-5 (Auth) starts |
+| **Day 1** | Foundation & Brand | Client scaffold (copied from Impulse, merge conflicts resolved), server scaffold, DB connection, OKLCH design tokens (converted from Impulse Violet, in `tailwind.config.js`), i18n + RTL conversion, E0-5 (Auth) starts |
 | **Day 2** | Setup, Auth & Goals | E0-6, E1-1, E3-1, E4-1, E2-1 starts |
 | **Day 3** | Tasks & Habits | E1-2, E2-1 finishes → E2-2, E2-3 starts, E3-2, E4-2, E4-3 starts |
 | **Day 4** | Capacity, Scoring & Home | E2-3 finishes, E4-3 finishes, HOME-1, HOME-2, ONB-1/ONB-2/ONB-3 start |
@@ -100,7 +100,7 @@ Full per-person breakdown lives in `Docs/team-task-assignments.md`; this is the 
 
 ### E0-1: Project Scaffold & Design System Foundation
 Copy the Impulse client codebase into `hadaf/client/`, rebrand it, and establish CSS design tokens (see `Docs/Impulse-Migration-Plan.md` for the reuse map).
-**AC:** Client scaffold runs locally (Vite dev server), 3 pre-existing merge conflicts resolved, `DESIGN.md` created (seeded from Impulse's Violet OKLCH tokens), OKLCH CSS variables, CSS transitions defined.
+**AC:** Client scaffold runs locally (Vite dev server), 3 pre-existing merge conflicts resolved, OKLCH design tokens converted from Impulse's Violet hex scale directly in `tailwind.config.js`/stylesheet, CSS transitions defined.
 
 ### E0-2: Typography & RTL Foundation
 Configure Tajawal + IBM Plex Sans Arabic fonts with RTL support, and convert Impulse's physical CSS properties to logical ones.
@@ -108,7 +108,7 @@ Configure Tajawal + IBM Plex Sans Arabic fonts with RTL support, and convert Imp
 
 ### E0-3: Layered Architecture Setup
 Set up all architectural layers on both client and server.
-**AC:** Client: `app/`, `features/`, `components/`, `providers/`, `lib/`, `stores/`, `i18n/` exist (Impulse's existing feature-slice layout, extended). Server: `models/`, `controllers/`, `routes/`, `middleware/`, `utils/` exist. `server/src/utils/` is framework-agnostic (zero Express/Mongoose imports).
+**AC:** Client: `app/`, `features/`, `components/`, `providers/`, `lib/`, `stores/`, `i18n/` exist (Impulse's existing feature-slice layout, extended). Server: `models/`, `controllers/`, `routes/`, `middleware/`, `utils/` exist. `server/utils/` is framework-agnostic (zero Express/Mongoose imports).
 
 ### E0-4: Database Connection & Analytics Schema
 Connect MongoDB via Mongoose and create the basic schemas.

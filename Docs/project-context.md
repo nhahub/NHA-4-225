@@ -10,8 +10,9 @@ existing_patterns_found: 6
 
 _This file contains critical rules and patterns that AI agents (BMad skills and plain Claude Code
 sessions alike) must follow when planning or implementing anything for Hadaf. It is the canonical
-source — other briefing documents (e.g. `hadaf/MINIMAX-INSTRUCTIONS.md`) should be kept
-consistent with it, not contradict it._
+source — other briefing documents (e.g. `Docs/AGENT-OPERATING-INSTRUCTIONS.md`, the standing
+playbook for whichever coding agent — MiniMax, Gemini, Claude, etc. — is implementing) should be
+kept consistent with it, not contradict it._
 
 ---
 
@@ -20,12 +21,15 @@ consistent with it, not contradict it._
 When documents disagree, the higher one wins. Do not average conflicting docs — pick the winner
 per this order, and if the conflict isn't resolved by it, stop and ask instead of guessing.
 
-1. **`hadaf/DESIGN.md`** and **`hadaf/PRODUCT.md`** — the ONLY authority for color, typography,
-   elevation, motion, and product framing. These supersede the UX spec below wherever they
-   overlap.
+1. **The client's own design tokens** — `hadaf/client/tailwind.config.js` + global stylesheet —
+   are the ONLY authority for color, typography, elevation, and motion. There is no separate
+   `DESIGN.md`/`PRODUCT.md` design-system document; those files were deliberately deleted by the
+   project owner and must not be recreated. The token layer supersedes the UX spec below wherever
+   they overlap.
 2. **`Docs/UX-Design-Specification.md`** — authority for screens, flows, and microcopy, **except**:
-   - §5.1 (colors) and §5.2 (type) — superseded by `DESIGN.md`. The §5.1 hex palette
-     (`#6366F1`, `#22C55E`, `#FFD700`, `#FAFAFA`…) is a generic default palette — never use it.
+   - §5.1 (colors) and §5.2 (type) — superseded by the client's real token layer (see rung 1). The
+     §5.1 hex palette (`#6366F1`, `#22C55E`, `#FFD700`, `#FAFAFA`…) is a generic default palette
+     — never use it.
    - §8.7 ("Arabic-only in MVP") — stale. Bilingual parity (Arabic + English, both first-class)
      is the actual mandate everywhere else in this doc set.
 3. **`Docs/PRD.md`** and **`Docs/Epics.md`** — current source of truth for product scope and the
@@ -70,10 +74,10 @@ until the docs themselves are patched:
 ## Non-Negotiable Guardrails
 
 **Color**
-- Use only the OKLCH tokens defined in `hadaf/client/DESIGN.md` (authored Day 1, seeded from
-  Impulse's Violet OKLCH tokens and refined during the build) and mirrored into the client's
-  global stylesheet. Never introduce a raw hex color. `DESIGN.md` is the sole authority here —
-  once it exists, trust it over any color name mentioned elsewhere in this doc set.
+- Use only the OKLCH tokens defined directly in `hadaf/client/tailwind.config.js` and the
+  client's global stylesheet, converted from Impulse's Violet hex tokens during E0-1 and refined
+  during the build. There is no separate `DESIGN.md` — the token layer itself is authoritative.
+  Never introduce a raw hex color.
 - Compute real WCAG contrast for any new fill before assigning its text color — never assume a
   saturated color automatically takes white text. Don't skip this check for any token, including
   ones inherited from Impulse.

@@ -131,9 +131,9 @@
 
 ```
 Ziad    → E0-1 (Scaffold: copy Impulse client, resolve 3 merge conflicts, rebrand,
-           DESIGN.md seeded from Impulse Violet) → E0-2 (RTL: convert all physical→logical
-           CSS per Docs/Impulse-Migration-Plan.md checklist, i18n setup) → E0-3 (Architecture)
-           → E0-4 (DB)
+           OKLCH tokens converted from Impulse Violet directly in tailwind.config.js) → E0-2
+           (RTL: convert all physical→logical CSS per Docs/Impulse-Migration-Plan.md checklist,
+           i18n setup) → E0-3 (Architecture) → E0-4 (DB)
 Mustafa → E0-5 (Email/Password Auth)  [starts after Ziad finishes E0-4]
 Hamza   → Study docs, set up dev environment, read PRD + Architecture + Impulse-Migration-Plan
 Khaled  → Study docs, set up dev environment, read PRD + Architecture + Impulse-Migration-Plan
