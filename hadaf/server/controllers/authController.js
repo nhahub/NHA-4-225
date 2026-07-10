@@ -84,7 +84,7 @@ exports.register = catchAsync(async (req, res, next) => {
   // 1) Validate with Zod
   const validation = registerSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -156,7 +156,7 @@ exports.login = catchAsync(async (req, res, next) => {
   // 1) Validate with Zod
   const validation = loginSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -308,7 +308,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Validate input with Zod
   const validation = forgotPasswordSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -361,7 +361,7 @@ exports.exchangeResetToken = catchAsync(async (req, res, next) => {
   // 1) Validate with Zod
   const validation = exchangeResetTokenSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -417,7 +417,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 1) Validate body with Zod
   const validation = resetPasswordSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -479,7 +479,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Validate with Zod
   const validation = updatePasswordSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",

@@ -8,9 +8,11 @@ const errorHandler = require("./utils/errorHandler");
 const authRoutes = require("./routes/authRoutes");
 const goalsRoutes = require("./routes/goalRoutes");
 const milestonesRoutes = require("./routes/milestoneRoutes");
-const { csrfGuard } = require("./middleware/auth");
+const csrf = require("./middleware/csrf");
 const rateLimiter = require("./middleware/rate-limiter");
+const AppError = require("./utils/appError");
 const cors = require("cors");
+
 const app = express();
 
 const allowedOrigins = [
@@ -29,28 +31,53 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-
-    const error = new Error("Not allowed by CORS");
-    error.statusCode = 403;
-    return callback(error);
+    // Surface CORS rejections via AppError so the errorHandler classifies
+    // them as AUTH (not a raw Error → 500 leak).
+    return callback(
+      new AppError({
+        code: "AUTH",
+        error: "errors.corsBlocked",
+        statusCode: 403,
+      })
+    );
   },
   credentials: true,
 };
 
-//middlewares
+// Middlewares
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(rateLimiter);
-app.use(csrfGuard);
 
-//routes
+// CSRF guard: state-changing requests must carry the X-Requested-With
+// header (Architecture.md §3.2). Must run after CORS + cookie-parser and
+// before route handlers.
+app.use(csrf);
+
+// Static uploads (placeholder; real uploads land in E1+).
+app.use("/upload", express.static(path.join(__dirname, "uploads")));
+
+// Health probe
+app.get("/", (req, res) => {
+  res.send("API is running");
+});
+
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/goals", goalsRoutes);
 app.use("/api/milestones", milestonesRoutes);
 
-app.get("/", (req, res) => {
-  res.send("API is running");
+// 404 fallback — must precede the error handler so unknown routes return
+// the documented contract shape, not Express's default HTML.
+app.use((req, res, next) => {
+  next(
+    new AppError({
+      code: "UNKNOWN",
+      error: "errors.routeNotFound",
+      statusCode: 404,
+    })
+  );
 });
 
 app.use(errorHandler);
