@@ -1,4 +1,11 @@
+const dns = require("dns");
 const mongoose = require("mongoose");
+
+// The local/OS resolver can't do SRV lookups on some networks (observed on
+// Windows dev machines), which breaks mongodb+srv:// connection strings with
+// `querySrv ECONNREFUSED`. Google's DNS resolves them fine, so prefer it
+// ahead of whatever the OS provides.
+dns.setServers([...dns.getServers(), "8.8.8.8", "8.8.4.4"]);
 
 const connectdb = async () => {
   if (!process.env.MONGO_URL) {

@@ -31,3 +31,17 @@ export const updateTask = async ({
 export const deleteTask = async (id: string | number): Promise<void> => {
   await apiClient.delete(`/tasks/${id}`);
 };
+
+export const createBigTask = async (data: Partial<Task>): Promise<Task> => {
+  const response = await apiClient.post<Task>('/tasks/big', data);
+  return response.data;
+};
+
+export const getPoints = async (): Promise<{ points: number }> => {
+  const response = await apiClient.get<{ points: number }>('/tasks/points');
+  return response.data;
+};
+
+export const deleteSubTask = async (id: string | number): Promise<void> => {
+  await apiClient.delete(`/tasks/subtasks/${id}`);
+};

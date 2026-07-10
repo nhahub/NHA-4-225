@@ -1,5 +1,39 @@
 const AppError = require("./appError");
 
+const handleCastErrorDB = (err) =>
+  new AppError({
+    code: "VALIDATION",
+    error: "errors.validationFailed",
+    statusCode: 400,
+    field: err.path,
+  });
+
+const handleDuplicateFieldsDB = (err) => {
+  const field = Object.keys(err.keyValue)[0];
+  return new AppError({
+    code: "VALIDATION",
+    error: `auth.errors.${field}Exists`,
+    statusCode: 400,
+    field,
+  });
+};
+
+const handleValidationErrorDB = (err) => {
+  const field = Object.keys(err.errors)[0];
+  return new AppError({
+    code: "VALIDATION",
+    error: err.errors[field].message || "errors.validationFailed",
+    statusCode: 400,
+    field,
+  });
+};
+
+const handleJWTError = () =>
+  new AppError({ code: "AUTH", error: "auth.errors.tokenInvalid", statusCode: 401 });
+
+const handleJWTExpiredError = () =>
+  new AppError({ code: "AUTH", error: "auth.errors.tokenExpired", statusCode: 401 });
+
 /**
  * Global Express Error Handler Middleware
  * Formats all exceptions into the standardized API contract.
@@ -7,60 +41,23 @@ const AppError = require("./appError");
 module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
 
-  // 1) Mongoose validation errors
-  if (err.name === "ValidationError") {
-    const field = Object.keys(err.errors)[0];
-    return res.status(400).json({
+  let error = err;
+  if (error.name === "CastError") error = handleCastErrorDB(error);
+  else if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+  else if (error.name === "ValidationError") error = handleValidationErrorDB(error);
+  else if (error.name === "JsonWebTokenError") error = handleJWTError();
+  else if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
+
+  if (error.isOperational) {
+    return res.status(error.statusCode).json({
       success: false,
-      errorCode: "VALIDATION",
-      error: err.errors[field].message || "errors.validationFailed",
-      field,
+      errorCode: error.errorCode || "UNKNOWN",
+      error: error.errorKey || error.message,
+      ...(error.field ? { field: error.field } : {}),
     });
   }
 
-  // 2) MongoDB duplicate key error (code 11000)
-  if (err.code === 11000) {
-    const field = Object.keys(err.keyValue)[0];
-    return res.status(400).json({
-      success: false,
-      errorCode: "VALIDATION",
-      error: `auth.errors.${field}Exists`, // e.g., auth.errors.emailExists
-      field,
-    });
-  }
-
-  // 3) JWT validation exceptions
-  if (err.name === "JsonWebTokenError") {
-    return res.status(401).json({
-      success: false,
-      errorCode: "AUTH",
-      error: "errors.unauthenticated",
-    });
-  }
-
-  if (err.name === "TokenExpiredError") {
-    return res.status(401).json({
-      success: false,
-      errorCode: "AUTH",
-      error: "errors.tokenExpired",
-    });
-  }
-
-  // 4) Custom operational errors (thrown via next(new AppError))
-  if (err.isOperational) {
-    // Map status code to appropriate errorCode
-    let errorCode = "UNKNOWN";
-    if (err.statusCode === 400) errorCode = "VALIDATION";
-    else if (err.statusCode === 401 || err.statusCode === 403) errorCode = "AUTH";
-
-    return res.status(err.statusCode).json({
-      success: false,
-      errorCode,
-      error: err.message,
-    });
-  }
-
-  // 5) Programming or other unknown exceptions
+  // Programming or other unknown exceptions — don't leak details
   console.error("ERROR 💥", err);
   return res.status(500).json({
     success: false,

@@ -1,3 +1,4 @@
+// Verified against Docs/Architecture.md §3.1 — 2026-07-10 (E0-3.1)
 const mongoose = require("mongoose");
 const { z } = require("zod");
 
