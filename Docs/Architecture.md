@@ -367,6 +367,20 @@ Tokens:
 * **Refresh Token Rotation**: Each token refresh request invalidates the old refresh token and issues a new pair. If token reuse is detected (indicating token theft), all active refresh sessions for the user are invalidated.
 * **Rate Limiting**: Configured via backend Express rate limiter middleware (e.g. 100 requests per minute per user ID/IP address).
 
+#### 3.2.1 Email Verification Workflow
+* **Registration Trigger:** When a user registers (`POST /api/auth/register`), the backend generates a random `verifyToken` and sets `isVerified: false`.
+* **Async Email Delivery:** The backend triggers the `Email` utility asynchronously to send a verification email containing a unique link (`/api/auth/verify/<token>`).
+* **Verification Gate:** Users cannot log in (`POST /api/auth/login` returns a `401 pleaseVerifyEmail`) until the GET request to `/api/auth/verify/<token>` marks `isVerified: true` in the database.
+
+#### 3.2.2 Password Recovery & Token Exchange Workflow
+* **Requesting Reset:** `POST /api/auth/forgotPassword` checks for user existence, generates a random reset token, hashes it in the DB, and emails the user a link (`/reset-token/<plain_token>`).
+* **Token Exchange (Session-binding Security):** When the user clicks the link, the client calls `POST /api/auth/exchangeResetToken` with `{ token: plain_token }`. The backend validates it and sets an `httpOnly` secure `resetToken` cookie on the browser (expiring in 10 minutes) rather than exposing the token to JavaScript state.
+* **Executing Reset:** The client form submits `POST /api/auth/resetPassword` with only the new `{ password }`. The backend reads the token from the secure cookie, matches the hashed value in the DB, updates the password, clears the cookie, and logs in the user.
+
+#### 3.2.3 Password Update (Authenticated Session)
+* **Route Guard:** `PATCH /api/auth/updatePassword` requires the `protect` middleware session.
+* **Execution:** User submits `{ currentPassword, newPassword }`. The backend validates the current password via `user.comparePassword()`, hashes the new password, saves the document, and refreshes the user's access/refresh session tokens.
+
 **Indexes summary:**
 
 ### 3.3 API Pattern — MVC REST Controller

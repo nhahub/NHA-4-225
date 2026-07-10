@@ -5,6 +5,9 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const connectdb = require("./config/db");
 const errorHandler = require("./utils/errorHandler");
+const authRoutes = require("./routes/auth.routes");
+const { csrfGuard } = require("./middleware/auth");
+const rateLimiter = require("./middleware/rate-limiter");
 const cors = require("cors");
 const app = express();
 
@@ -36,7 +39,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use("/upload", express.static(path.join(__dirname, "uploads")));
+app.use(rateLimiter);
+app.use(csrfGuard);
+
+//routes
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running");
