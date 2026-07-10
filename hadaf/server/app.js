@@ -10,6 +10,7 @@ const goalsRoutes = require("./routes/goalRoutes");
 const milestonesRoutes = require("./routes/milestoneRoutes");
 const csrf = require("./middleware/csrf");
 const taskRoutes = require("./routes/taskRoutes");
+const habitRoutes = require("./routes/habitRoutes");
 const rateLimiter = require("./middleware/rate-limiter");
 const AppError = require("./utils/appError");
 const cors = require("cors");
@@ -69,6 +70,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/goals", goalsRoutes);
 app.use("/api/milestones", milestonesRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/habits", habitRoutes);
 
 // 404 fallback — must precede the error handler so unknown routes return
 // the documented contract shape, not Express's default HTML.

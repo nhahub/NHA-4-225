@@ -1,6 +1,8 @@
 const {
   calculateTaskPoints,
   predictTaskPoints,
+  calculateHabitPoints,
+  calculateCounterHabitPoints,
 } = require("../utils/scoring");
 
 // ─── calculateTaskPoints ──────────────────────────────────────────────────────
@@ -205,5 +207,56 @@ describe("predictTaskPoints", () => {
 
   test("no plannedMinutes → minimum 1 point", () => {
     expect(predictTaskPoints({ type: "flexible", difficulty: "easy", plannedMinutes: 0 })).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// ─── Habit Scoring ────────────────────────────────────────────────────────────
+
+describe("calculateHabitPoints", () => {
+  test("boolean habit full = 5 points", () => {
+    expect(calculateHabitPoints("boolean", false)).toBe(5);
+  });
+
+  test("boolean habit MVD = 3 points", () => {
+    expect(calculateHabitPoints("boolean", true)).toBe(3);
+  });
+
+  test("quit habit = 0 points", () => {
+    expect(calculateHabitPoints("quit", false)).toBe(0);
+    expect(calculateHabitPoints("quit", true)).toBe(0);
+  });
+});
+
+describe("calculateCounterHabitPoints", () => {
+  test("full (value >= target) = 5 points", () => {
+    expect(calculateCounterHabitPoints(10, 10, 5)).toBe(5);
+    expect(calculateCounterHabitPoints(15, 10, 5)).toBe(5);
+  });
+
+  test("partial (mvd <= value < target) = 4 points", () => {
+    expect(calculateCounterHabitPoints(5, 10, 5)).toBe(4);
+    expect(calculateCounterHabitPoints(9, 10, 5)).toBe(4);
+  });
+
+  test("MVD-only (0 < value < mvd) = 3 points", () => {
+    expect(calculateCounterHabitPoints(1, 10, 5)).toBe(3);
+    expect(calculateCounterHabitPoints(4, 10, 5)).toBe(3);
+  });
+
+  test("zero or negative value = 0 points", () => {
+    expect(calculateCounterHabitPoints(0, 10, 5)).toBe(0);
+    expect(calculateCounterHabitPoints(-1, 10, 5)).toBe(0);
+  });
+
+  test("without mvd, any value < target is 0 points unless it's strictly > 0 but wait, rule says 0 < value < mvd...", () => {
+    // If mvd=0, it cannot be mvd <= value < target unless value=0? 
+    // Our formula: if mvd > 0 && value >= mvd && value < target -> 4
+    // if value > 0 && value < mvd -> 3. But mvd=0 means value < 0 to get 3, which is false for positive values.
+    // Let's verify behavior without MVD:
+    // If target=10, mvd=0, value=5 -> should be 0 because mvd wasn't set.
+    expect(calculateCounterHabitPoints(5, 10, 0)).toBe(0);
+    
+    // Value = 10 -> 5 points
+    expect(calculateCounterHabitPoints(10, 10, 0)).toBe(5);
   });
 });

@@ -105,3 +105,31 @@ exports.predictTaskPoints = ({ type, difficulty = "medium", plannedMinutes = 0 }
   const raw = (plannedMinutes / 10) * difficultyMultiplier;
   return Math.max(1, Math.ceil(raw));
 };
+
+// ─── Habit Scoring (E3) ────────────────────────────────────────────────────────
+
+/**
+ * Calculates points for boolean/quit habits.
+ * @param {'boolean'|'quit'} type 
+ * @param {boolean} isMvd 
+ * @returns {number} Points earned
+ */
+exports.calculateHabitPoints = (type, isMvd) => {
+  if (type === 'quit') return 0;
+  if (isMvd) return 3;
+  return 5;
+};
+
+/**
+ * Calculates points for counter habits.
+ * @param {number} value Logged value
+ * @param {number} target Target value
+ * @param {number} [mvd=0] Minimum viable dose value
+ * @returns {number} Points earned
+ */
+exports.calculateCounterHabitPoints = (value, target, mvd = 0) => {
+  if (value >= target) return 5;
+  if (mvd > 0 && value >= mvd && value < target) return 4;
+  if (value > 0 && value < mvd) return 3;
+  return 0;
+};
