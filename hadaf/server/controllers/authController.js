@@ -116,7 +116,7 @@ exports.register = catchAsync(async (req, res, next) => {
     name,
     passwordHash,
     verifyToken,
-    isVerified: false,
+    isVerified: true,
   });
 
   // 4) Log analytics event
@@ -126,16 +126,16 @@ exports.register = catchAsync(async (req, res, next) => {
     eventData: { email },
   });
 
-  // 5) Send verification email asynchronously
-  const verifyURL = `${req.protocol}://${req.get("host")}/api/auth/verify/${verifyToken}`;
-  new Email(newUser, verifyURL)
-    .sendVerificationEmail()
-    .then(() => {
-      console.log("Verification email sent successfully");
-    })
-    .catch((err) => {
-      console.error("Error sending verification email:", err);
-    });
+  // // 5) Send verification email asynchronously
+  // const verifyURL = `${req.protocol}://${req.get("host")}/api/auth/verify/${verifyToken}`;
+  // new Email(newUser, verifyURL)
+  //   .sendVerificationEmail()
+  //   .then(() => {
+  //     console.log("Verification email sent successfully");
+  //   })
+  //   .catch((err) => {
+  //     console.error("Error sending verification email:", err);
+  //   });
 
   res.status(201).json({
     success: true,
