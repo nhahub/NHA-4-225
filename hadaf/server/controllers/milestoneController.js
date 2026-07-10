@@ -18,6 +18,17 @@ exports.toggleMilestone = catchAsync(async (req, res, next) => {
   milestone.completed_at = milestone.is_completed ? new Date() : null;
   await milestone.save();
 
+  const { upsertDailySummaryHelper } = require("./dailySummaryController");
+  const { resolveLogicalDate } = require("../utils/date");
+  const User = require("../models/User");
+
+  // Recompute summary for the logical date of the toggle event
+  const user = await User.findById(req.user.id).lean();
+  if (user) {
+    const todayStr = resolveLogicalDate(new Date(), user.settings.day_start);
+    await upsertDailySummaryHelper(req.user.id, todayStr);
+  }
+
   res.status(200).json({
     success: true,
     data: {
@@ -64,5 +75,47 @@ exports.reorderMilestones = catchAsync(async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: null,
+  });
+});
+
+// Add Milestone to an existing Goal
+exports.addMilestone = catchAsync(async (req, res, next) => {
+  const goalId = req.params.id;
+  const { title } = req.body;
+
+  if (!title) {
+    return res.status(400).json({
+      success: false,
+      errorCode: 'VALIDATION',
+      error: 'Title is required',
+    });
+  }
+
+  const goal = await Goal.findById(goalId);
+  if (!goal || goal.userId.toString() !== req.user.id) {
+    return res.status(404).json({
+      success: false,
+      errorCode: 'VALIDATION',
+      error: 'goals.errors.notFound',
+    });
+  }
+
+  const milestoneCount = await Milestone.countDocuments({ goalId });
+
+  const milestone = await Milestone.create({
+    goalId,
+    title,
+    sort_order: milestoneCount,
+    is_completed: false,
+  });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      id: milestone._id,
+      title: milestone.title,
+      is_completed: milestone.is_completed,
+      sort_order: milestone.sort_order,
+    },
   });
 });

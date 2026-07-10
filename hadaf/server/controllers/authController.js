@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { hashPassword } = require("../utils/password");
 const crypto = require("crypto");
-const { z } = require("zod");
+const zod = require("zod");
+const z = zod.z || zod;
 const User = require("../models/User");
 const AnalyticsEvent = require("../models/AnalyticsEvent");
 const Email = require("../utils/sendEmail");

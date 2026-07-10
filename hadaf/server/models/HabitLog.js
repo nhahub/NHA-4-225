@@ -1,6 +1,7 @@
 // Verified against Docs/Architecture.md §3.1 — 2026-07-10 (E0-3.1)
 const mongoose = require("mongoose");
-const { z } = require("zod");
+const zod = require("zod");
+const z = zod.z || zod;
 
 const habitLogSchema = new mongoose.Schema({
   habitId: { type: mongoose.Schema.Types.ObjectId, ref: 'Habit', required: true, index: true },

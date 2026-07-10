@@ -65,12 +65,17 @@ app.get("/", (req, res) => {
   res.send("API is running");
 });
 
+const userRoutes = require("./routes/userRoutes");
+const dailySummaryRoutes = require("./routes/dailySummaryRoutes");
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/goals", goalsRoutes);
 app.use("/api/milestones", milestonesRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/habits", habitRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/daily-summaries", dailySummaryRoutes);
 
 // 404 fallback — must precede the error handler so unknown routes return
 // the documented contract shape, not Express's default HTML.
@@ -96,4 +101,8 @@ const startServer = async () => {
   });
 };
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;

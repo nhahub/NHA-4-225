@@ -1,5 +1,6 @@
 const express = require("express");
 const goalsController = require("../controllers/goalController");
+const milestonesController = require("../controllers/milestoneController");
 const { protect } = require("../middleware/auth");
 const router = express.Router();
 
@@ -18,7 +19,8 @@ router.route("/:id")
 
 router.post("/:id/replace", goalsController.replaceGoal);
 
-router.route("/:id/override")
-  .patch(goalsController.overrideProgress);
+router.patch("/:id/override", goalsController.overrideProgress);
+
+router.post("/:id/milestones", milestonesController.addMilestone);
 
 module.exports = router;

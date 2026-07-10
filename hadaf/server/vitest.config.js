@@ -10,5 +10,7 @@ export default defineConfig({
     include: ['tests/**/*.test.js', 'utils/**/*.test.js'],
     globals: true,
     environment: 'node',
+    setupFiles: ['tests/api/setup.js'],
+    hookTimeout: 30000,
   },
 });

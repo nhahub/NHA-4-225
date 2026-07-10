@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const { z } = require("zod");
+const zod = require("zod");
+const z = zod.z || zod;
 const { comparePassword } = require("../utils/password");
 const crypto = require("crypto");
 
@@ -48,7 +49,7 @@ userSchema.methods.createPasswordResetToken = function () {
 const userSettingsValidationSchema = z.object({
   work_hours_start: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").default("09:00"),
   work_hours_end: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").default("17:00"),
-  day_start: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").default("04:00"),
+  day_start: z.string().regex(/^0[1-5]:[0-5][0-9]$|^06:00$/, "Invalid day_start time (must be between 01:00 and 06:00)").default("04:00"),
   off_days: z.array(z.string()).default(["friday", "saturday"]),
   theme: z.enum(["light", "dark", "system"]).default("light"),
   language: z.enum(["ar", "en"]).default("ar"),

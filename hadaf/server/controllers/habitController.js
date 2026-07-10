@@ -5,7 +5,7 @@ const catchAsync = require("../utils/catchAsync");
 exports.createHabit = catchAsync(async (req, res) => {
   const validation = Habit.createHabitSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -26,7 +26,7 @@ exports.createHabit = catchAsync(async (req, res) => {
 exports.logHabit = catchAsync(async (req, res) => {
   const validation = HabitLog.logHabitSchema.safeParse({ habitId: req.params.id, ...req.body });
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -53,6 +53,9 @@ exports.logHabit = catchAsync(async (req, res) => {
     { $set: { value, isMvd } },
     { upsert: true, new: true }
   ).select("-isRelapse -__v");
+
+  const { upsertDailySummaryHelper } = require("./dailySummaryController");
+  await upsertDailySummaryHelper(req.user.id, date);
 
   res.status(200).json({ success: true, data: log });
 });

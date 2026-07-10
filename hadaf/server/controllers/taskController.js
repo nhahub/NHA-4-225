@@ -7,22 +7,23 @@ const { predictTaskPoints, calculateTaskPoints } = require("../utils/scoring");
 
 // ─── Streak helper ────────────────────────────────────────────────────────────
 
+const { resolveLogicalDate } = require("../utils/date");
+
 /**
- * Counts the number of consecutive days (ending yesterday, UTC) on which the
- * user completed at least one task. Looks back at most 60 days (Architecture.md §7.2).
+ * Counts the number of consecutive days (ending yesterday, logical timezone) on which the
+ * user completed at least one task. Looks back at most 60 days.
  *
  * @param {string} userId
- * @returns {Promise<number>} streakDays (0 if no task was completed yesterday)
+ * @param {string} dayStartStr
+ * @returns {Promise<number>} streakDays
  */
-async function getStreakDays(userId) {
-  // UTC "today" and "yesterday" as YYYY-MM-DD strings — must match Task.date storage format
+async function getStreakDays(userId, dayStartStr = "04:00") {
   const now = new Date();
-  const todayStr = now.toISOString().split("T")[0];
+  const todayStr = resolveLogicalDate(now, dayStartStr);
 
   const sixtyDaysAgo = new Date(now);
   sixtyDaysAgo.setUTCDate(sixtyDaysAgo.getUTCDate() - 60);
 
-  // Fetch all recent completions (completedAt is a Date — we'll extract the date part)
   const completions = await Task.find({
     userId,
     status: "completed",
@@ -31,24 +32,23 @@ async function getStreakDays(userId) {
     .select("completedAt")
     .lean();
 
-  // Build a Set of distinct YYYY-MM-DD completion dates
   const completedDates = new Set(
-    completions.map((t) => t.completedAt.toISOString().split("T")[0])
+    completions.map((t) => resolveLogicalDate(t.completedAt, dayStartStr))
   );
 
-  // Walk backwards from yesterday, counting consecutive days
   let streak = 0;
-  const cursor = new Date(now);
+  // Cursor walks backwards in logical dates
+  const cursorDate = new Date(`${todayStr}T12:00:00Z`); // start safely in the middle of today
+  cursorDate.setUTCDate(cursorDate.getUTCDate() - 1); // move to yesterday
 
-  // Start at yesterday
-  cursor.setUTCDate(cursor.getUTCDate() - 1);
+  const cutoffStr = resolveLogicalDate(sixtyDaysAgo, dayStartStr);
 
   while (true) {
-    const dateStr = cursor.toISOString().split("T")[0];
-    if (dateStr < sixtyDaysAgo.toISOString().split("T")[0]) break; // outside lookback window
-    if (!completedDates.has(dateStr)) break;                        // gap found — streak ends
+    const dateStr = cursorDate.toISOString().split("T")[0];
+    if (dateStr < cutoffStr) break;
+    if (!completedDates.has(dateStr)) break;
     streak++;
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
+    cursorDate.setUTCDate(cursorDate.getUTCDate() - 1);
   }
 
   return streak;
@@ -60,7 +60,7 @@ async function getStreakDays(userId) {
 exports.createTask = catchAsync(async (req, res) => {
   const validation = Task.createTaskSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -141,10 +141,10 @@ exports.createTask = catchAsync(async (req, res) => {
 exports.completeTask = catchAsync(async (req, res) => {
   const validation = Task.completeTaskSchema.safeParse({
     taskId: req.params.id,
-    actualDurationMinutes: req.body.actualDurationMinutes,
+    actualDurationMinutes: req.body?.actualDurationMinutes,
   });
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -178,7 +178,9 @@ exports.completeTask = catchAsync(async (req, res) => {
   }
 
   // Compute streak: consecutive completed-task days ending yesterday (Architecture.md §7.2)
-  const streakDays = await getStreakDays(req.user.id);
+  const User = require("../models/User");
+  const user = await User.findById(req.user.id).select("settings.day_start").lean();
+  const streakDays = await getStreakDays(req.user.id, user ? user.settings.day_start : "04:00");
 
   const pointsEarned = calculateTaskPoints({
     type:           task.type,
@@ -229,6 +231,9 @@ exports.completeTask = catchAsync(async (req, res) => {
     },
   });
 
+  const { upsertDailySummaryHelper } = require("./dailySummaryController");
+  await upsertDailySummaryHelper(req.user.id, updated.date);
+
   res.status(200).json({
     success: true,
     data: { ...updated.toObject(), streakDays },
@@ -256,7 +261,9 @@ exports.getTasks = catchAsync(async (req, res) => {
   const query = { userId: req.user.id };
 
   if (view === "backlog") {
-    const todayStr = new Date().toISOString().split("T")[0];
+    const User = require("../models/User");
+    const user = await User.findById(req.user.id).select("settings.day_start").lean();
+    const todayStr = resolveLogicalDate(new Date(), user ? user.settings.day_start : "04:00");
     query.$or = [
       { status: "pending", date: { $lt: todayStr } },
       { status: "postponed" },
@@ -298,7 +305,7 @@ exports.postponeTask = catchAsync(async (req, res) => {
 exports.rescheduleTask = catchAsync(async (req, res) => {
   const validation = Task.rescheduleTaskSchema.safeParse({ taskId: req.params.id, ...req.body });
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({ success: false, errorCode: "VALIDATION", error: firstError.message, field: firstError.path[0] });
   }
   const { taskId, date, timeBlockStart, timeBlockEnd } = validation.data;

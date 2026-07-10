@@ -82,7 +82,7 @@ const compileGoalProgress = async (goal) => {
 exports.createGoal = catchAsync(async (req, res, next) => {
   const validation = Goal.createGoalSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -202,7 +202,7 @@ exports.getGoalDetails = catchAsync(async (req, res, next) => {
 exports.updateGoal = catchAsync(async (req, res, next) => {
   const validation = Goal.updateGoalSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -252,7 +252,7 @@ exports.replaceGoal = catchAsync(async (req, res, next) => {
   // Validate the replacement goal payload
   const validation = Goal.replaceGoalSchema.safeParse(req.body);
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
@@ -323,7 +323,7 @@ exports.softDeleteGoal = catchAsync(async (req, res, next) => {
   });
 
   if (!validation.success) {
-    const firstError = validation.error.errors[0];
+    const firstError = validation.error.issues[0];
     return res.status(400).json({
       success: false,
       errorCode: "VALIDATION",
