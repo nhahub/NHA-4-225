@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { z } = require("zod");
 const { comparePassword } = require("../utils/password");
+const crypto = require("crypto");
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -10,6 +11,10 @@ const userSchema = new mongoose.Schema({
   refreshToken: { type: String },
   refreshTokenExp: { type: Date },
   onboardingCompleted: { type: Boolean, default: false },
+  isVerified: { type: Boolean, default: false },
+  verifyToken: { type: String },
+  passwordResetToken: { type: String },
+  passwordResetExpires: { type: Date },
   settings: {
     work_hours_start: { type: String, default: "09:00" },
     work_hours_end: { type: String, default: "17:00" },
@@ -25,6 +30,19 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await comparePassword(candidatePassword, this.passwordHash);
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+
+  return resetToken;
 };
 
 const userSettingsValidationSchema = z.object({

@@ -4,23 +4,36 @@ const crypto = require("crypto");
 const { z } = require("zod");
 const User = require("../models/User");
 const AnalyticsEvent = require("../models/AnalyticsEvent");
+const Email = require("../utils/sendEmail");
 const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
 
 // Zod schemas for validation
 const registerSchema = z.object({
   email: z.string().email("Invalid email format").toLowerCase().trim(),
   name: z.string().min(1, "Name is required").optional(),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  passwordConfirm: z.string()
-}).refine((data) => data.password === data.passwordConfirm, {
-  message: "Passwords do not match",
-  path: ["passwordConfirm"],
 });
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email format").toLowerCase().trim(),
   password: z.string().min(1, "Password is required"),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email format").toLowerCase().trim(),
+});
+
+const exchangeResetTokenSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+});
+
+const resetPasswordSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+const updatePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(8, "New password must be at least 8 characters"),
 });
 
 // Helper to sign JWT access token
@@ -93,12 +106,16 @@ exports.register = catchAsync(async (req, res, next) => {
     });
   }
 
-  // 3) Hash password and create user
+  // 3) Hash password, generate verifyToken, and create user
   const passwordHash = await hashPassword(password);
+  const verifyToken = crypto.randomBytes(32).toString("hex");
+
   const newUser = await User.create({
     email,
     name,
     passwordHash,
+    verifyToken,
+    isVerified: false,
   });
 
   // 4) Log analytics event
@@ -108,8 +125,16 @@ exports.register = catchAsync(async (req, res, next) => {
     eventData: { email },
   });
 
-  // 5) Issue tokens and login
-  await sendTokens(newUser, res);
+  // 5) Send verification email asynchronously
+  const verifyURL = `${req.protocol}://${req.get("host")}/api/auth/verify/${verifyToken}`;
+  new Email(newUser, verifyURL)
+    .sendVerificationEmail()
+    .then(() => {
+      console.log("Verification email sent successfully");
+    })
+    .catch((err) => {
+      console.error("Error sending verification email:", err);
+    });
 
   res.status(201).json({
     success: true,
@@ -118,6 +143,7 @@ exports.register = catchAsync(async (req, res, next) => {
         id: newUser._id,
         email: newUser.email,
         name: newUser.name,
+        isVerified: newUser.isVerified,
         onboardingCompleted: newUser.onboardingCompleted,
         settings: newUser.settings,
       },
@@ -151,13 +177,22 @@ exports.login = catchAsync(async (req, res, next) => {
     });
   }
 
-  // 3) Log login event
+  // 3) Ensure email is verified
+  if (!user.isVerified) {
+    return res.status(401).json({
+      success: false,
+      errorCode: "AUTH",
+      error: "auth.errors.pleaseVerifyEmail",
+    });
+  }
+
+  // 4) Log login event
   await AnalyticsEvent.create({
     userId: user._id,
     eventType: "login",
   });
 
-  // 4) Issue new tokens
+  // 5) Issue new tokens
   await sendTokens(user, res);
 
   res.status(200).json({
@@ -172,6 +207,29 @@ exports.login = catchAsync(async (req, res, next) => {
       },
     },
   });
+});
+
+// Verify email
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  const { token } = req.params;
+
+  const user = await User.findOneAndUpdate(
+    { verifyToken: token },
+    { isVerified: true, verifyToken: null },
+    { new: true }
+  );
+
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "auth.errors.invalidOrExpiredVerificationToken",
+    });
+  }
+
+  // Redirect to frontend success page
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  res.redirect(`${frontendUrl}/verify-success`);
 });
 
 // Logout
@@ -229,6 +287,224 @@ exports.refreshToken = catchAsync(async (req, res, next) => {
   }
 
   // Rotate to a new pair of tokens
+  await sendTokens(user, res);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        onboardingCompleted: user.onboardingCompleted,
+        settings: user.settings,
+      },
+    },
+  });
+});
+
+// Forgot password
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Validate input with Zod
+  const validation = forgotPasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    const firstError = validation.error.errors[0];
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: firstError.message,
+      field: firstError.path[0],
+    });
+  }
+
+  const { email } = validation.data;
+
+  // 2) Find user
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "auth.errors.noUserWithEmail",
+    });
+  }
+
+  // 3) Create password reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save();
+
+  // 4) Send email
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const resetURL = `${frontendUrl}/reset-token/${resetToken}`;
+
+  try {
+    await new Email(user, resetURL).sendPasswordReset();
+    res.status(200).json({
+      success: true,
+      data: null,
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    return res.status(500).json({
+      success: false,
+      errorCode: "UNKNOWN",
+      error: "auth.errors.emailSendError",
+    });
+  }
+});
+
+// Exchange reset token for a cookie-based reset session
+exports.exchangeResetToken = catchAsync(async (req, res, next) => {
+  // 1) Validate with Zod
+  const validation = exchangeResetTokenSchema.safeParse(req.body);
+  if (!validation.success) {
+    const firstError = validation.error.errors[0];
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: firstError.message,
+      field: firstError.path[0],
+    });
+  }
+
+  const { token } = validation.data;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  // 2) Find user with valid reset token
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "auth.errors.invalidOrExpiredResetToken",
+    });
+  }
+
+  // 3) Set HttpOnly cookie with the token
+  const cookieOptions = {
+    expires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  };
+
+  res.cookie("resetToken", token, cookieOptions);
+
+  res.status(200).json({
+    success: true,
+    data: null,
+  });
+});
+
+// Reset Password using the cookie-based token
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const token = req.cookies.resetToken;
+  if (!token) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "auth.errors.resetTokenRequired",
+    });
+  }
+
+  // 1) Validate body with Zod
+  const validation = resetPasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    const firstError = validation.error.errors[0];
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: firstError.message,
+      field: firstError.path[0],
+    });
+  }
+
+  const { password } = validation.data;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  // 2) Find user
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "auth.errors.invalidOrExpiredResetToken",
+    });
+  }
+
+  // 3) Hash and update password, clear reset fields
+  user.passwordHash = await hashPassword(password);
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  // 4) Clear the reset token cookie
+  res.cookie("resetToken", "", {
+    expires: new Date(Date.now() - 10 * 1000),
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+
+  // 5) Log in user and send tokens
+  await sendTokens(user, res);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        onboardingCompleted: user.onboardingCompleted,
+        settings: user.settings,
+      },
+    },
+  });
+});
+
+// Update password (protected route, requires auth)
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1) Validate with Zod
+  const validation = updatePasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    const firstError = validation.error.errors[0];
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: firstError.message,
+      field: firstError.path[0],
+    });
+  }
+
+  const { currentPassword, newPassword } = validation.data;
+
+  // 2) Check if current password is correct
+  const user = await User.findById(req.user.id);
+  if (!user || !(await user.comparePassword(currentPassword))) {
+    return res.status(401).json({
+      success: false,
+      errorCode: "AUTH",
+      error: "auth.errors.incorrectCurrentPassword",
+    });
+  }
+
+  // 3) Hash and save new password
+  user.passwordHash = await hashPassword(newPassword);
+  await user.save();
+
+  // 4) Send new access and refresh tokens
   await sendTokens(user, res);
 
   res.status(200).json({
