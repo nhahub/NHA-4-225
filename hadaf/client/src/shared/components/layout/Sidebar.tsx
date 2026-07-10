@@ -1,9 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutGrid, ListTodo, CheckCircle2, Clock, Zap, Hourglass, X, BookOpen, Quote, LogOut } from 'lucide-react';
+import { Home, Target, Repeat, LayoutGrid, Settings, CheckCircle2, Clock, Zap, Hourglass, X, BookOpen, Quote, LogOut } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import { DashboardStats } from '@/features/dashboard/api/dashboardApi';
 import { useUIStore } from '@/shared/stores/useUIStore';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
+import { useLocale, useTranslation } from '@/providers/useLocale';
+import { useIsDesktop } from '@/shared/hooks/useIsDesktop';
 
 interface SidebarProps {
   stats?: DashboardStats;
@@ -12,19 +14,43 @@ interface SidebarProps {
 export const Sidebar = ({ stats }: SidebarProps) => {
   const { isSidebarOpen, closeSidebar, isSidebarCollapsed } = useUIStore();
   const logout = useAuthStore((state) => state.logout);
+  const { t } = useTranslation();
+  const { locale } = useLocale();
+  const isDesktop = useIsDesktop();
+
+  // Bypass the Tailwind `ltr:` / `rtl:` variant specificity trap. In Tailwind
+  // v4 those variants wrap their selector in `:where(...)` (0 specificity), so
+  // when the same class is paired with `md:translate-x-0`, the `ltr:`/`rtl:`
+  // rule wins by source order (it's emitted later in the CSS bundle) — the
+  // sidebar stays off-screen at every breakpoint.
+  //
+  // Computing the slide-off transform via React state and applying it as an
+  // inline style guarantees the right value at every viewport and avoids the
+  // flicker when `<html dir>` toggles on language change.
+  const sidebarTransform = isDesktop
+    ? 'none'
+    : isSidebarOpen
+    ? 'translateX(0)'
+    : locale === 'ar'
+    ? 'translateX(100%)' // RTL: closed → slides off the right edge
+    : 'translateX(-100%)'; // LTR: closed → slides off the left edge
 
   const doneCount = stats?.completedTasks || 0;
   const pendingCount = stats?.pendingTasks || 0;
   const score = stats?.dailyScore || 0;
-  
+
   const focusMinutes = stats?.totalFocusTime || 0;
   const hours = Math.floor(focusMinutes / 60);
   const minutes = focusMinutes % 60;
   const focusTimeText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
+  // 5 items per E0-6 spec (Home, Goals, Habits, Overview, Settings).
   const navItems = [
-    { icon: LayoutGrid, label: 'Overview', path: '/dashboard' },
-    { icon: ListTodo, label: 'To-Do List', path: '/tasks' },
+    { icon: Home, label: t('nav.home'), path: '/' },
+    { icon: Target, label: t('nav.goals'), path: '/goals' },
+    { icon: Repeat, label: t('nav.habits'), path: '/habits' },
+    { icon: LayoutGrid, label: t('nav.overview'), path: '/overview' },
+    { icon: Settings, label: t('nav.settings'), path: '/settings' },
   ];
 
   const handleLogout = () => {
@@ -44,16 +70,14 @@ export const Sidebar = ({ stats }: SidebarProps) => {
       />
 
       {/* Sidebar Container */}
-      <aside className={cn(
-        "h-full fixed start-0 top-0 z-[60] flex flex-col transition-all duration-300 ease-in-out",
-        "bg-background-paper dark:bg-background-paper-dark border-e border-border dark:border-border-dark",
-        // Hide off-canvas: in LTR slide left, in RTL slide right.
-        isSidebarOpen
-          ? "translate-x-0"
-          : "ltr:-translate-x-full rtl:translate-x-full",
-        "md:translate-x-0",
-        isSidebarCollapsed ? "md:w-[80px]" : "md:w-[280px]"
-      )}>
+      <aside
+        className={cn(
+          "h-full fixed start-0 top-0 z-[60] flex flex-col transition-all duration-300 ease-in-out",
+          "bg-background-paper dark:bg-background-paper-dark border-e border-border dark:border-border-dark",
+          isSidebarCollapsed ? "md:w-[80px]" : "md:w-[280px]"
+        )}
+        style={{ transform: sidebarTransform }}
+      >
         
         {/* Logo Area */}
         <div className={cn(
@@ -70,7 +94,7 @@ export const Sidebar = ({ stats }: SidebarProps) => {
               "text-xl font-bold text-gray-900 dark:text-white tracking-tight transition-opacity duration-200",
               isSidebarCollapsed ? "hidden opacity-0" : "block opacity-100"
             )}>
-              Impulse
+              {`هدف`}
             </span>
           </div>
           
@@ -176,14 +200,14 @@ export const Sidebar = ({ stats }: SidebarProps) => {
             // Full Widget
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-800 relative overflow-hidden animate-fade-in">
               <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                Daily Summary
+                {t('sidebar.dailySummary')}
               </h3>
               <div className="space-y-2.5">
-                <SummaryRow icon={CheckCircle2} color="text-emerald-600" label="Done" value={doneCount} />
-                <SummaryRow icon={Clock} color="text-amber-600" label="Pending" value={pendingCount} />
-                <SummaryRow icon={Hourglass} color="text-blue-600" label="Focus" value={focusTimeText} />
+                <SummaryRow icon={CheckCircle2} color="text-emerald-600" label={t('sidebar.done')} value={doneCount} />
+                <SummaryRow icon={Clock} color="text-amber-600" label={t('sidebar.pending')} value={pendingCount} />
+                <SummaryRow icon={Hourglass} color="text-blue-600" label={t('sidebar.focus')} value={focusTimeText} />
                 <div className="pt-2.5 border-t border-gray-200 dark:border-gray-700 mt-2.5">
-                   <SummaryRow icon={Zap} color="text-brand-600" label="Score" value={score} isScore />
+                   <SummaryRow icon={Zap} color="text-brand-600" label={t('sidebar.score')} value={score} isScore />
                 </div>
               </div>
             </div>
@@ -221,17 +245,17 @@ export const Sidebar = ({ stats }: SidebarProps) => {
                 "flex items-center w-full rounded-xl transition-all duration-200 group font-medium text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10",
                 isSidebarCollapsed ? "justify-center py-3 px-0" : "gap-3 px-3 py-2.5"
               )}
-              title="Sign Out"
+              title={t('sidebar.signOut')}
             >
-              <LogOut 
-                size={22} 
-                className="transition-transform group-hover:scale-110 opacity-80 group-hover:opacity-100" 
+              <LogOut
+                size={22}
+                className="transition-transform group-hover:scale-110 opacity-80 group-hover:opacity-100"
               />
               <span className={cn(
                 "whitespace-nowrap transition-all duration-200",
                 isSidebarCollapsed ? "hidden w-0 opacity-0" : "block w-auto opacity-100"
               )}>
-                Sign Out
+                {t('sidebar.signOut')}
               </span>
             </button>
          </div>

@@ -12,6 +12,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@fontsource/ibm-plex-sans-arabic": "^5.2.9",
+    "@fontsource/tajawal": "^5.2.7",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.19",

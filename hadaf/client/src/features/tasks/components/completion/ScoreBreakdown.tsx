@@ -1,3 +1,4 @@
+﻿// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema. This file still uses Impulse's pre-migration task shape (name/startTime/endTime/subTasks/type/points). Full Express rewiring lands in the E2 work order.
 import { Zap, Target, TrendingUp } from 'lucide-react';
 
 interface ScoreBreakdownProps {

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { queryClient } from '@/shared/lib/react-query';
 import { LocaleProvider } from '@/providers/LocaleProvider';
+import { ThemeProvider } from '@/providers/ThemeProvider';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -11,25 +12,30 @@ interface AppProvidersProps {
 
 export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
-    <LocaleProvider>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          {children}
+    <ThemeProvider>
+      <LocaleProvider>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            {children}
 
-          {/* Toast notifications. Position is "top-end" so it flips with RTL. */}
-          <Toaster
-            position="top-end"
-            richColors
-            expand={false}
-            duration={3000}
-          />
+            {/* Toast notifications. RTL flips the start/end; in LTR we want top-right,
+                in RTL we want top-left. Sonner doesn't support logical positions, so
+                pick the safer default and let user perception cover the small RTL
+                visual gap. */}
+            <Toaster
+              position="top-right"
+              richColors
+              expand={false}
+              duration={3000}
+            />
 
-          {/* React Query DevTools (only in dev) */}
-          {import.meta.env.DEV && (
-            <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-          )}
-        </BrowserRouter>
-      </QueryClientProvider>
-    </LocaleProvider>
+            {/* React Query DevTools (only in dev) */}
+            {import.meta.env.DEV && (
+              <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+            )}
+          </BrowserRouter>
+        </QueryClientProvider>
+      </LocaleProvider>
+    </ThemeProvider>
   );
 };

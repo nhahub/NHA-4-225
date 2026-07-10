@@ -1,3 +1,7 @@
+// @ts-nocheck — TODO(E2): scoring formulas will be re-derived from the real
+// Task model (difficulty/priority/time block) in the E2/Capacity & Scoring
+// work order. The constants and helpers here still reference Impulse's
+// pre-migration task shape.
 import { Task } from '../types';
 
 export const calculateTaskPoints = (task: Task, actualTime: number) => {

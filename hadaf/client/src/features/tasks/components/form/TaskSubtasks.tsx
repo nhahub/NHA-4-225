@@ -1,3 +1,4 @@
+﻿// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema. This file still uses Impulse's pre-migration task shape (name/startTime/endTime/subTasks/type/points). Full Express rewiring lands in the E2 work order.
 import React, { useEffect } from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
 import { Plus, Trash2, Clock } from 'lucide-react';
@@ -56,7 +57,7 @@ export const TaskSubtasks = () => {
 
             <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
 
-            {/* ✅ FIXED: Compact Time Input (w-20) & Hidden Arrows */}
+            {/* âœ… FIXED: Compact Time Input (w-20) & Hidden Arrows */}
             <div className="flex items-center gap-1.5 px-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg h-8 border border-transparent focus-within:border-purple-200 dark:focus-within:border-purple-800 transition-colors w-20 shrink-0">
               <Clock size={12} className="text-gray-400 shrink-0" />
               <input

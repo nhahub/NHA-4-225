@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +7,9 @@ import { toast } from 'sonner';
 import { Loader2, Moon, Sun } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
-import { loginWithEmail, registerWithEmail } from '@/features/auth/api/authApi'; // ✅ تأكدنا من الأسماء
+import { loginWithEmail, registerWithEmail } from '@/features/auth/api/authApi';
+import { useTheme } from '@/providers/useTheme';
+import { LanguageSwitcher } from '@/shared/components/layout/LanguageSwitcher';
 import { cn } from '@/shared/utils/cn';
 import styles from './LoginPage.module.css';
 
@@ -26,27 +28,17 @@ const registerSchema = z.object({
 export const LoginPage = () => {
   const [isRightPanelActive, setIsRightPanelActive] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login); // دالة الحفظ في الستور
+  const location = useLocation();
+  const login = useAuthStore((state) => state.login);
+  const { theme, toggleTheme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
-  // --- Clock & Theme Effects ---
   useEffect(() => {
-    const dark = localStorage.getItem('theme') === 'dark' || 
-                 (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    setIsDarkMode(dark);
-    document.documentElement.classList.toggle('dark', dark);
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const toggleTheme = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    document.documentElement.classList.toggle('dark', newMode);
-    localStorage.setItem('theme', newMode ? 'dark' : 'light');
-  };
 
   // --- Forms ---
   const { register: registerLogin, handleSubmit: handleLoginSubmit, formState: { errors: loginErrors, isSubmitting: isLoginSubmitting } } = useForm({ resolver: zodResolver(loginSchema) });
@@ -55,20 +47,22 @@ export const LoginPage = () => {
   // --- Handlers (التربيط هنا) ---
   
   // 1. معالجة تسجيل الدخول
+  const resolveRedirect = (): string => {
+    const params = new URLSearchParams(location.search);
+    const target = params.get('redirect');
+    if (target && target.startsWith('/') && !target.startsWith('//')) return target;
+    return '/';
+  };
+
   const onLogin = async (data: any) => {
     try {
-      console.log('Attempting login with:', data.email); // للتجربة
       const response = await loginWithEmail(data);
-      
-      // تخزين التوكن والبيانات في الستور
-      // TODO(E0-5.4): useAuthStore.login signature will become (accessToken, user).
-      login(response.accessToken, data.email, []);
-      
+      login(response.accessToken, response.user);
       toast.success('Welcome back!');
-      navigate('/dashboard'); // توجيه للوحة التحكم مباشرة
+      navigate(resolveRedirect(), { replace: true });
     } catch (error: any) {
       console.error('Login Error:', error);
-      // TODO(E0-1.3): ApiError class carries i18n key — translate via useTranslation.
+      // TODO(E0-2): translate via useTranslation.
       const msg = error.message || 'Login failed. Please check your credentials.';
       toast.error(msg);
     }
@@ -76,14 +70,10 @@ export const LoginPage = () => {
 
   const onRegister = async (data: any) => {
     try {
-      console.log('Attempting register with:', data.email);
       const response = await registerWithEmail(data);
-      
-      // تسجيل الدخول مباشرة بعد إنشاء الحساب
-      login(response.accessToken, data.email, []);
-      
+      login(response.accessToken, response.user);
       toast.success('Account created successfully!');
-      navigate('/dashboard');
+      navigate(resolveRedirect(), { replace: true });
     } catch (error: any) {
       console.error('Registration Error:', error);
       const msg = error.message || 'Registration failed.';
@@ -105,15 +95,18 @@ export const LoginPage = () => {
       {/* Header */}
       <header className="absolute top-0 start-0 w-full p-6 md:px-12 flex justify-between items-center z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/20">I</div>
-          <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight hidden sm:block">Impulse</span>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/20">{`ح`}</div>
+          <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight hidden sm:block">{`هدف`}</span>
         </div>
         <div className="absolute start-1/2 -translate-x-1/2 hidden md:block">
           <span className="text-2xl font-bold text-gray-400 dark:text-gray-600 tabular-nums tracking-tight opacity-50 select-none">{format(currentTime, 'h:mm a')}</span>
         </div>
-        <button onClick={toggleTheme} className="w-10 h-10 rounded-xl flex items-center justify-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-all shadow-sm hover:shadow-md">
-          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <button onClick={toggleTheme} className="w-10 h-10 rounded-xl flex items-center justify-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-all shadow-sm hover:shadow-md">
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
       </header>
 
       {/* Container */}
@@ -166,7 +159,7 @@ export const LoginPage = () => {
             </div>
             <div className={cn(styles['overlay-panel'], styles['overlay-right'])}>
               <h1 className="text-3xl font-bold mb-4">Hello, Friend!</h1>
-              <p className="text-sm leading-6 tracking-wide mb-8">Enter your personal details and start your journey with Impulse</p>
+              <p className="text-sm leading-6 tracking-wide mb-8">{`Enter your personal details and start your journey with هدف`}</p>
               <button className={overlayButtonClasses} onClick={() => setIsRightPanelActive(true)}>Sign Up</button>
             </div>
           </div>

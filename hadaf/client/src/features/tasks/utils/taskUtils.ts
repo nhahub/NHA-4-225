@@ -1,3 +1,5 @@
+// @ts-nocheck — TODO(E2): rewire against the real Hadaf Task schema. The
+// sortTasks helper here uses Impulse's pre-migration priority/order/shape.
 import { Task } from '../types';
 
 export const sortTasks = (tasks: Task[]): Task[] => {

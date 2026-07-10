@@ -3,6 +3,7 @@ import { Moon, Sun, Calendar, Search, Plus, X, ChevronDown, RotateCcw, PanelLeft
 import { format, isSameDay, differenceInCalendarDays, startOfToday } from 'date-fns';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/components/ui/Button';
+import { LanguageSwitcher } from '@/shared/components/layout/LanguageSwitcher';
 
 interface HeaderContentProps {
   currentTime: Date;
@@ -166,9 +167,12 @@ export const HeaderContent = ({
 
         <div className="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block" />
 
+        <LanguageSwitcher />
+
         <button
           onClick={onThemeToggle}
           className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-500 border border-transparent hover:border-gray-200 hover:bg-white/50 dark:hover:bg-white/10 transition-all"
+          aria-label="Toggle theme"
         >
           {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>

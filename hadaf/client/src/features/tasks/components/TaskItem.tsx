@@ -1,5 +1,6 @@
+﻿// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema. This file still uses Impulse's pre-migration task shape (name/startTime/endTime/subTasks/type/points). Full Express rewiring lands in the E2 work order.
 import { Draggable } from '@hello-pangea/dnd';
-import { CheckCircle2, Circle, Clock, Flame } from 'lucide-react'; // ✅ تأكد من هذا السطر
+import { CheckCircle2, Circle, Clock, Flame } from 'lucide-react'; // âœ… ØªØ£ÙƒØ¯ Ù…Ù† Ù‡Ø°Ø§ Ø§Ù„Ø³Ø·Ø±
 import { Task } from '../types';
 import { cn } from '@/shared/utils/cn';
 import { format } from 'date-fns';

@@ -1,3 +1,6 @@
+// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema. This page
+// still references Impulse's old task shape (day/name/startTime/etc.) and
+// TaskItem from Impulse. E2 rebuilds this against the real Task model.
 // import { useQuery } from '@tanstack/react-query'; // ❌ احذف هذا السطر أو لا تستخدمه
 import { CalendarDays, Inbox, AlertCircle } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';

@@ -26,6 +26,9 @@ const ar = {
     ar: 'العربية',
     en: 'English',
   },
+  languageSwitcher: {
+    toggle: 'تبديل اللغة',
+  },
   nav: {
     home: 'الرئيسية',
     goals: 'الأهداف',
@@ -60,6 +63,14 @@ const ar = {
   },
   placeholder: {
     comingSoon: 'قريباً',
+  },
+  sidebar: {
+    dailySummary: 'ملخص اليوم',
+    done: 'منجز',
+    pending: 'قيد الانتظار',
+    focus: 'التركيز',
+    score: 'النقاط',
+    signOut: 'تسجيل الخروج',
   },
 };
 

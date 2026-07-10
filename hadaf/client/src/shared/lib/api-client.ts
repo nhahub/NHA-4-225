@@ -63,6 +63,46 @@ function unwrapEnvelope<T>(payload: unknown): T {
   return payload as T;
 }
 
+// --- Silent-refresh state (E0-6) ---
+// On a 401 we call /auth/refresh once. While that refresh is in flight, any
+// other 401s queue behind it (avoid refresh-storm). If refresh succeeds, the
+// original request is replayed with the fresh access token. If it fails, we
+// clear local state and redirect to /login with a `redirect` query param so
+// the user lands back on the page they were trying to reach.
+let isRefreshing = false;
+let refreshSubscribers: Array<(token: string | null) => void> = [];
+
+function subscribeToRefresh(cb: (token: string | null) => void) {
+  refreshSubscribers.push(cb);
+}
+
+function notifyRefreshSubscribers(token: string | null) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+
+async function performRefresh(): Promise<string | null> {
+  try {
+    // Use a bare axios call (not apiClient) so we don't recurse through the
+    // interceptor again. The refresh endpoint reads the httpOnly cookie and
+    // rotates the refresh token.
+    const response = await axios.post(
+      `${BASE_URL}/auth/refresh`,
+      {},
+      { withCredentials: true }
+    );
+    const data = unwrapEnvelope<{ accessToken?: string }>(response.data);
+    const accessToken = data?.accessToken;
+    if (accessToken) {
+      localStorage.setItem('token', accessToken);
+      return accessToken;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 apiClient.interceptors.response.use(
   (response) => {
     if (response.config.responseType === 'blob' || response.config.responseType === 'arraybuffer') {
@@ -71,9 +111,44 @@ apiClient.interceptors.response.use(
     response.data = unwrapEnvelope(response.data);
     return response;
   },
-  (error: AxiosError<ApiResponseError>) => {
+  async (error: AxiosError<ApiResponseError>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
     const payload = error.response?.data;
 
+    // ---- 401 silent-refresh path (E0-6) ----
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      // If a refresh is already in flight, queue behind it.
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          subscribeToRefresh((token) => {
+            if (token) {
+              originalRequest._retry = true;
+              originalRequest.headers = originalRequest.headers ?? {};
+              (originalRequest.headers as Record<string, string>).Authorization = `Bearer ${token}`;
+              resolve(apiClient(originalRequest));
+            } else {
+              reject(error);
+            }
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+      const token = await performRefresh();
+      isRefreshing = false;
+      notifyRefreshSubscribers(token);
+
+      if (token) {
+        originalRequest.headers = originalRequest.headers ?? {};
+        (originalRequest.headers as Record<string, string>).Authorization = `Bearer ${token}`;
+        return apiClient(originalRequest);
+      }
+
+      // Refresh failed — fall through to logout + redirect.
+    }
+
+    // ---- Standard error envelope handling ----
     if (payload && payload.success === false) {
       const apiErr = new ApiError(
         payload.error ?? 'errors.unknown',
@@ -85,10 +160,12 @@ apiClient.interceptors.response.use(
       return Promise.reject(apiErr);
     }
 
+    // Refresh failed or non-envelope 401 → clear + redirect.
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('auth-storage');
-      window.location.assign('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      const currentPath = window.location.pathname + window.location.search;
+      window.location.assign('/login?redirect=' + encodeURIComponent(currentPath));
     }
 
     const fallback = new ApiError(

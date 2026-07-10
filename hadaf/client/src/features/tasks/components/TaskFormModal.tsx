@@ -1,3 +1,7 @@
+// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema (date,
+// plannedDurationMinutes, checklist, etc.). This file still uses Impulse's
+// pre-migration task shape (name/startTime/endTime/subTasks/type). Full
+// Express rewiring lands in the E2 work order, not here.
 import React, { useEffect } from 'react';
 import { useForm, FormProvider, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

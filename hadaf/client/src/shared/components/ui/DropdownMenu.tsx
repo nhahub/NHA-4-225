@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { Check, ChevronEnd } from 'lucide-react';
+import { Check, ChevronRight } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
@@ -138,7 +138,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <ChevronEnd className="ms-auto h-4 w-4 rtl:rotate-180" />
+    <ChevronRight className="ms-auto h-4 w-4 rtl:rotate-180" />
   </DropdownMenuPrimitive.SubTrigger>
 ));
 DropdownMenuSubTrigger.displayName = 'DropdownMenuSubTrigger';

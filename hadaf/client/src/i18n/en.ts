@@ -27,6 +27,9 @@ const en = {
     ar: 'العربية',
     en: 'English',
   },
+  languageSwitcher: {
+    toggle: 'Toggle language',
+  },
   nav: {
     home: 'Home',
     goals: 'Goals',
@@ -61,6 +64,14 @@ const en = {
   },
   placeholder: {
     comingSoon: 'Coming soon',
+  },
+  sidebar: {
+    dailySummary: 'Daily Summary',
+    done: 'Done',
+    pending: 'Pending',
+    focus: 'Focus',
+    score: 'Score',
+    signOut: 'Sign out',
   },
 };
 

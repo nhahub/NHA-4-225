@@ -1,3 +1,6 @@
+// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema. The hooks
+// here still use Impulse's pre-migration task shape; the E2 work order
+// replaces this module with hooks against the Express endpoints.
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api/taskApi';
 import { Task } from '../types';

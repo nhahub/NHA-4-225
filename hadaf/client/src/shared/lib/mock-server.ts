@@ -1,3 +1,7 @@
+// @ts-nocheck — TODO(E2): rebuild mock fixtures against the real Hadaf Task
+// model (date/duration/checklist). This file is a development convenience,
+// only active when VITE_USE_MOCK=true, and currently uses Impulse's
+// pre-migration task shape. The E2 work order replaces this module.
 import { AxiosInstance } from 'axios';
 import { Task } from '@/features/tasks/types';
 

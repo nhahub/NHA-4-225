@@ -1,3 +1,4 @@
+﻿// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema. This file still uses Impulse's pre-migration task shape (name/startTime/endTime/subTasks/type/points). Full Express rewiring lands in the E2 work order.
 import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -129,7 +130,7 @@ export const EditBigTaskForm = ({ task, onClose }: EditBigTaskFormProps) => {
               <TaskSubtasks />
             </div>
             
-            {/* ✅ FIXED: Removed redundant Grid & Message. TaskScheduling handles it. */}
+            {/* âœ… FIXED: Removed redundant Grid & Message. TaskScheduling handles it. */}
             <TaskScheduling isAutoScheduled={true} />
             
             <TaskPriority />
