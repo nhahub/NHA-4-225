@@ -5,7 +5,9 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const connectdb = require("./config/db");
 const errorHandler = require("./utils/errorHandler");
-const authRoutes = require("./routes/auth.routes");
+const authRoutes = require("./routes/authRoutes");
+const goalsRoutes = require("./routes/goalRoutes");
+const milestonesRoutes = require("./routes/milestoneRoutes");
 const { csrfGuard } = require("./middleware/auth");
 const rateLimiter = require("./middleware/rate-limiter");
 const cors = require("cors");
@@ -44,6 +46,8 @@ app.use(csrfGuard);
 
 //routes
 app.use("/api/auth", authRoutes);
+app.use("/api/goals", goalsRoutes);
+app.use("/api/milestones", milestonesRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running");
