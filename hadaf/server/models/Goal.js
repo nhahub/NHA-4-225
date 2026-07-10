@@ -57,6 +57,24 @@ const createGoalSchema = z.object({
     return arg;
   }, z.date()),
   milestones: z.array(z.string().min(1)).optional()
+}).refine((data) => {
+  const start = new Date(data.cycleStart);
+  const end = new Date(data.cycleEnd);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
+  return diffDays === 84;
+}, {
+  message: "Goal cycle must be exactly 12 weeks (84 days)",
+  path: ["cycleEnd"]
+}).refine((data) => {
+  if (data.category === 'other') {
+    return !!data.customCategory && data.customCategory.trim().length > 0;
+  }
+  return true;
+}, {
+  message: "Custom category is required when category is 'other'",
+  path: ["customCategory"]
 });
 
 const softDeleteGoalSchema = z.object({
@@ -64,9 +82,24 @@ const softDeleteGoalSchema = z.object({
   reason: z.string().min(1, "Deletion reason is required")
 });
 
+const updateGoalSchema = z.object({
+  title: z.string().min(1, "Title is required").optional(),
+  description: z.string().optional(),
+  category: z.enum(['education_work', 'family', 'health', 'religion_spirituality', 'other']).optional(),
+  customCategory: z.string().optional(),
+  measure: z.string().min(1, "Measure is required").optional(),
+  relevance: z.string().optional(),
+});
+
+const replaceGoalSchema = createGoalSchema.extend({
+  reason: z.string().min(1, "Replacement reason is required")
+});
+
 const Goal = mongoose.model("Goal", goalSchema);
 
 Goal.createGoalSchema = createGoalSchema;
 Goal.softDeleteGoalSchema = softDeleteGoalSchema;
+Goal.updateGoalSchema = updateGoalSchema;
+Goal.replaceGoalSchema = replaceGoalSchema;
 
 module.exports = Goal;
