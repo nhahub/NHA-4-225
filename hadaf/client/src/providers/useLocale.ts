@@ -11,8 +11,8 @@ export function useLocale(): LocaleContextValue {
   return ctx;
 }
 
-// Convenience hook — most components only need `t`.
-export function useTranslation() {
-  const { t } = useLocale();
-  return { t };
+// Convenience hook — most components only need `t` (and sometimes `locale`).
+export function useTranslation(): Pick<LocaleContextValue, 't' | 'locale'> {
+  const { t, locale } = useLocale();
+  return { t, locale };
 }

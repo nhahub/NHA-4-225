@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useDateStore } from '@/shared/stores/useDateStore';
 import { useUIStore } from '@/shared/stores/useUIStore';
-import { getDashboardStats } from '@/features/dashboard/api/dashboardApi';
+import { getDailySummary } from '@/features/dashboard/api/dashboardApi';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import { HeaderProgressBar } from './header/HeaderProgressBar';
 import { HeaderContent } from './header/HeaderContent';
@@ -24,13 +24,13 @@ export const Header = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
-  const { data: stats } = useQuery({
-    queryKey: QUERY_KEYS.DASHBOARD_STATS,
-    queryFn: getDashboardStats,
+  const { data: summary } = useQuery({
+    queryKey: QUERY_KEYS.DAILY_SUMMARY,
+    queryFn: getDailySummary,
   });
 
-  const score = stats?.dailyScore || 0;
-  const target = stats?.dailyTarget || 100;
+  const score = (summary as { pointsEarned?: number } | undefined)?.pointsEarned ?? 0;
+  const target = (summary as { dailyTarget?: number } | undefined)?.dailyTarget ?? 100;
   const rawProgress = target > 0 ? (score / target) * 100 : 0;
   const progress = Math.min(100, Math.round(rawProgress));
   const isOverachiever = rawProgress >= 100;

@@ -8,16 +8,22 @@
 > detection), §5 (directory structure); `Docs/Epics.md` E2; `Docs/team-task-breakdown.md`
 > E2-1/E2-2/E2-3 (full itemized detail, translate its stale idioms per the table below).
 >
+> **Updated 2026-07-10 — this epic's backend has shipped; the frontend is the actual priority.**
+> See `Docs/agent-tasks/WORK-ORDER-FRONTEND-CATCHUP.md` for the current big-picture build sequence
+> across all epics — **this epic is Step 1 of 5, the highest-priority step**, because a full
+> Impulse-ported task UI already exists but is disconnected from the real API (`@ts-nocheck` on 16
+> files). Read that file first. The **Backend** subsections below are now a verification checklist,
+> not a build list.
+>
 > **Execution model: single agent, sequential.** Work E2-1 → E2-2 → E2-3 in order.
 >
-> **Gate: do not start until E0 is fully complete** (auth, controller/route/middleware pattern,
-> i18n, app shell — see `WORK-ORDER-E0-Foundation.md`). E2 does not depend on E1, but the two are
-> intended to land close together — E1-2's weekly heat map needs E2-2's completed-task data (see
-> the cross-epic note in `WORK-ORDER-E1-Goals.md`'s E1-2 section).
+> **Gate: none — E0 is complete (verified).** E2 does not depend on E1; E1's weekly heat map
+> depends on this epic's task-completion data, which is exactly why this epic is sequenced first
+> in `WORK-ORDER-FRONTEND-CATCHUP.md`.
 
 ---
 
-## 0. Current State
+## 0. Current State — updated 2026-07-10, backend shipped, frontend is the real gap
 
 **Already exists and verified — do not recreate:** `hadaf/server/models/Task.js` — full schema
 (`userId`, `goalId` optional, `title`, `description`, `type` enum `scheduled|flexible|quick`,
@@ -28,18 +34,39 @@ string, `timeBlockStart`/`timeBlockEnd` as `HH:MM` strings, `plannedDurationMinu
 co-located `Task.createTaskSchema` and `Task.completeTaskSchema` (Zod). Carries an E0-3.1
 verification comment — trust the live file over this description if they disagree.
 
-**Net-new — everything else:**
-- No `server/controllers/taskController.js` / `server/routes/taskRoutes.js`.
-- No `server/utils/scoring.js` or `server/utils/taskType.js`. `team-task-breakdown.md` marks
-  these domain functions `[x]` — that's aspirational, not real. `Architecture.md` §6 names them
-  `scoring.js`/`task-type.js`; follow the real committed camelCase convention:
-  **`scoring.js`** (already camelCase, no change needed) and **`taskType.js`** (not
-  `task-type.js`).
-- No `hadaf/client/src/features/tasks/` business logic wired to real endpoints — Impulse's
-  existing `features/tasks/api/taskApi.ts` was only stubbed to compile cleanly in E0-1.2 (a
-  `// TODO(E2): rewire to Express task endpoints` comment marks where this epic's work begins).
-  Reuse Impulse's existing `features/tasks/` component shells where they fit; don't discard them
-  wholesale.
+**Backend — SHIPPED:**
+- `server/controllers/taskController.js` + `server/routes/taskRoutes.js` — live endpoints:
+  `GET/POST /api/tasks`, `PATCH /api/tasks/:id/complete`, `PATCH /api/tasks/:id/postpone`,
+  `PATCH /api/tasks/:id/reschedule`, `DELETE /api/tasks/:id`.
+- `server/utils/scoring.js` — matches `Architecture.md` §6.1 exactly, including the specific
+  edge-case ordering this file calls out below (accuracy bonus checked against raw actual before
+  the 3× cap is applied).
+- `server/utils/task-type.js` — **note the real filename is kebab-case**, not `taskType.js` as
+  originally instructed here (same pattern as `goal-progress.js`/`habit-streak.js` in E1/E3). Don't
+  create a second, camelCase copy.
+- **One gap vs. this epic's original scope:** no free-text search/filter beyond
+  `date`/`status`/`type`/`view=backlog` query params — minor, only matters if E2-3's search UI
+  (below) needs it.
+
+**Still net-new — this is the actual epic-1-priority gap across the whole project:**
+`hadaf/client/src/features/tasks/` has a **full UI already ported from Impulse** — forms,
+completion flows, a victory overlay, score breakdown, drag/drop list — but it is **not wired to
+the real endpoints above**. 16 of ~20 files carry `@ts-nocheck`, and
+`features/tasks/types/index.ts` still models Impulse's shape (`day: Date`,
+`priority: 'LOW'|'MEDIUM'|...`, `startTime/endTime`) instead of the real `Task` model described
+above. The real, shipped component names also differ from what this file originally suggested
+building — **don't create duplicates, adapt what's already there**:
+
+| This work order originally said to build | What's actually there (adapt, don't duplicate) |
+|---|---|
+| `QuickAddSheet` | `TaskFormModal` (+ `components/form/*`) |
+| `SmartCompleteDialog` / `ManualCompleteDialog` | `TaskCompletionModal`, `GlobalTaskCompletion` (+ `components/completion/*`) |
+| `ContributionPulse` | `VictoryOverlay`, `ScoreBreakdown` — confirm these already satisfy the text-only/no-gamification guardrail below; adjust rather than replace if not |
+| `TaskList` | `RegularTaskView`, `BigTaskView` |
+
+See `Docs/agent-tasks/WORK-ORDER-FRONTEND-CATCHUP.md` Step 1 for the exact rewire task list (types,
+API layer, hooks, dropping `@ts-nocheck`) — that file is the priority-ordered version of the
+Frontend tasks below.
 
 ## Idiom translation
 
@@ -48,7 +75,7 @@ verification comment — trust the live file over this description if they disag
 | "task_type / difficulty / priority / status enums", "tasks table" | Already satisfied by `Task.js` — nothing to create |
 | `features/tasks/actions.ts` | `server/controllers/taskController.js` + `server/routes/taskRoutes.js` |
 | `data/repositories/tasks.repo.ts` | Controller calls `Task` directly — no repository layer |
-| `domain/scoring.ts`, `domain/task-type.ts` | `server/utils/scoring.js`, `server/utils/taskType.js` |
+| `domain/scoring.ts`, `domain/task-type.ts` | `server/utils/scoring.js`, `server/utils/task-type.js` (kebab-case — shipped, see §0) |
 | `ActionResult` | `ApiResponse<T>` |
 | FCM / push notifications | Browser `Notification` API only — no FCM, no service worker push (`Architecture.md` doesn't scope a push infra) |
 
@@ -58,9 +85,9 @@ verification comment — trust the live file over this description if they disag
 
 **Goal:** Quick-add a task; the system infers its type and previews likely points.
 
-**Tasks — Backend:**
+**Backend — already shipped (verify against this checklist, don't rebuild):**
 
-- `server/utils/taskType.js` (pure): `detectTaskType(input)` — `timeBlockStart` AND
+- `server/utils/task-type.js` (pure): `detectTaskType(input)` — `timeBlockStart` AND
   `timeBlockEnd` present → `'scheduled'`; else `plannedDurationMinutes > 0` → `'flexible'`; else
   `'quick'` (`Architecture.md` §6.5). `calculateBlockDuration(start, end)` — minutes between two
   `HH:MM` strings.
@@ -72,12 +99,15 @@ verification comment — trust the live file over this description if they disag
   validates with `Task.createTaskSchema`, calls `detectTaskType` to set `type` when the client
   didn't already resolve it, scoped to `req.user.id`. Response: `ApiResponse<Task>`.
 
-**Tasks — Frontend:**
+**Frontend — this is the real work (rewire, not rebuild — see the component-name table in §0):**
 
-- `QuickAddSheet` — single-input-first quick add (title required, everything else optional/
-  progressive disclosure), shows the `predictTaskPoints` preview once enough fields are filled.
-- `ChecklistInput` — add/remove/reorder checklist items matching `Task.checklist[]`'s shape.
+- `TaskFormModal` (was suggested as `QuickAddSheet`) — single-input-first quick add (title
+  required, everything else optional/progressive disclosure), shows the `predictTaskPoints`
+  preview once enough fields are filled. Rewire to real `createTask`, drop `@ts-nocheck`.
+- `ChecklistInput` (in `components/form/`) — add/remove/reorder checklist items matching
+  `Task.checklist[]`'s shape — confirm it already matches; adjust if it's still Impulse's shape.
 - `useCreateTask` — React Query mutation, invalidates the task-list query for the task's `date`.
+  Rewire to `POST /api/tasks`.
 
 **AC:** Creating a task with only a title defaults it to `quick`; adding a time block flips it to
 `scheduled`; adding only a planned duration flips it to `flexible` — verified against
@@ -93,7 +123,7 @@ change. Query scoped to the authenticated user.
 **Goal:** Mark a task complete (smart-detect vs. manual duration entry), award points, show the
 Contribution Pulse.
 
-**Tasks — Backend:**
+**Backend — already shipped (verify against this checklist, don't rebuild):**
 
 - `server/utils/scoring.js` — `calculateTaskPoints(input)`, the full formula (`Architecture.md`
   §6.1): quick tasks always 2 points; otherwise `(actualDurationMinutes / 10) × difficultyMult ×
@@ -111,17 +141,20 @@ Contribution Pulse.
   `calculateTaskPoints`, sets `status: 'completed'`, `completedAt`, `pointsEarned`. Log an
   `AnalyticsEvent` (`eventType: 'task_completed'`).
 
-**Tasks — Frontend:**
+**Frontend — this is the real work (rewire, not rebuild — see the component-name table in §0):**
 
-- `SmartCompleteDialog` (task had a planned duration — offer "on time" as a one-tap default,
-  manual override available) and `ManualCompleteDialog` (task had no planned duration — ask for
-  actual time spent) — two distinct flows per `team-task-breakdown.md`, not one generic dialog.
-- `ContributionPulse` — **exact spec, don't improvise**: text-only (no icon/badge/confetti — the
-  no-gamification voice guardrail applies directly here), positioned inline directly above the
-  completed task's card, CSS-only 3-second fade (`transition`, not Framer Motion — motion
-  guardrail).
-- `useCompleteTask` — mutation, invalidates the task-list query and (once E1-2 wires its real
-  heat-map data source) the goal heat-map query for any date this task touches.
+- `TaskCompletionModal`/`GlobalTaskCompletion` (was suggested as `SmartCompleteDialog`/
+  `ManualCompleteDialog`) — task had a planned duration → offer "on time" as a one-tap default,
+  manual override available; no planned duration → ask for actual time spent. Confirm the existing
+  components already distinguish these two flows; adjust if they've collapsed into one generic
+  dialog. Rewire to `PATCH /api/tasks/:id/complete`.
+- `VictoryOverlay`/`ScoreBreakdown` (was suggested as `ContributionPulse`) — **check against this
+  exact spec, don't assume the Impulse original already matches it**: text-only (no icon/badge/
+  confetti — the no-gamification voice guardrail applies directly here), CSS-only fade
+  (`transition`, not Framer Motion — motion guardrail). Adjust if the ported version has
+  gamification flourishes Impulse used that Hadaf's guardrails don't allow.
+- `useCompleteTask` — mutation, invalidates the task-list query and the goal heat-map query (E1-2,
+  now unblocked — see that work order's updated note) for any date this task touches.
 
 **AC:** Completing a task computes points matching `calculateTaskPoints` exactly for each tested
 branch. `ContributionPulse` renders text-only, fades via CSS in ~3s, no icon/animation library
@@ -138,7 +171,7 @@ engine both consume downstream — once this lands, go back and confirm E1-2's h
 **Goal:** Sorted daily task list, backlog for overdue/postponed items, reschedule/delete actions,
 time-block reminders, an "all done" end state.
 
-**Tasks — Backend:**
+**Backend — already shipped (verify against this checklist, don't rebuild):**
 
 - `getTasks` (list, scoped to user, filter by `date` — sorted server- or client-side by priority
   then time block, your call, but the ordering must be deterministic), `rescheduleTask` (updates
@@ -146,9 +179,10 @@ time-block reminders, an "all done" end state.
   query params (gap-fill — same rationale as E1-2's: required for the list UI, not itemized in
   the PRD as its own FR).
 
-**Tasks — Frontend:**
+**Frontend — partly rewire (`RegularTaskView`/`BigTaskView`, was suggested as `TaskList`), partly
+still net-new (backlog ribbon, notifications, search):**
 
-- `TaskList` — sorted per the above; a `BacklogRibbon` surfaces postponed/overdue tasks
+- `RegularTaskView`/`BigTaskView` — sorted per the above; a `BacklogRibbon` surfaces postponed/overdue tasks
   separately from today's list, not interleaved.
 - Reschedule/delete/postpone actions on each `TaskCard` (delete routes through `POL-4`'s
   confirmation dialog once that epic exists — stub with a local confirmation until then, same

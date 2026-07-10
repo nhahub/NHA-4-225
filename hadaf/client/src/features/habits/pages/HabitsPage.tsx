@@ -1,39 +1,234 @@
-import { useEffect } from 'react';
-import { Lock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Plus, Loader2, ShieldCheck } from 'lucide-react';
+import { Card } from '@/shared/components/ui/Card';
+import { Skeleton } from '@/shared/components/ui/Skeleton';
+import { Button } from '@/shared/components/ui/Button';
+import { Input, Textarea } from '@/shared/components/ui/Input';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/shared/components/ui/AlertDialog';
 import { useTranslation } from '@/providers/useLocale';
+import { useHabits, useCreateHabit } from '../hooks/useHabits';
+import { HabitCard } from '../components/HabitCard';
+import { Habit } from '../types';
+import { cn } from '@/shared/utils/cn';
+import { toast } from 'sonner';
 
-// /habits — Habits CRUD shell (E3 fills content; this is the route stub).
 export const HabitsPage = () => {
   const { t } = useTranslation();
+  const { data: habits = [], isLoading } = useHabits();
+  const createHabit = useCreateHabit();
+  const [creating, setCreating] = useState(false);
+  const [newHabit, setNewHabit] = useState<{
+    title: string;
+    category: 'education_work' | 'family' | 'health' | 'religion_spirituality' | 'other';
+    type: 'boolean' | 'counter' | 'quit';
+    targetValue: string;
+    mvdValue: string;
+    mvdDescription: string;
+  }>({
+    title: '',
+    category: 'health',
+    type: 'boolean',
+    targetValue: '',
+    mvdValue: '',
+    mvdDescription: '',
+  });
 
   useEffect(() => {
     document.title = `${t('nav.habits')} · ${t('app.name')}`;
   }, [t]);
 
+  const onSubmit = () => {
+    if (!newHabit.title.trim()) return;
+    const payload = {
+      title: newHabit.title.trim(),
+      category: newHabit.category,
+      type: newHabit.type,
+      targetValue: newHabit.targetValue ? Number(newHabit.targetValue) : undefined,
+      mvdValue: newHabit.mvdValue ? Number(newHabit.mvdValue) : undefined,
+      mvdDescription: newHabit.mvdDescription || undefined,
+    };
+    createHabit.mutate(payload, {
+      onSuccess: () => {
+        toast.success(t('habits.created'));
+        setCreating(false);
+        setNewHabit({
+          title: '',
+          category: 'health',
+          type: 'boolean',
+          targetValue: '',
+          mvdValue: '',
+          mvdDescription: '',
+        });
+      },
+      onError: () => toast.error(t('common.error')),
+    });
+  };
+
+  const byType = (type: Habit['type']) => habits.filter((h) => h.type === type);
+
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          {t('nav.habits')}
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
-          {t('placeholder.comingSoon')}
-        </p>
+      <header className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {t('nav.habits')}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {t('habits.subtitle')}
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          leftIcon={<Plus size={16} />}
+          onClick={() => setCreating(true)}
+        >
+          {t('habits.newHabit')}
+        </Button>
       </header>
-      <div className="relative overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm h-[420px] flex flex-col items-center justify-center text-center p-6">
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-brand-500 blur-xl opacity-20 animate-pulse" />
-          <div className="relative w-20 h-20 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center shadow-xl border border-gray-100 dark:border-gray-700">
-            <Lock className="w-9 h-9 text-brand-500" strokeWidth={1.5} />
+
+      {isLoading ? (
+        <Skeleton className="h-32 w-full rounded-2xl" />
+      ) : habits.length === 0 ? (
+        <Card padding="lg">
+          <div className="text-center py-12">
+            <ShieldCheck className="mx-auto mb-4 text-gray-300 dark:text-gray-600" size={48} />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              {t('habits.noHabits')}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+              {t('habits.noHabitsHelper')}
+            </p>
           </div>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {byType('boolean').length > 0 && (
+            <HabitSection title={t('habits.boolean')}>
+              {byType('boolean').map((h) => <HabitCard key={h._id} habit={h} />)}
+            </HabitSection>
+          )}
+          {byType('counter').length > 0 && (
+            <HabitSection title={t('habits.counter')}>
+              {byType('counter').map((h) => <HabitCard key={h._id} habit={h} />)}
+            </HabitSection>
+          )}
+          {byType('quit').length > 0 && (
+            <HabitSection title={t('habits.quit')}>
+              {byType('quit').map((h) => <HabitCard key={h._id} habit={h} />)}
+            </HabitSection>
+          )}
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
-          {t('placeholder.comingSoon')}
-        </h2>
-        <div className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg border border-transparent dark:border-gray-200">
-          E3
-        </div>
-      </div>
+      )}
+
+      <AlertDialog open={creating} onOpenChange={setCreating}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('habits.newHabit')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('habits.createHelper')}</AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-3 my-4">
+            <div>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                {t('habits.title')}
+              </label>
+              <Input
+                value={newHabit.title}
+                onChange={(e) => setNewHabit({ ...newHabit, title: e.target.value })}
+                placeholder={t('habits.titlePlaceholder')}
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                {t('habits.type')}
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['boolean', 'counter', 'quit'] as const).map((tp) => (
+                  <button
+                    key={tp}
+                    type="button"
+                    onClick={() => setNewHabit({ ...newHabit, type: tp })}
+                    className={cn(
+                      'px-3 py-2 rounded-xl border text-sm font-semibold transition-colors',
+                      newHabit.type === tp
+                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300',
+                    )}
+                  >
+                    {t(`habits.type${tp.charAt(0).toUpperCase()}${tp.slice(1)}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {newHabit.type === 'counter' && (
+              <>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                    {t('habits.targetValue')}
+                  </label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={newHabit.targetValue}
+                    onChange={(e) => setNewHabit({ ...newHabit, targetValue: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                    {t('habits.mvdValue')}
+                  </label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={newHabit.mvdValue}
+                    onChange={(e) => setNewHabit({ ...newHabit, mvdValue: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {newHabit.type !== 'quit' && (
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                  {t('habits.mvdDescription')}
+                </label>
+                <Textarea
+                  value={newHabit.mvdDescription}
+                  onChange={(e) => setNewHabit({ ...newHabit, mvdDescription: e.target.value })}
+                  placeholder={t('habits.mvdPlaceholder')}
+                />
+              </div>
+            )}
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCreating(false)}>
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={onSubmit} disabled={createHabit.isPending}>
+              {createHabit.isPending && <Loader2 className="w-4 h-4 animate-spin me-2" />}
+              {t('common.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
+
+const HabitSection = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <section>
+    <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+      {title}
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{children}</div>
+  </section>
+);

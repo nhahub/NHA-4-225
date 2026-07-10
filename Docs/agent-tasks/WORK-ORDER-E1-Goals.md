@@ -9,18 +9,23 @@
 > itemized detail — this work order re-scopes it against real progress and translates its stale
 > Next.js/Drizzle idioms, see the translation table below).
 >
+> **Updated 2026-07-10 — this epic's backend has shipped.** See
+> `Docs/agent-tasks/WORK-ORDER-FRONTEND-CATCHUP.md` for the current big-picture build sequence
+> across all epics (this epic is Step 3 of 5). Read that file first if you're picking up epics in
+> priority order rather than working this one standalone — it corrects the backend assumptions
+> below and tells you what's actually left. Only the **Frontend** tasks in this file remain to be
+> built; the **Backend** subsections are now a verification checklist, not a build list.
+>
 > **Execution model: single agent, sequential**, same as `WORK-ORDER-E0-Foundation.md`. Work
 > E1-1 → E1-2 in order.
 >
-> **Gate: do not start this epic until E0 is fully complete.** Specifically you need, from E0:
-> auth working end-to-end (E0-5), the `controllers/routes/middleware` request pattern established
-> (E0-3/E0-5), i18n dictionaries + `LocaleProvider` (E0-2), and the app shell with route guards
-> (E0-6). If any of those aren't done, stop and finish E0 first — don't build goal features
-> against a shell that doesn't exist yet.
+> **Gate: none — E0 is complete (verified).** Auth, the `controllers/routes/middleware` pattern,
+> i18n/`LocaleProvider`, and the app shell with route guards are all in place and working. Start
+> immediately.
 
 ---
 
-## 0. Current State
+## 0. Current State — updated 2026-07-10, backend shipped
 
 **Already exists and verified — do not recreate:**
 - `hadaf/server/models/Goal.js` — full schema (`userId`, `title`, `description`, `category` enum
@@ -31,24 +36,37 @@
   tasks, plus co-located `Goal.createGoalSchema` and `Goal.softDeleteGoalSchema` (Zod).
 - `hadaf/server/models/Milestone.js` — `goalId`, `title`, `sort_order`, `is_completed`,
   `completed_at`, index `{goalId, sort_order}`, co-located `Milestone.milestoneValidationSchema`.
-- Both carry a header comment confirming they were checked against `Architecture.md` §3.1 in
-  E0-3.1. If the live files disagree with this description, trust the live files and note the
-  drift back to the team lead.
+- **`server/controllers/goalController.js` + `server/routes/goalRoutes.js` — SHIPPED.** Live
+  endpoints: `POST /api/goals`, `GET /api/goals/active`, `GET/PATCH/DELETE /api/goals/:id`,
+  `POST /api/goals/:id/replace`, `PATCH /api/goals/:id/override`, `POST /api/goals/:id/milestones`,
+  plus `PATCH /api/milestones/:id/toggle` and `PUT /api/milestones/reorder` on a separate
+  `milestoneRoutes.js`. Verified matching this epic's formulas below, including the milestone +10
+  point bonus rolled into `scoring.js`/`DailySummary` (E4-3's hook — confirmed present as
+  `MILESTONE_BONUS_POINTS` in `dailySummaryController.js`).
+- **`server/utils/goal-progress.js` — SHIPPED.** Note the real filename is **kebab-case**
+  (`goal-progress.js`), not `goalProgress.js` as originally instructed below — the camelCase
+  convention didn't end up applying to this file (`task-type.js` and `habit-streak.js` share the
+  same kebab-case pattern in E2/E3). Don't create a second, camelCase copy. Implements
+  `calculateHybridProgress`/`calculateGoalHealth`/`getCurrentWeek`/`calculateWeeklyExecutionScore`
+  matching E1-1's formulas below exactly.
+- All of the above carry a header comment confirming they were checked against `Architecture.md`
+  §3.1 in E0-3.1. If the live files disagree with this description, trust the live files.
 
-**Net-new — everything else in this epic:**
-- No `server/controllers/goalController.js`, no `server/routes/goalRoutes.js` — `controllers/`
-  and `routes/` currently hold only placeholder files.
-- No `server/utils/goalProgress.js` (the domain math). `team-task-breakdown.md` marks
-  `domain/goal-progress.ts` functions as done — that's stale/aspirational, not real; the file
-  doesn't exist. `Architecture.md` §6.2 names it `goal-progress.js` (kebab-case, per its naming
-  table) but every committed `server/utils/*.js` file so far uses camelCase
-  (`appError.js`, `catchAsync.js`, `errorHandler.js`) — follow the real convention:
-  **`goalProgress.js`**.
-- No `hadaf/client/src/features/goals/` — Impulse's copy only brought `features/{auth,dashboard,tasks}`.
-  Everything client-side for goals (wizard, dashboard, detail page, hooks, components) is built
-  fresh, following the folder shape of Impulse's existing `features/tasks/` as the pattern to
-  copy (api/, components/, hooks/, pages/, stores/ as needed — PascalCase component files per
-  `Architecture.md` §4.1).
+**One real backend gap — small, fold it into E1-2 below:** there is no generic filterable goal
+list, only the hardcoded `GET /api/goals/active`. E1-2's dashboard needs
+`completed`/`archived`/`replaced` too. Add a `getGoals` action + route
+(`GET /api/goals?status=&category=`, scoped to `req.user.id`, same pattern as every other list
+endpoint in this codebase) — a small, established-pattern addition, not a design decision.
+
+**Still net-new — this is what's actually left in this epic:**
+- `hadaf/client/src/features/goals/` — still doesn't exist beyond a stub `GoalsPage.tsx`
+  ("Coming Soon" placeholder). Everything client-side for goals (wizard, dashboard, detail page,
+  hooks, components) is still to be built, following the folder shape of Impulse's existing
+  `features/tasks/` as the pattern to copy (api/, components/, hooks/, pages/, stores/ as needed —
+  PascalCase component files per `Architecture.md` §4.1).
+
+See `Docs/agent-tasks/WORK-ORDER-FRONTEND-CATCHUP.md` Step 3 for how this epic's remaining work
+fits into the overall build sequence.
 
 ## Idiom translation (source doc → what to actually build)
 
@@ -60,7 +78,7 @@ plan. Translate as you read it:
 | "goal_category / goal_status enums", "goals table", "milestones table" | Already satisfied by `Goal.js`/`Milestone.js` above — nothing to create |
 | `features/goals/actions.ts` | `server/controllers/goalController.js` + `server/routes/goalRoutes.js` |
 | `data/repositories/goals.repo.ts` | Controller calls `Goal`/`Milestone` models directly — no repository layer |
-| `domain/goal-progress.ts` | `server/utils/goalProgress.js` |
+| `domain/goal-progress.ts` | `server/utils/goal-progress.js` (kebab-case — shipped, see §0) |
 | `ActionResult` | `ApiResponse<T>` (`Architecture.md` §3.3) |
 | kebab-case component files (`goal-card.tsx`) | PascalCase (`GoalCard.tsx`) |
 
@@ -70,9 +88,9 @@ plan. Translate as you read it:
 
 **Goal:** User can create a goal via a 3-step wizard with SMART-style fields, seeding milestones.
 
-**Tasks — Backend:**
+**Backend — already shipped (verify against this checklist, don't rebuild):**
 
-- `server/utils/goalProgress.js` (pure, no Express/Mongoose imports — SRP per
+- `server/utils/goal-progress.js` (pure, no Express/Mongoose imports — SRP per
   `AGENT-OPERATING-INSTRUCTIONS.md` §5):
   - `calculateHybridProgress(input)` — `(tasksProgress × 0.6) + (milestonesProgress × 0.4)`
     (`Architecture.md` §6.2, FR6).
@@ -116,10 +134,10 @@ authenticated user. `calculateHybridProgress`/`calculateGoalHealth`/`getCurrentW
 **Goal:** List/search goals, view a single goal's progress and milestones, manually override
 progress.
 
-**Tasks — Backend:**
+**Backend — mostly shipped, one gap-fill still needed (see §0):**
 
-- `getGoals` (list, scoped to user, supports status/category filter — gap-fill: filtering wasn't
-  itemized in the PRD but is required for the dashboard's search/filter UI), `getGoalById`
+- `getGoals` (list, scoped to user, supports status/category filter — **this is the one gap-fill
+  endpoint that doesn't exist yet**, required for the dashboard's search/filter UI), `getGoalById`
   (includes its milestones), `updateGoal`, `softDeleteGoal` (uses the existing
   `Goal.softDeleteGoalSchema`; sets `status: 'archived'` + `deletionReason`, does not hard-delete
   — the cascade hook on `Goal.js` only fires on `deleteOne`, which this flow doesn't use),
@@ -141,12 +159,12 @@ progress.
   `ProgressRing`/`HealthDot` as small shared components), a 12-week bar visualization per goal,
   search/filter (gap-fill, same note as backend), empty state (hand off to `POL-1`'s shared
   component once that epic lands — stub with plain text until then).
-- `WeeklyHeatmap` — **cross-epic dependency**: needs completed-task density data
-  (`Task.status === 'completed'` grouped by date) that only exists once E2 is built. Build the
-  heatmap UI against a typed placeholder/empty data shape in E1-2, then wire it to the real
-  endpoint (from `E2-2`, task completion) as a follow-up task once E2 lands — don't block the
-  rest of E1-2 on this. Flag it explicitly in your hand-off notes as the one item deferred past
-  E1-2's initial pass.
+- `WeeklyHeatmap` — needs completed-task density data (`Task.status === 'completed'` grouped by
+  date). **E2-2 (task completion) has now shipped on the backend** — the original "build against a
+  placeholder, defer the real wiring" advice no longer applies. Wire this directly to real data
+  from the start, once the client-side Tasks rewire (`WORK-ORDER-FRONTEND-CATCHUP.md` Step 1) has
+  landed — if you're working this epic per that file's Step 3, Step 1 is already done by the time
+  you reach this story.
 - `GoalDetailPage` (route `/goals/:id`): `MilestoneList` (toggle/reorder), a manual-override
   slider wired to `overrideProgress`, goal edit/delete actions (delete routes through
   `POL-4`'s confirmation dialog once that epic exists — stub with a plain `window.confirm` or a
@@ -161,8 +179,9 @@ reorderable) and a working manual-progress override. Heat map renders against pl
 with the real wiring explicitly noted as deferred to post-E2.
 
 **Dependencies:** E1-1 (goal creation must exist to have anything to list). Heat-map's real data
-wiring depends on `E2-2` (task completion) — see the note above; do not block E1-2's other tasks
-on E2.
+wiring depends on `E2-2` (task completion) — already shipped on the backend; per
+`WORK-ORDER-FRONTEND-CATCHUP.md`'s sequencing, the client Tasks rewire (Step 1) lands before this
+epic (Step 3), so there's no need to stub it.
 
 ---
 

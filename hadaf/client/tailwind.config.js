@@ -26,7 +26,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Semantic surfaces — light
+        // Semantic surfaces — the `:root` and `:root.dark` CSS variables already
+        // resolve to the right theme value (`:root` for light, `:root.dark` for
+        // dark), so a single token covers both. No -dark suffixed entries needed.
         background: {
           DEFAULT: "var(--color-background)",
           paper: "var(--color-background-paper)",
@@ -38,13 +40,6 @@ export default {
         border: {
           DEFAULT: "var(--color-border)",
         },
-
-        // Semantic surfaces — dark
-        "background-dark": "var(--color-background-dark)",
-        "background-paper-dark": "var(--color-background-paper-dark)",
-        "foreground-dark": "var(--color-foreground-dark)",
-        "foreground-muted-dark": "var(--color-foreground-muted-dark)",
-        "border-dark": "var(--color-border-dark)",
 
         // Brand scale — Violet (Tailwind v4 OKLCH equivalents of Impulse's hex)
         brand: {

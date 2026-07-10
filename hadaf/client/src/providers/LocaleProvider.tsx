@@ -65,16 +65,26 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   const t = useCallback(
-    (key: string, fallback?: string): string => {
+    (key: string, params?: string | Record<string, string | number>): string => {
       const dict = dictionaries[locale];
-      const value = lookup(dict as unknown as Record<string, unknown>, key);
-      if (typeof value === 'string') return value;
+      let raw = lookup(dict as unknown as Record<string, unknown>, key);
       // Fall back to the other locale if missing there too — dev-loop
       // safety net so a missing translation doesn't break the screen.
-      const other = dictionaries[locale === 'ar' ? 'en' : 'ar'];
-      const otherValue = lookup(other as unknown as Record<string, unknown>, key);
-      if (typeof otherValue === 'string') return otherValue;
-      return fallback ?? key;
+      if (typeof raw !== 'string') {
+        const other = dictionaries[locale === 'ar' ? 'en' : 'ar'];
+        raw = lookup(other as unknown as Record<string, unknown>, key);
+        if (typeof raw !== 'string') {
+          raw = typeof params === 'string' ? params : key;
+        }
+      }
+
+      if (params && typeof params === 'object') {
+        return Object.entries(params).reduce(
+          (acc, [k, v]) => acc.split(`{${k}}`).join(String(v)),
+          raw as string,
+        );
+      }
+      return raw as string;
     },
     [locale],
   );

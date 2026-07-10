@@ -1,47 +1,69 @@
 import { apiClient } from '@/shared/lib/api-client';
-import type { Task } from '../types';
+import type {
+  Task,
+  CreateTaskInput,
+  CompleteTaskInput,
+  RescheduleTaskInput,
+} from '../types';
 
-// TODO(E2): rewire to Express task endpoints — `/api/tasks/*`.
-// The current Task type in features/tasks/types still matches Impulse's old
-// shape (day/startTime/endTime/subTasks). E2 will introduce the real Task
-// model (date, plannedDurationMinutes, checklist, etc.) and rebuild this
-// module against it. For E0-1 we just need a compiling stub.
+export interface GetTasksParams {
+  date?: string;
+  status?: string;
+  type?: string;
+  view?: 'backlog';
+}
 
-export const getTasks = async (): Promise<Task[]> => {
-  const response = await apiClient.get<Task[]>('/tasks');
+export interface GetTasksMeta {
+  count?: number;
+  overLimit?: boolean;
+}
+
+export const getTasks = async (
+  params: GetTasksParams = {},
+): Promise<Task[] | { data: Task[]; meta: GetTasksMeta }> => {
+  const response = await apiClient.get<Task[] | { data: Task[]; meta: GetTasksMeta }>(
+    '/tasks',
+    { params },
+  );
   return response.data;
 };
 
-export const createTask = async (data: Partial<Task>): Promise<Task> => {
-  const response = await apiClient.post<Task>('/tasks', data);
+export const getBacklogTasks = async (): Promise<Task[]> => {
+  const response = await apiClient.get<Task[]>('/tasks', {
+    params: { view: 'backlog' },
+  });
+  return (response.data as Task[]) || [];
+};
+
+export const createTask = async (input: CreateTaskInput): Promise<Task> => {
+  const response = await apiClient.post<Task>('/tasks', input);
   return response.data;
 };
 
-export const updateTask = async ({
-  id,
-  updates,
-}: {
-  id: string | number;
-  updates: Partial<Task>;
-}): Promise<Task> => {
-  const response = await apiClient.patch<Task>(`/tasks/${id}`, updates);
+export const completeTask = async (
+  id: string,
+  input: CompleteTaskInput = {},
+): Promise<Task> => {
+  const response = await apiClient.patch<Task>(`/tasks/${id}/complete`, input);
   return response.data;
 };
 
-export const deleteTask = async (id: string | number): Promise<void> => {
+export const postponeTask = async (id: string): Promise<Task> => {
+  const response = await apiClient.patch<Task>(`/tasks/${id}/postpone`);
+  return response.data;
+};
+
+export const rescheduleTask = async (
+  id: string,
+  input: RescheduleTaskInput,
+): Promise<Task> => {
+  const response = await apiClient.patch<Task>(
+    `/tasks/${id}/reschedule`,
+    input,
+  );
+  return response.data;
+};
+
+export const deleteTask = async (id: string): Promise<void> => {
   await apiClient.delete(`/tasks/${id}`);
-};
-
-export const createBigTask = async (data: Partial<Task>): Promise<Task> => {
-  const response = await apiClient.post<Task>('/tasks/big', data);
-  return response.data;
-};
-
-export const getPoints = async (): Promise<{ points: number }> => {
-  const response = await apiClient.get<{ points: number }>('/tasks/points');
-  return response.data;
-};
-
-export const deleteSubTask = async (id: string | number): Promise<void> => {
-  await apiClient.delete(`/tasks/subtasks/${id}`);
 };

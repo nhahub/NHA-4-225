@@ -20,8 +20,8 @@ const DropdownMenuContent = React.forwardRef<
       sideOffset={sideOffset}
       className={cn(
         'z-50 min-w-[10rem] overflow-hidden rounded-lg',
-        'bg-background-paper dark:bg-background-paper-dark p-1 shadow-lg',
-        'border border-border dark:border-border-dark',
+        'bg-background-paper dark:bg-background-paper p-1 shadow-lg',
+        'border border-border',
         'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
         'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
         className,
@@ -42,7 +42,7 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none',
-      'text-foreground dark:text-foreground-dark',
+      'text-foreground',
       'transition-colors focus:bg-brand-50 dark:focus:bg-brand-900/30',
       'focus:text-brand-700 dark:focus:text-brand-300',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
@@ -89,7 +89,7 @@ const DropdownMenuLabel = React.forwardRef<
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn(
-      'px-2 py-1.5 text-xs font-semibold text-foreground-muted dark:text-foreground-muted-dark',
+      'px-2 py-1.5 text-xs font-semibold text-foreground-muted',
       inset && 'ps-8',
       className,
     )}
@@ -104,7 +104,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-border dark:bg-border-dark', className)}
+    className={cn('-mx-1 my-1 h-px bg-border', className)}
     {...props}
   />
 ));
@@ -116,7 +116,7 @@ const DropdownMenuShortcut = ({
 }: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
     className={cn(
-      'ms-auto text-xs tracking-widest text-foreground-muted dark:text-foreground-muted-dark',
+      'ms-auto text-xs tracking-widest text-foreground-muted',
       className,
     )}
     {...props}
@@ -151,8 +151,8 @@ const DropdownMenuSubContent = React.forwardRef<
     ref={ref}
     className={cn(
       'z-50 min-w-[10rem] overflow-hidden rounded-lg',
-      'bg-background-paper dark:bg-background-paper-dark p-1 shadow-lg',
-      'border border-border dark:border-border-dark',
+      'bg-background-paper dark:bg-background-paper p-1 shadow-lg',
+      'border border-border',
       className,
     )}
     {...props}

@@ -152,6 +152,22 @@ exports.createGoal = catchAsync(async (req, res, next) => {
   });
 });
 
+// List all Goals (filtered by status and/or category, scoped to user)
+exports.getGoals = catchAsync(async (req, res) => {
+  const { status, category } = req.query;
+  const query = { userId: req.user.id };
+  if (status) query.status = status;
+  if (category) query.category = category;
+
+  const goals = await Goal.find(query);
+  const compiledGoals = await Promise.all(goals.map((g) => compileGoalProgress(g)));
+
+  res.status(200).json({
+    success: true,
+    data: compiledGoals,
+  });
+});
+
 // List Active Goals
 exports.getActiveGoals = catchAsync(async (req, res, next) => {
   const goals = await Goal.find({

@@ -33,8 +33,8 @@ const AlertDialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         'fixed top-1/2 start-1/2 z-50 grid w-full max-w-md -translate-x-1/2 -translate-y-1/2',
-        'gap-4 rounded-xl bg-background-paper dark:bg-background-paper-dark p-6 shadow-lg',
-        'border border-border dark:border-border-dark',
+        'gap-4 rounded-xl bg-background-paper dark:bg-background-paper p-6 shadow-lg',
+        'border border-border',
         'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
         'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
         className,
@@ -76,7 +76,7 @@ const AlertDialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Title
     ref={ref}
-    className={cn('text-lg font-semibold text-foreground dark:text-foreground-dark', className)}
+    className={cn('text-lg font-semibold text-foreground', className)}
     {...props}
   />
 ));
@@ -88,7 +88,7 @@ const AlertDialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Description
     ref={ref}
-    className={cn('text-sm text-foreground-muted dark:text-foreground-muted-dark', className)}
+    className={cn('text-sm text-foreground-muted', className)}
     {...props}
   />
 ));
@@ -118,10 +118,10 @@ const AlertDialogCancel = React.forwardRef<
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center rounded-lg border border-border dark:border-border-dark',
-      'bg-background-paper dark:bg-background-paper-dark px-4 py-2 text-sm font-medium',
-      'text-foreground dark:text-foreground-dark',
-      'hover:bg-background dark:hover:bg-background-dark',
+      'inline-flex items-center justify-center rounded-lg border border-border',
+      'bg-background-paper dark:bg-background-paper px-4 py-2 text-sm font-medium',
+      'text-foreground',
+      'hover:bg-background dark:hover:bg-background',
       'focus:outline-none focus:ring-2 focus:ring-brand-500',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       className,

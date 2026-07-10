@@ -1,14 +1,12 @@
-﻿// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema. This file still uses Impulse's pre-migration task shape (name/startTime/endTime/subTasks/type/points). Full Express rewiring lands in the E2 work order.
-import React, { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+﻿import { useEffect, useState } from 'react';
 import { Button } from '@/shared/components/ui/Button';
 import { Task } from '../types';
 import { cn } from '@/shared/utils/cn';
-import { format, differenceInMinutes, parse, addMinutes } from 'date-fns';
-import { QUERY_KEYS } from '@/shared/constants/queryKeys';
-import { getPointsBreakdown } from '../utils/scoringUtils';
-
-// Sub-components
+import { useTranslation } from '@/providers/useLocale';
+import { calculateTaskPointsPreview } from '../utils/scoringUtils';
+import { format, differenceInMinutes, parse } from 'date-fns';
+import { useUIStore } from '@/shared/stores/useUIStore';
+import { useCompleteTask } from '../hooks/useTasks';
 import { VictoryOverlay } from './completion/VictoryOverlay';
 import { CompletionHeader } from './completion/CompletionHeader';
 import { TimeEntry } from './completion/TimeEntry';
@@ -17,131 +15,158 @@ import { ScoreBreakdown } from './completion/ScoreBreakdown';
 interface TaskCompletionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // âœ… Updated signature to accept time strings
-  onConfirm: (actualTime: number, points: number, start: string, end: string) => void;
   task: Task;
 }
 
 export const TaskCompletionModal: React.FC<TaskCompletionModalProps> = ({
   isOpen,
   onClose,
-  onConfirm,
-  task
+  task,
 }) => {
-  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const setTaskToComplete = useUIStore((s) => s.setTaskToComplete);
+  const completeTask = useCompleteTask();
+
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [actualMinutes, setActualMinutes] = useState<number | undefined>(undefined);
   const [showVictory, setShowVictory] = useState(false);
   const [displayedPoints, setDisplayedPoints] = useState(0);
-  
-  const tasks = queryClient.getQueryData<Task[]>(QUERY_KEYS.TASKS) || [];
-  const remainingTasks = Math.max(0, tasks.filter(t => !t.done).length - 1);
 
-  // Initialize
+  const hasPlannedTime =
+    task.type !== 'quick' && task.plannedDurationMinutes !== undefined;
+
+  // Initialize time fields
   useEffect(() => {
-    if (isOpen) {
-      setShowVictory(false);
-      setDisplayedPoints(0);
+    if (!isOpen) return;
+    setShowVictory(false);
+    setDisplayedPoints(0);
+    if (task.timeBlockStart && task.timeBlockEnd) {
+      setStartTime(task.timeBlockStart);
+      setEndTime(task.timeBlockEnd);
+    } else {
       const now = new Date();
-      const defaultStart = task.startTime 
-        ? task.startTime 
-        : format(addMinutes(now, -task.expectedTime), 'HH:mm');
-      const defaultEnd = format(now, 'HH:mm');
-      setStartTime(defaultStart);
-      setEndTime(defaultEnd);
+      const start = format(now, 'HH:00');
+      const end = format(now, 'HH:mm');
+      setStartTime(start);
+      setEndTime(end);
     }
   }, [isOpen, task]);
 
-  // Logic
-  const calculateDuration = () => {
-    try {
-      const now = new Date();
-      const s = parse(startTime, 'HH:mm', now);
-      const e = parse(endTime, 'HH:mm', now);
-      let diff = differenceInMinutes(e, s);
-      if (diff < 0) diff += 1440; 
-      return diff;
-    } catch {
-      return task.expectedTime;
+  // Derive actual minutes from start/end edits, fallback to planned duration for quick tasks.
+  useEffect(() => {
+    if (!startTime || !endTime) {
+      setActualMinutes(undefined);
+      return;
     }
-  };
+    const s = parse(startTime, 'HH:mm', new Date());
+    const e = parse(endTime, 'HH:mm', new Date());
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) {
+      setActualMinutes(undefined);
+      return;
+    }
+    let diff = differenceInMinutes(e, s);
+    if (diff < 0) diff += 1440;
+    setActualMinutes(diff);
+  }, [startTime, endTime]);
 
-  const actualDuration = calculateDuration();
-  const timeDiff = task.expectedTime - actualDuration;
+  const planned = task.plannedDurationMinutes ?? 0;
+  const breakdown = calculateTaskPointsPreview({
+    type: task.type,
+    difficulty: task.difficulty,
+    actualMinutes: actualMinutes ?? planned,
+    plannedMinutes: planned,
+  });
 
-  const pointsData = getPointsBreakdown(task, actualDuration);
+  const timeDiff = planned - (actualMinutes ?? planned);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setShowVictory(true);
-    let start = 0;
+    const points = breakdown.total;
     const duration = 800;
     const stepTime = 16;
     const steps = duration / stepTime;
-    const increment = pointsData.total / steps;
-
+    const increment = points / steps;
+    let start = 0;
     const timer = setInterval(() => {
       start += increment;
-      if (start >= pointsData.total) {
-        setDisplayedPoints(pointsData.total);
+      if (start >= points) {
+        setDisplayedPoints(points);
         clearInterval(timer);
       } else {
         setDisplayedPoints(Math.floor(start));
       }
     }, stepTime);
+
+    try {
+      await completeTask.mutateAsync({
+        id: task._id,
+        input: hasPlannedTime ? { actualDurationMinutes: actualMinutes ?? 0 } : {},
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleClose = () => {
+    setTaskToComplete(null);
+    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      
-      <div className={cn(
-        "relative bg-white dark:bg-gray-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-gray-200 dark:border-gray-800 flex flex-col max-h-[90vh]",
-      )}>
-        
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        onClick={handleClose}
+      />
+      <div
+        className={cn(
+          'relative bg-white dark:bg-background-paper w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-gray-200 dark:border-gray-800 flex flex-col max-h-[90vh]',
+        )}
+      >
         {showVictory && (
-          <VictoryOverlay 
+          <VictoryOverlay
             points={displayedPoints}
-            basePoints={pointsData.base}
-            bonusPoints={pointsData.bonus}
-            timeDiff={timeDiff} 
-            remainingTasks={remainingTasks}
-            onContinue={() => onConfirm(actualDuration, pointsData.total, startTime, endTime)} 
+            basePoints={breakdown.base}
+            bonusPoints={breakdown.bonus - Math.max(0, breakdown.bonus)}
+            timeDiff={timeDiff}
+            remainingTasks={0}
+            onContinue={handleClose}
           />
         )}
 
-        <CompletionHeader taskName={task.name} onClose={onClose} />
+        <CompletionHeader taskName={task.title} onClose={handleClose} />
 
         <div className="p-6 space-y-6 overflow-y-auto">
-          <TimeEntry 
+          <TimeEntry
             startTime={startTime}
-            setStartTime={setStartTime}
             endTime={endTime}
+            setStartTime={setStartTime}
             setEndTime={setEndTime}
-            taskStartTime={task.startTime}
-            taskEndTime={task.endTime}
-            expectedTime={task.expectedTime}
-            actualDuration={actualDuration}
+            taskStartTime={task.timeBlockStart}
+            taskEndTime={task.timeBlockEnd}
+            expectedTime={planned}
+            actualDuration={actualMinutes ?? 0}
             timeDiff={timeDiff}
           />
-          
-          <ScoreBreakdown 
-            basePoints={pointsData.base}
-            bonusPoints={pointsData.bonus}
-            totalPoints={pointsData.total}
+
+          <ScoreBreakdown
+            basePoints={breakdown.base}
+            bonusPoints={breakdown.bonus}
+            totalPoints={breakdown.total}
           />
         </div>
 
         <div className="p-6 pt-0 mt-auto shrink-0">
-          <Button 
-            onClick={handleConfirm} 
+          <Button
+            onClick={handleConfirm}
             className="w-full h-14 text-lg font-bold shadow-xl shadow-brand-500/20 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white active:scale-[0.98] transition-all"
           >
-            Confirm Completion
+            {t('tasks.confirmCompletion')}
           </Button>
         </div>
-
       </div>
     </div>
   );

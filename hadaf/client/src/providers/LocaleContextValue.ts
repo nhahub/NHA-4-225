@@ -4,10 +4,12 @@ import { createContext } from 'react';
 
 export type Locale = 'ar' | 'en';
 
+export type TranslationParams = Record<string, string | number>;
+
 export interface LocaleContextValue {
   locale: Locale;
   setLocale: (next: Locale) => void;
-  t: (key: string, fallback?: string) => string;
+  t: (key: string, params?: string | TranslationParams) => string;
   formatNumber: (n: number) => string;
   formatDate: (date: Date | string | number) => string;
 }

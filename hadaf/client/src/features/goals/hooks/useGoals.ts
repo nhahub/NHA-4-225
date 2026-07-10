@@ -1,0 +1,132 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getActiveGoals,
+  getGoals,
+  getGoalDetail,
+  createGoal as apiCreateGoal,
+  updateGoal as apiUpdateGoal,
+  archiveGoal as apiArchiveGoal,
+  replaceGoal as apiReplaceGoal,
+  overrideProgress as apiOverrideProgress,
+  toggleMilestone as apiToggleMilestone,
+  reorderMilestones as apiReorderMilestones,
+  addMilestone as apiAddMilestone,
+  type GetGoalsParams,
+} from '../api/goalApi';
+import type { CreateGoalInput } from '../types';
+import { QUERY_KEYS } from '@/shared/constants/queryKeys';
+
+export const useActiveGoals = () =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.GOALS, 'active'] as const,
+    queryFn: getActiveGoals,
+  });
+
+export const useGoals = (params: GetGoalsParams = {}) =>
+  useQuery({
+    queryKey: [...QUERY_KEYS.GOALS, params] as const,
+    queryFn: () => getGoals(params),
+  });
+
+export const useGoal = (id: string | undefined) =>
+  useQuery({
+    queryKey: id ? QUERY_KEYS.GOAL_DETAIL(id) : ['goal', 'pending'],
+    queryFn: () => getGoalDetail(id!),
+    enabled: !!id,
+  });
+
+export const useCreateGoal = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateGoalInput) => apiCreateGoal(input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+    },
+  });
+};
+
+export const useUpdateGoal = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Partial<CreateGoalInput> }) =>
+      apiUpdateGoal(id, input),
+    onSuccess: (goal) => {
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.GOAL_DETAIL(goal._id) });
+    },
+  });
+};
+
+export const useArchiveGoal = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      apiArchiveGoal(id, reason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+    },
+  });
+};
+
+export const useReplaceGoal = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: CreateGoalInput & { reason: string };
+    }) => apiReplaceGoal(id, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+    },
+  });
+};
+
+export const useOverrideProgress = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, progress }: { id: string; progress: number | null }) =>
+      apiOverrideProgress(id, progress),
+    onSuccess: (goal) => {
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.GOAL_DETAIL(goal._id) });
+    },
+  });
+};
+
+export const useToggleMilestone = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (milestoneId: string) => apiToggleMilestone(milestoneId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS, 'detail'] });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
+    },
+  });
+};
+
+export const useReorderMilestones = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (milestones: Array<{ id: string; sort_order: number }>) =>
+      apiReorderMilestones(milestones),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS, 'detail'] });
+    },
+  });
+};
+
+export const useAddMilestone = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ goalId, title }: { goalId: string; title: string }) =>
+      apiAddMilestone(goalId, title),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS, 'detail'] });
+    },
+  });
+};

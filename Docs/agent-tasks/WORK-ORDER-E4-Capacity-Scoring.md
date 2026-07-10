@@ -8,53 +8,71 @@
 > §5 (directory structure); `Docs/Epics.md` E4; `Docs/team-task-breakdown.md` E4-1/E4-2/E4-3
 > (full itemized detail, translate stale idioms per the table below).
 >
+> **Updated 2026-07-10 — this epic's backend has shipped, including E4-3's cross-epic hooks into
+> E2/E3.** See `Docs/agent-tasks/WORK-ORDER-FRONTEND-CATCHUP.md` for the current big-picture build
+> sequence across all epics — this epic's frontend is split across Step 2 (E4-1
+> Settings/`DayTypeProvider`, moved early because E3's Habits/Step 4 needs it) and Step 5 (E4-2/
+> E4-3, still last, since that's genuinely dependent on Steps 1/2/4). The **Backend** subsections
+> below are now a verification checklist, not a build list.
+>
 > **Execution model: single agent, sequential.** Work E4-1 → E4-2 → E4-3 in strict order — this
 > is the one epic where the internal sequencing is load-bearing, not just convention: E4-2 needs
 > E4-1's day-type data, and E4-3 is explicitly this epic's capstone, hooking into code from E2 and
 > E3 as well.
 >
-> **Gate: do not start until E0 is fully complete**, and until **E2-2** (task points) and **E3-1**
-> (habit points) exist — E4-3 modifies both of their controllers (see below).
+> **Gate: E0 complete (verified), and E2-2/E3-1 backend both shipped** — the cross-epic hooks
+> E4-3 needs into task/habit completion are already live server-side. Only the frontend (E4-1's
+> Settings page, E4-2's gauge, E4-3's progress bar) remains, per the sequence above.
 
 ---
 
-## 0. Current State
+## 0. Current State — updated 2026-07-10, backend shipped, both flagged questions resolved
 
 **Already exists and verified — do not recreate:**
 - `hadaf/server/models/DailySummary.js` — `userId`, `date`, `dayType` enum
   `work|light|off`, `tasksCompleted`, `habitsCompleted`, `pointsEarned`, `dailyTarget`,
   `dayState` enum `legendary|amazing|perfect|good_enough|low`, `summaryShown`; unique compound
-  index `{userId, date}` (this satisfies `team-task-breakdown.md`'s "`daily_summaries` table +
-  `UNIQUE(user_id, date)`" line — nothing to create); co-located
-  `DailySummary.dailySummaryValidationSchema`.
-- `hadaf/server/models/User.js` — `settings` sub-document already has `work_hours_start`,
+  index `{userId, date}`; co-located `DailySummary.dailySummaryValidationSchema`.
+- `hadaf/server/models/User.js` — `settings` sub-document has `work_hours_start`,
   `work_hours_end`, `day_start` (default `"04:00"`), `off_days: [String]`, `theme`, `language`,
-  `notifications.time_block_reminder`, plus a co-located **`User.updateSettingsSchema`** (a
-  `.partial()` of the full settings Zod schema) — this already satisfies E4-1's
-  `updateSettingsSchema` task, don't recreate it.
+  `notifications.time_block_reminder`, plus a co-located `User.updateSettingsSchema`.
 
-**Net-new:**
-- No `server/controllers/{settingsController,dailySummaryController}.js` /
-  matching routes.
-- No `server/utils/capacity.js` or `server/utils/dayState.js`. `Architecture.md` §6 names them
-  `capacity.js`/`day-state.js`; follow the real committed camelCase convention:
-  **`capacity.js`** (no change) and **`dayState.js`** (not `day-state.js`).
-- No `DayTypeProvider` client context, no `SettingsPage`, no capacity gauge, no progress bar.
+**Backend — SHIPPED:**
+- `server/controllers/settingsController.js` + `server/controllers/dailySummaryController.js` —
+  live endpoints: `PATCH /api/user/settings` (mounted under `userRoutes.js`, not a separate
+  `settingsRoutes.js` — a naming deviation, functionally the same thing), `GET
+  /api/daily-summaries/today`, `GET /api/daily-summaries/capacity`,
+  `PATCH /api/daily-summaries/:date/day-type`.
+- `server/utils/capacity.js` / `server/utils/dayState.js` — filenames match what this section
+  originally specified (camelCase `dayState.js`). Verified matching `Architecture.md` §6.3/§6.4
+  exactly: day-state boundaries at precisely 150/120/100/50%, capacity 80%/50%/0% by day type.
+- **Day-start range validation (part of E4-1's AC) is done** — `User.js`'s
+  `userSettingsValidationSchema`/`updateSettingsSchema` already constrain `day_start` to
+  01:00–06:00 via regex (confirmed directly in the model file).
 
-**A schema question you need to resolve, not assume — flag it either way in your hand-off:**
-`team-task-breakdown.md` E4-1 says *"Database: None new — uses `users.settings`"* and separately
-lists a frontend task *"Day Type config per weekday (Work/Light/Off)"* — a **3-state** value per
-weekday. But the actual, verified `User.js` settings only has `off_days: [String]` — a
-**2-state** (off / not-off) concept, with no field for a per-weekday "light" designation.
-Something has to give: either (a) "light day" isn't actually a per-weekday stored setting and is
-instead a manual daily override only (see E4-1's "Manual day-type override control (today only)"
-task — plausible, since that task already implies a same-day override exists somewhere), or (b)
-`User.settings` genuinely needs a small additive field (e.g. `lightDays: [String]` alongside the
-existing `off_days`, plus the matching Zod schema update) to represent a weekday-level template.
-**Read `team-task-breakdown.md`'s full E4-1 section and `Architecture.md` §3.1 once more before
-deciding** — if it's still ambiguous, implement option (a) (manual override only, no new field)
-since it requires no schema change, and say explicitly in your hand-off that you made this call
-and why, so it can be corrected if wrong.
+**Both flagged open questions from this section are now resolved — verified directly against the
+live code, not inferred:**
+1. **The day-type-per-weekday schema question: resolved as option (a).** `User.js`'s `settings`
+   still only has `off_days: [String]` — confirmed no `lightDays`/`light_days` field or any other
+   3-state addition exists. So "light day" is a same-day manual override only, not a stored
+   per-weekday template. Build `SettingsPage`'s day-type control (below) around a manual
+   override, not a weekday config grid.
+2. **The E4-2 lunch-break constant: resolved, already flagged in code.** `capacity.js` hardcodes
+   `LUNCH_BREAK_MINUTES = 60` with a comment marking it as an assumption pending a design/PM
+   decision (matches this file's own guidance below) — nothing further to do here besides
+   inheriting the same flag if you ever revisit the value.
+
+**One item that's still genuinely open** (not resolved by the backend work, carry it forward):
+`server/utils/dayState.js` has an explicit `// TODO (Product Sign-off): Multipliers for adaptive
+targets on light/off days are assumed.` comment — the 0.5×/0.2× multipliers in
+`calculateAdaptiveDailyTarget` (E4-3 below) are shipped but still awaiting real product sign-off.
+
+**Still net-new — this is what's actually left in this epic:**
+`DayTypeProvider` client context, `SettingsPage`, capacity gauge, progress bar — none of it exists
+yet beyond a stub `SettingsPage.tsx` ("Coming Soon" placeholder).
+
+See `Docs/agent-tasks/WORK-ORDER-FRONTEND-CATCHUP.md` Steps 2 (E4-1) and 5 (E4-2/E4-3) for how
+this epic's frontend fits into the overall build sequence.
 
 ## Idiom translation
 
@@ -74,37 +92,34 @@ and why, so it can be corrected if wrong.
 **Goal:** A settings screen covering work hours, day-start time, day-type behavior, theme, and
 notification preferences.
 
-**Tasks — Backend:**
+**Backend — already shipped (verify against this checklist, don't rebuild):**
 
-- `server/controllers/settingsController.js` + `server/routes/settingsRoutes.js`:
-  `updateSettings` — validates with the **already-existing** `User.updateSettingsSchema`, updates
-  `req.user`'s `settings` sub-document. Response: `ApiResponse<User['settings']>`.
-- **Day-start time**: `updateSettingsSchema`'s Zod definition already enforces the HH:MM regex,
-  but does **not** currently constrain it to the documented FR55.2 valid range (01:00–06:00,
-  default 04:00) — add that range constraint to `userSettingsValidationSchema`/
-  `updateSettingsSchema` in `User.js` as part of this story (a real, scoped schema edit, unlike
-  the flagged question above).
+- `server/controllers/settingsController.js` + route (mounted under `userRoutes.js`):
+  `updateSettings` — validates with `User.updateSettingsSchema`, updates `req.user`'s `settings`
+  sub-document. Response: `ApiResponse<User['settings']>`.
+- **Day-start time range (01:00–06:00, FR55.2): done.** Confirmed directly in `User.js` — the
+  regex constraint is already in place, not just the basic HH:MM format check.
 
-**Tasks — Frontend:**
+**Frontend — net-new, this is the actual priority (Step 2 of
+`WORK-ORDER-FRONTEND-CATCHUP.md` — build this early, ahead of Habits/Step 4):**
 
-- `SettingsPage` (route `/settings`): work-hours start/end pickers, day-start picker (constrained
-  range per above), off-days picker, theme toggle (dark/light, FR53), language display (this
-  screen doesn't need to duplicate E0-6's language switcher — read-only or a shortcut back to it
-  is enough), notification-preferences toggle (gap-fill, FR-adjacent per
-  `team-task-breakdown.md` §2.1 — the single `notifications.time_block_reminder` boolean).
-  Day-type-per-weekday config or manual-override-only control per whichever resolution you picked
-  in §0 above.
-- `DayTypeProvider` context + `useDayType` hook — exposes the resolved day type for "today"
-  (needed by `E3-1`'s MVD indicator, which was stubbed against a local placeholder pending this
-  story — go confirm/finish that wiring once this lands, and say so in your hand-off).
+- `SettingsPage` (route `/settings`): work-hours start/end pickers, day-start picker (already
+  range-constrained server-side, see above), off-days picker, theme toggle (dark/light, FR53),
+  language display (this screen doesn't need to duplicate E0-6's language switcher — read-only or
+  a shortcut back to it is enough), notification-preferences toggle (the single
+  `notifications.time_block_reminder` boolean). **Manual day-type override control (today only)**
+  — per §0's resolved schema question, this is a same-day override, not a per-weekday config grid.
+- `DayTypeProvider` context + `useDayType` hook — exposes the resolved day type for "today". Build
+  this **before** Habits (Step 4 in the sequence) so `E3-1`'s MVD indicator can wire to the real
+  thing directly instead of a temporary stub.
 
 **AC:** Settings persist and reflect immediately. Day-start time rejects values outside
-01:00–06:00 (validated server-side, not just client-side). `DayTypeProvider` correctly resolves
-today's day type per whichever model you settled on in §0. Theme toggle and notification
+01:00–06:00 (already enforced server-side — verify, don't re-implement). `DayTypeProvider`
+correctly resolves today's day type per the manual-override model. Theme toggle and notification
 preference both work.
 
-**Dependencies:** E0 complete (settings schema already exists from E0's model work; this story
-adds the controller/route/frontend layer).
+**Dependencies:** none — E0 complete, backend done. This is the epic's frontend priority precisely
+because Habits (Step 4) depends on it.
 
 ---
 
@@ -112,28 +127,19 @@ adds the controller/route/frontend layer).
 
 **Goal:** Compute and visually surface how much of today's work capacity is planned/free.
 
-**Tasks — Backend:**
+**Backend — already shipped (verify against this checklist, don't rebuild):**
 
 - `server/utils/capacity.js` (pure): `calculateDailyCapacity(input)` —
   `(work_end - work_start - lunch) × 0.80` on a work day; `× 0.50` on a light day; `0` on an off
-  day (`Architecture.md` §6.3). **The `lunch` deduction has no dedicated settings field anywhere
-  in the schema** — no doc specifies its value either. Use a fixed 60-minute constant inside
-  `capacity.js` (name it clearly, e.g. `LUNCH_BREAK_MINUTES = 60`) and note in your hand-off that
-  this was an assumption, not a spec — flag it for a design/PM decision rather than treating it
-  as settled. `calculatePlannedTime(tasks)` — sum of today's tasks' `plannedDurationMinutes` (fall
-  back to `actualDurationMinutes` for already-completed tasks without a planned value, if that
-  case comes up). `parseTimeToMinutes(time)` — `"HH:MM"` → integer minutes. Unit-test all three
-  against Work/Light/Off day types, custom hours, and the time-parsing edge cases
-  (`team-task-breakdown.md` flags this test suite P0).
-- No new controller strictly required — capacity is computed on request, not persisted
-  (`team-task-breakdown.md`: "None new — capacity is computed, not persisted"). Expose it via a
-  small `getCapacity` action (could live on `dailySummaryController.js` since it's read-only and
-  date-scoped, or its own thin controller — your call) that calls `calculateDailyCapacity` +
-  `calculatePlannedTime` against the day's real task list and today's resolved day type from
-  `DayTypeProvider`'s server-side equivalent (i.e., `req.user.settings` + the day-type resolution
-  logic from E4-1).
+  day (`Architecture.md` §6.3). **The lunch constant is resolved** — `LUNCH_BREAK_MINUTES = 60` is
+  hardcoded and flagged in a comment as an assumption pending design/PM sign-off, exactly per this
+  section's original guidance. `calculatePlannedTime(tasks)` and `parseTimeToMinutes(time)` are
+  also shipped.
+- `getCapacity` exists on `dailySummaryController.js` (`GET /api/daily-summaries/capacity`),
+  computed on request against the day's real task list and resolved day type — not persisted.
 
-**Tasks — Frontend:**
+**Tasks — Frontend (net-new, Step 5 in `WORK-ORDER-FRONTEND-CATCHUP.md` — after Tasks/Settings/
+Goals/Habits, since it needs all of their real data):**
 
 - **Visual capacity gauge on the Home screen** — required, not optional; this is the product's
   signature visual per the PRD, give it real design attention (SVG-based, animated fill).
@@ -157,29 +163,23 @@ fires only below the 30% threshold, verified with a test case near the boundary.
 **Goal:** Roll up a day's points into a `DailySummary`, classify the day into one of 5 states,
 show a live progress bar.
 
-**Tasks — Backend:**
+**Backend — already shipped, including the cross-epic hooks (verify against this checklist, don't
+rebuild):**
 
 - `server/utils/dayState.js` (pure): `calculateDayState(points, target)` — ratio = points/target:
   ≥150% `legendary`, ≥120% `amazing`, ≥100% `perfect`, ≥50% `good_enough`, <50% `low`
   (`Architecture.md` §6.4). `calculateAdaptiveDailyTarget(recentDailyPoints, dayType)` — rolling
-  7-day average of points, then `× 0.5` on a light day, `× 0.2` on an off day. Unit-test all 5
-  state boundaries exactly at 49/50/100/120/150% plus a zero-target edge case
-  (`team-task-breakdown.md` flags this P0).
-- `server/controllers/dailySummaryController.js` + routes: `getToday` (read-only, computes/
-  returns today's `DailySummary`, creating one via upsert if it doesn't exist yet for the date),
-  `upsertDailySummary` (internal helper, not necessarily its own public route — called from the
-  hook points below).
-- **This story edits code from E2 and E3, not just new files** — hook a `DailySummary` recompute
-  (recalculate `tasksCompleted`/`habitsCompleted`/`pointsEarned`/`dayState` for today, via an
-  upsert on `{userId, date}`) into the **end of** `E2-2`'s `taskController.completeTask` and
-  `E3-1`'s `habitController.logHabit`. **Also hook in `E1-2`'s milestone `toggleComplete` action**
-  — it awards a +10 point bonus (`Architecture.md` §6.1, added to `scoring.js` in that work
-  order) that must roll into the same day's `pointsEarned`/`dayState`, not just task/habit points.
-  Keep the recompute logic itself inside
-  `dailySummaryController.js` or a small shared helper — don't duplicate the roll-up math inline
-  in both controllers; import and call it.
+  7-day average of points, `× 0.5`/`× 0.2` on light/off days (still flagged pending product
+  sign-off — see §0). Confirmed matching all 5 state boundaries exactly.
+- `server/controllers/dailySummaryController.js` — `getToday` (`GET /api/daily-summaries/today`,
+  upserts if today's `DailySummary` doesn't exist yet).
+- **The cross-epic recompute hooks are confirmed wired**: a `DailySummary` recompute
+  (`tasksCompleted`/`habitsCompleted`/`pointsEarned`/`dayState`) fires at the end of
+  `taskController.completeTask` and `habitController.logHabit`, and the milestone `toggleComplete`
+  +10 point bonus (`MILESTONE_BONUS_POINTS` in `dailySummaryController.js`) rolls into the same
+  day's total — exactly as this section originally specified.
 
-**Tasks — Frontend:**
+**Tasks — Frontend (net-new, part of Step 5 in `WORK-ORDER-FRONTEND-CATCHUP.md`):**
 
 - `ProgressBar` — 4 CSS color states (red/orange/purple/green per the existing status-color
   guardrail — verify the real token names in `tailwind.config.js` rather than assuming exact hex/
@@ -203,6 +203,9 @@ capstone, sequence it last within E4 as noted at the top of this file.
 
 ## Hand-off notes
 
-Report against each story's AC explicitly. Two items need an explicit call either way in your
-hand-off regardless of which way you resolved them: the E4-1 day-type-per-weekday schema question
-(§0), and the E4-2 lunch-break constant assumption. See `AGENT-OPERATING-INSTRUCTIONS.md` §9.
+Report against each story's AC explicitly. Both items this file used to flag as open questions are
+now resolved (§0: day-type is manual-override-only, lunch constant is hardcoded-and-flagged) — no
+need to re-litigate either, just confirm the frontend respects the manual-override model. The one
+still-genuinely-open item to carry forward: `dayState.js`'s adaptive-target multipliers remain
+unconfirmed by product — flag it again if you touch that code. See
+`AGENT-OPERATING-INSTRUCTIONS.md` §9.

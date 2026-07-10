@@ -8,6 +8,7 @@ const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage').then((m) 
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const TasksPage = lazy(() => import('@/features/tasks/pages/TasksPage').then((m) => ({ default: m.TasksPage })));
 const GoalsPage = lazy(() => import('@/features/goals/pages/GoalsPage').then((m) => ({ default: m.GoalsPage })));
+const GoalDetailPage = lazy(() => import('@/features/goals/pages/GoalDetailPage').then((m) => ({ default: m.GoalDetailPage })));
 const HabitsPage = lazy(() => import('@/features/habits/pages/HabitsPage').then((m) => ({ default: m.HabitsPage })));
 const OverviewPage = lazy(() => import('@/features/overview/pages/OverviewPage').then((m) => ({ default: m.OverviewPage })));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
@@ -67,6 +68,7 @@ export const AppRouter = () => {
           <Route path="/dashboard" element={<Navigate to="/" replace />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/goals" element={<GoalsPage />} />
+          <Route path="/goals/:id" element={<GoalDetailPage />} />
           <Route path="/habits" element={<HabitsPage />} />
           <Route path="/overview" element={<OverviewPage />} />
           <Route path="/settings" element={<SettingsPage />} />

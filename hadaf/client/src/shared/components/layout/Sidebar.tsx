@@ -1,14 +1,22 @@
 import { NavLink } from 'react-router-dom';
 import { Home, Target, Repeat, LayoutGrid, Settings, CheckCircle2, Clock, Zap, Hourglass, X, BookOpen, Quote, LogOut } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
-import { DashboardStats } from '@/features/dashboard/api/dashboardApi';
 import { useUIStore } from '@/shared/stores/useUIStore';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { useLocale, useTranslation } from '@/providers/useLocale';
 import { useIsDesktop } from '@/shared/hooks/useIsDesktop';
 
+interface SidebarStats {
+  pendingTasks: number;
+  completedTasks: number;
+  totalFocusMinutes: number;
+  dailyScore: number;
+  dailyTarget: number;
+  isLoading: boolean;
+}
+
 interface SidebarProps {
-  stats?: DashboardStats;
+  stats?: SidebarStats;
 }
 
 export const Sidebar = ({ stats }: SidebarProps) => {
@@ -39,10 +47,17 @@ export const Sidebar = ({ stats }: SidebarProps) => {
   const pendingCount = stats?.pendingTasks || 0;
   const score = stats?.dailyScore || 0;
 
-  const focusMinutes = stats?.totalFocusTime || 0;
+  const focusMinutes = stats?.totalFocusMinutes || 0;
   const hours = Math.floor(focusMinutes / 60);
   const minutes = focusMinutes % 60;
-  const focusTimeText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+  const focusTimeText =
+    locale === 'ar'
+      ? hours > 0
+        ? `${hours} س ${minutes} د`
+        : `${minutes} د`
+      : hours > 0
+      ? `${hours}h ${minutes}m`
+      : `${minutes}m`;
 
   // 5 items per E0-6 spec (Home, Goals, Habits, Overview, Settings).
   const navItems = [
@@ -73,7 +88,7 @@ export const Sidebar = ({ stats }: SidebarProps) => {
       <aside
         className={cn(
           "h-full fixed start-0 top-0 z-[60] flex flex-col transition-all duration-300 ease-in-out",
-          "bg-background-paper dark:bg-background-paper-dark border-e border-border dark:border-border-dark",
+          "bg-background-paper dark:bg-background-paper border-e border-border dark:border-border",
           isSidebarCollapsed ? "md:w-[80px]" : "md:w-[280px]"
         )}
         style={{ transform: sidebarTransform }}
@@ -198,7 +213,7 @@ export const Sidebar = ({ stats }: SidebarProps) => {
         )}>
           {!isSidebarCollapsed ? (
             // Full Widget
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-800 relative overflow-hidden animate-fade-in">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 relative overflow-hidden animate-fade-in">
               <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                 {t('sidebar.dailySummary')}
               </h3>
@@ -213,7 +228,7 @@ export const Sidebar = ({ stats }: SidebarProps) => {
             </div>
           ) : (
             // Mini Widget
-            <div className="py-4 flex flex-col items-center gap-4 bg-gray-50 dark:bg-background-dark rounded-xl border border-gray-200 dark:border-gray-800 animate-fade-in">
+            <div className="py-4 flex flex-col items-center gap-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-800 animate-fade-in">
                <div className="flex flex-col items-center gap-1 group relative cursor-help">
                  <CheckCircle2 size={18} className="text-emerald-600" />
                  <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">{doneCount}</span>

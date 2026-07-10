@@ -7,6 +7,7 @@ const router = express.Router();
 router.use(protect); // Ensure all goal endpoints require authentication
 
 router.route("/")
+  .get(goalsController.getGoals)
   .post(goalsController.createGoal);
 
 router.route("/active")

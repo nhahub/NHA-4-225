@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { queryClient } from '@/shared/lib/react-query';
 import { LocaleProvider } from '@/providers/LocaleProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
+import { DayTypeProvider } from '@/providers/DayTypeProvider';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -15,25 +16,22 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
     <ThemeProvider>
       <LocaleProvider>
         <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            {children}
+          <DayTypeProvider>
+            <BrowserRouter>
+              {children}
 
-            {/* Toast notifications. RTL flips the start/end; in LTR we want top-right,
-                in RTL we want top-left. Sonner doesn't support logical positions, so
-                pick the safer default and let user perception cover the small RTL
-                visual gap. */}
-            <Toaster
-              position="top-right"
-              richColors
-              expand={false}
-              duration={3000}
-            />
+              <Toaster
+                position="top-right"
+                richColors
+                expand={false}
+                duration={3000}
+              />
 
-            {/* React Query DevTools (only in dev) */}
-            {import.meta.env.DEV && (
-              <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-            )}
-          </BrowserRouter>
+              {import.meta.env.DEV && (
+                <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+              )}
+            </BrowserRouter>
+          </DayTypeProvider>
         </QueryClientProvider>
       </LocaleProvider>
     </ThemeProvider>

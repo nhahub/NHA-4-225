@@ -1,43 +1,58 @@
-export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+export type TaskType = 'scheduled' | 'flexible' | 'quick';
+export type TaskDifficulty = 'easy' | 'medium' | 'hard';
+export type TaskPriority = 'high' | 'medium' | 'low';
+export type TaskStatus = 'pending' | 'completed' | 'postponed';
 
-export interface SubTask {
-  id?: number | string;
+export interface ChecklistItem {
+  _id?: string;
   title: string;
-  isCompleted: boolean;
-  taskId?: number | string;
+  is_completed: boolean;
 }
 
 export interface Task {
-  id?: number | string;
-  name: string;
+  _id: string;
+  userId?: string;
+  goalId?: string;
+  title: string;
   description?: string;
-  
-  day: Date; 
-  
-  startTime?: Date;
-  endTime?: Date;
-  
-  // ✅ تعريف الحقول بدقة لتطابق الباك إند
-  actualStartTime?: Date;
-  actualendTime?: Date; 
-
+  type: TaskType;
+  difficulty: TaskDifficulty;
   priority: TaskPriority;
-  done: boolean;
-  points: number;
-  
-  subTasks: SubTask[];
-
-  // حقول للواجهة (Optional)
-  isTimeSet?: boolean;
+  date: string;
+  timeBlockStart?: string;
+  timeBlockEnd?: string;
+  plannedDurationMinutes?: number;
+  actualDurationMinutes?: number;
+  checklist: ChecklistItem[];
+  status: TaskStatus;
+  pointsEarned: number;
+  completedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  predictedPoints?: number;
+  streakDays?: number;
 }
 
-export interface DragResult {
-  source: {
-    index: number;
-    droppableId: string;
-  };
-  destination?: {
-    index: number;
-    droppableId: string;
-  }; 
+export interface CreateTaskInput {
+  goalId?: string;
+  title: string;
+  description?: string;
+  date: string;
+  difficulty?: TaskDifficulty;
+  priority?: TaskPriority;
+  type?: TaskType;
+  timeBlockStart?: string;
+  timeBlockEnd?: string;
+  plannedDurationMinutes?: number;
+  checklist?: { title: string; is_completed?: boolean }[];
+}
+
+export interface CompleteTaskInput {
+  actualDurationMinutes?: number;
+}
+
+export interface RescheduleTaskInput {
+  date: string;
+  timeBlockStart?: string;
+  timeBlockEnd?: string;
 }

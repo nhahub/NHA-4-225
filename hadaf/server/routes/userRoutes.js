@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.use(protect); // Ensure endpoints require authentication
 
-// /api/user/settings
 router.route("/settings")
+  .get(settingsController.getSettings)
   .patch(settingsController.updateSettings);
 
 module.exports = router;

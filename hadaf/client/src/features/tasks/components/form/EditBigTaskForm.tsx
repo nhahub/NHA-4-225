@@ -1,154 +1,116 @@
-﻿// @ts-nocheck — TODO(E2): rewire to the real Hadaf Task schema. This file still uses Impulse's pre-migration task shape (name/startTime/endTime/subTasks/type/points). Full Express rewiring lands in the E2 work order.
-import React, { useEffect } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
+﻿import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Edit3 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
+import { Task, ChecklistItem } from '../../types';
+import { cn } from '@/shared/utils/cn';
+import { useTranslation } from '@/providers/useLocale';
+import { TaskFormBody } from './sharedBody';
+import type { TaskFormValues } from './formValues';
 import { useUpdateTask } from '../../hooks/useTasks';
-import type { Task } from '../../types';
-import { TaskHeader } from './TaskHeader';
-import { TaskScheduling } from './TaskScheduling';
-import { TaskPriority } from './TaskPriority';
-import { TaskSubtasks } from './TaskSubtasks';
-import { differenceInMinutes, parse, addMinutes, format, isValid } from 'date-fns';
 
-const bigTaskSchema = z.object({
-  name: z.string().min(1, 'Required'),
+const schema = z.object({
+  title: z.string().min(1),
   description: z.string().optional(),
-  day: z.string().min(1, 'Required'),
-  startTime: z.string().min(1, 'Required'),
-  endTime: z.string().min(1, 'Required'),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']),
-  subTasks: z.array(z.object({
-    name: z.string().optional(),
-    isCompleted: z.boolean().default(false),
-    timeEstimate: z.coerce.number().min(1).default(30)
-  }).strict()).optional()
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  priority: z.enum(['high', 'medium', 'low']),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+  timeBlockStart: z.string().optional().or(z.literal('')),
+  timeBlockEnd: z.string().optional().or(z.literal('')),
+  plannedDurationMinutes: z.number().int().nonnegative().optional(),
+  checklist: z.array(z.object({ title: z.string(), is_completed: z.boolean().optional() })).optional(),
 });
-
-type BigFormValues = z.infer<typeof bigTaskSchema>;
 
 interface EditBigTaskFormProps {
   task: Task;
   onClose: () => void;
 }
 
+// EditBigTaskForm renders the same content as EditRegularTaskForm — both are
+// Tasks in the real Task model. Kept as a separate file to satisfy the
+// component-shell parity with the original code paths without any code
+// duplication in the caller.
 export const EditBigTaskForm = ({ task, onClose }: EditBigTaskFormProps) => {
+  const { t } = useTranslation();
   const updateTask = useUpdateTask();
 
-  const methods = useForm<BigFormValues>({
-    resolver: zodResolver(bigTaskSchema),
+  const methods = useForm<TaskFormValues>({
+    resolver: zodResolver(schema) as never,
     defaultValues: {
-      name: task.name,
-      description: task.description || '',
-      day: task.day,
+      title: task.title,
+      description: task.description ?? '',
+      date: task.date,
       priority: task.priority,
-      startTime: task.startTime,
-      endTime: task.endTime,
-      subTasks: task.subTasks?.map(st => ({ 
-        name: st.name, 
-        isCompleted: st.isCompleted,
-        timeEstimate: st.timeEstimate || 30
-      })) || []
+      difficulty: task.difficulty,
+      timeBlockStart: task.timeBlockStart ?? '',
+      timeBlockEnd: task.timeBlockEnd ?? '',
+      plannedDurationMinutes: task.plannedDurationMinutes ?? undefined,
+      checklist: task.checklist?.map((c) => ({ title: c.title, is_completed: c.is_completed })) ?? [],
     },
   });
 
-  const { handleSubmit, watch, setValue, formState: { isSubmitting } } = methods;
-  const startTime = watch('startTime');
-  const subTasks = watch('subTasks');
-
-  useEffect(() => {
-    if (subTasks) {
-      const validSubTasks = subTasks.filter(st => st.name && st.name.trim().length > 0);
-      const totalMinutes = validSubTasks.reduce((acc, curr) => acc + (curr.timeEstimate || 0), 0);
-      const durationToAdd = totalMinutes > 0 ? totalMinutes : 30; 
-
-      if (startTime) {
-        const startDate = parse(startTime, 'HH:mm', new Date());
-        if (isValid(startDate)) {
-          const endDate = addMinutes(startDate, durationToAdd);
-          setValue('endTime', format(endDate, 'HH:mm'));
-        }
-      }
-    }
-  }, [subTasks, startTime, setValue]);
-
-  const calculateDuration = (start: string, end: string) => {
-    try {
-      const s = parse(start, 'HH:mm', new Date());
-      const e = parse(end, 'HH:mm', new Date());
-      let diff = differenceInMinutes(e, s);
-      if (diff < 0) diff += 1440;
-      return diff;
-    } catch { return 60; }
-  };
-
-  const onSubmit = async (data: BigFormValues) => {
-    try {
-      const validSubTasks = data.subTasks
-        ?.filter(st => st.name && st.name.trim().length > 0)
-        .map(st => ({
-          id: crypto.randomUUID(), 
-          isCompleted: false, 
-          name: st.name!,
-          timeEstimate: st.timeEstimate || 30
-        }));
-
-      await updateTask.mutateAsync({
-        id: task.id,
-        updates: {
-          ...data,
-          expectedTime: calculateDuration(data.startTime, data.endTime),
-          subTasks: validSubTasks,
-          type: 'big_task'
-        }
-      });
-      onClose();
-    } catch (error) {
-      console.error("Failed to update project:", error);
-    }
-  };
+  const { handleSubmit, formState: { isSubmitting } } = methods;
 
   return (
-    <div className="flex flex-col h-full max-h-[85vh]"> 
-      {/* Header */}
+    <div className="flex flex-col h-full max-h-[85vh]">
       <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-purple-50/30 dark:bg-purple-900/10 shrink-0">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <Edit3 size={18} className="text-purple-600" />
-          Edit Big Task
+          {t('tasks.editTask')}
         </h2>
-        <p className="text-xs text-gray-500 mt-1">Managing project structure</p>
+        <p className="text-xs text-gray-500 mt-1">{task.title}</p>
       </div>
 
-      {/* Body */}
       <div className="flex-1 overflow-y-auto min-h-0 px-6 py-6 scrollbar-hide">
         <FormProvider {...methods}>
-          <form id="edit-big-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <TaskHeader />
-            <div className="animate-slide-in-up">
-              <TaskSubtasks />
-            </div>
-            
-            {/* âœ… FIXED: Removed redundant Grid & Message. TaskScheduling handles it. */}
-            <TaskScheduling isAutoScheduled={true} />
-            
-            <TaskPriority />
+          <form
+            id="edit-big-task-form"
+            onSubmit={handleSubmit(async (data) => {
+              try {
+                await updateTask.mutateAsync({
+                  id: task._id,
+                  input: {
+                    title: data.title,
+                    description: data.description,
+                    priority: data.priority,
+                    difficulty: data.difficulty,
+                    date: data.date,
+                    timeBlockStart: data.timeBlockStart || undefined,
+                    timeBlockEnd: data.timeBlockEnd || undefined,
+                    plannedDurationMinutes: data.plannedDurationMinutes,
+                    checklist: (data.checklist ?? [])
+                      .filter((c) => c.title.trim())
+                      .map<ChecklistItem>((c) => ({
+                        title: c.title,
+                        is_completed: c.is_completed ?? false,
+                      })),
+                  },
+                });
+                onClose();
+              } catch (e) {
+                console.error(e);
+              }
+            })}
+            className={cn('space-y-6')}
+          >
+            <TaskFormBody />
           </form>
         </FormProvider>
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3 bg-white dark:bg-gray-900 shrink-0">
-        <Button variant="ghost" onClick={onClose} size="sm">Cancel</Button>
-        <Button 
-          type="submit" 
-          form="edit-big-form" 
-          isLoading={isSubmitting} 
-          size="sm" 
+      <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3 bg-white dark:bg-background-paper shrink-0">
+        <Button variant="ghost" onClick={onClose} size="sm">
+          {t('common.cancel')}
+        </Button>
+        <Button
+          type="submit"
+          form="edit-big-task-form"
+          isLoading={isSubmitting}
+          size="sm"
           className="px-6 shadow-lg shadow-purple-500/20"
         >
-          Update Project
+          {t('common.save')}
         </Button>
       </div>
     </div>

@@ -9,16 +9,23 @@
 > E3; `Docs/team-task-breakdown.md` E3-1/E3-2 (full itemized detail, translate stale idioms per
 > the table below).
 >
+> **Updated 2026-07-10 — this epic's backend has shipped.** See
+> `Docs/agent-tasks/WORK-ORDER-FRONTEND-CATCHUP.md` for the current big-picture build sequence
+> across all epics (this epic is Step 4 of 5, after Settings/`DayTypeProvider` — see the gate note
+> below, now resolved in this epic's favor). The **Backend** subsections below are now a
+> verification checklist, not a build list; the **Frontend** is still fully net-new.
+>
 > **Execution model: single agent, sequential.** Work E3-1 → E3-2 in order.
 >
-> **Gate: do not start until E0 is fully complete.** E3 also has a **forward dependency worth
-> knowing about now**: E3-1's MVD indicator is specified to read a `DayTypeProvider` context that
-> isn't built until `E4-1` (later in epic order). See the note inside E3-1 below for how to
-> sequence around this without blocking on E4.
+> **Gate: E0 complete (verified).** The forward dependency this file originally flagged —
+> E3-1's MVD indicator needing a `DayTypeProvider` context from `E4-1` — is resolved by
+> `WORK-ORDER-FRONTEND-CATCHUP.md`'s sequencing: Settings/`DayTypeProvider` is Step 2, ahead of this
+> epic's Step 4. If you're following that sequence, `DayTypeProvider` already exists by the time
+> you reach E3-1 — wire to it directly, skip the temporary-stub advice below.
 
 ---
 
-## 0. Current State
+## 0. Current State — updated 2026-07-10, backend shipped
 
 **Already exists and verified — do not recreate:**
 - `hadaf/server/models/Habit.js` — `userId`, `title`, `category` enum
@@ -32,15 +39,25 @@
 - Both carry an E0-3.1 verification comment — trust the live files over this description if they
   disagree.
 
-**Net-new — everything else:**
-- No `server/controllers/habitController.js` / `server/routes/habitRoutes.js`.
-- No habit-point functions in `server/utils/scoring.js` yet. **These extend the same file E2-2
-  creates** — `calculateHabitPoints`/`calculateCounterHabitPoints` are scoring-domain functions
-  per `Architecture.md` §6.1, not a separate habits-domain file. If E2 hasn't landed yet,
-  `scoring.js` doesn't exist — create it here with just the habit functions, and E2-2 (or you,
-  if doing both) adds the task-scoring functions alongside them. Either order works; don't
-  duplicate the file.
-- No `hadaf/client/src/features/habits/` — fully new, Impulse has no habits feature to adapt from.
+**Backend — SHIPPED:**
+- `server/controllers/habitController.js` + `server/routes/habitRoutes.js` — live endpoints:
+  `GET/POST /api/habits`, `GET /api/habits/logs`, `POST /api/habits/:id/log`,
+  `POST /api/habits/:id/relapse`.
+- Habit-point functions in `server/utils/scoring.js` (shared with E2, as this file anticipated) —
+  verified matching `Architecture.md` §6.1's point table exactly (boolean full=5/MVD=3, counter
+  full=5/partial=4/mvd-only=3, quit=0).
+- Relapse/streak-since-relapse logic lives in **`server/utils/habit-streak.js`** — a read-time
+  calculation as E3-2 below specifies, not a stored counter. Note this is a **kebab-case**
+  filename (same pattern as `goal-progress.js`/`task-type.js` in E1/E2) — it wasn't originally
+  named in this section, but this is where that logic ended up.
+
+**Still net-new — this is what's actually left in this epic:**
+- `hadaf/client/src/features/habits/` — still doesn't exist beyond a stub `HabitsPage.tsx`
+  ("Coming Soon" placeholder). Fully new — Impulse has no habits feature to adapt from.
+
+See `Docs/agent-tasks/WORK-ORDER-FRONTEND-CATCHUP.md` Step 4 for how this epic's frontend fits
+into the overall build sequence (after Settings/`DayTypeProvider`, so the MVD indicator below can
+wire to the real thing from the start).
 
 ## Idiom translation
 
@@ -59,7 +76,7 @@
 **Goal:** Create boolean/counter habits, log daily progress, show the Minimum Viable Dose (MVD)
 fallback.
 
-**Tasks — Backend:**
+**Backend — already shipped (verify against this checklist, don't rebuild):**
 
 - `server/utils/scoring.js` (pure, shared with E2 — see note above): `calculateHabitPoints(type,
   isMvd)` — boolean: full=5, MVD=3. `calculateCounterHabitPoints(value, target, mvd)` — full
@@ -72,29 +89,27 @@ fallback.
   on a same-day re-log, that's a legitimate "user changed their mind" case), `getHabits` (list,
   scoped to user), `getHabitLogs` (for a date range, used by the habit's history view).
 
-**Tasks — Frontend:**
+**Tasks — Frontend (fully net-new):**
 
 - `HabitCard` / `HabitList` — boolean habits show a single toggle; counter habits show a
   numeric-stepper (`HabitCounter`) against `targetValue`.
-- **MVD indicator — forward-dependency note:** the spec calls for this to read the active day
-  type from `DayTypeProvider`, which is built in `E4-1` (not yet built when you reach E3 in
-  sequence). Build the indicator now against a minimal local read — e.g. a prop or a lightweight
-  query for "is today a light/off day" sourced from whatever's available at the time (worst case:
-  hardcode to "work day" behavior and leave a
-  `// TODO(E4-1): wire to DayTypeProvider once it exists` comment) — don't block E3-1 on E4. If
-  you're the one implementing both epics later, come back and do the real wiring once `E4-1`
-  lands, and confirm it in your E4-1 hand-off notes.
-- `useCreateHabit`, `useLogHabit`, `useHabits` — React Query hooks.
-- `HabitsPage` (route `/habits`).
+- **MVD indicator:** per `WORK-ORDER-FRONTEND-CATCHUP.md`'s sequencing, `DayTypeProvider` (built in
+  Settings/Step 2) already exists by the time you reach this story — wire the indicator directly
+  to it, no stub needed. *(Only fall back to a local read/TODO comment if you're working this epic
+  out of that sequence, i.e. before Settings/`DayTypeProvider` exists.)*
+- `useCreateHabit`, `useLogHabit`, `useHabits` — React Query hooks, wired to the real endpoints in
+  §0 above.
+- `HabitsPage` (route `/habits`) — replaces the current "Coming Soon" stub.
 
 **AC:** Boolean and counter habits can be created and logged. Re-logging the same habit on the
 same date updates the existing log (upsert), doesn't error. `calculateHabitPoints`/
 `calculateCounterHabitPoints` match `Architecture.md` §6.1's point values exactly for every
-tested branch. MVD indicator renders (even if against the temporary local read noted above).
+tested branch. MVD indicator renders against the real `DayTypeProvider` (or the temporary local
+read, only if built out of sequence — see above).
 
-**Dependencies:** E0 complete. Shares `scoring.js` with E2 — see the Current State note on
-sequencing that file. MVD indicator's real `DayTypeProvider` wiring depends on E4-1 (non-blocking,
-see above).
+**Dependencies:** E0 complete. Shares `scoring.js` with E2 (both already shipped on the backend).
+MVD indicator's `DayTypeProvider` wiring depends on Settings/Step 2 of
+`WORK-ORDER-FRONTEND-CATCHUP.md`, which precedes this epic in that sequence.
 
 ---
 
@@ -103,7 +118,7 @@ see above).
 **Goal:** A `quit`-type habit variant that tracks streak-since-relapse instead of daily completion,
 with a non-punitive relapse flow.
 
-**Tasks — Backend:**
+**Backend — already shipped (verify against this checklist, don't rebuild):**
 
 - `logRelapse` controller action: writes a `HabitLog` for today with `isRelapse: true`. The
   "counter resets" behavior described in `team-task-breakdown.md` is a **read-time**

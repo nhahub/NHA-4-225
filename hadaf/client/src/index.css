@@ -229,7 +229,7 @@
   :root.dark *,
   :root.dark ::after,
   :root.dark ::before {
-    border-color: var(--color-border-dark);
+    border-color: var(--color-border);
   }
 
   html {

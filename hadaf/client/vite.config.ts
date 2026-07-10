@@ -10,11 +10,12 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8642',
-        changeOrigin: true,
-      },
-    },
+    // Bind IPv4 explicitly. Without this, Vite's default on Windows binds
+    // to IPv6 `::1` only, and browsers that resolve `localhost` to
+    // `127.0.0.1` (or axios calls that go IPv4-first) hit a refused
+    // connection → "errors.networkError" fallback in the API client.
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
   },
 });

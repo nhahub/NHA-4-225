@@ -51,7 +51,7 @@ export const HeaderProgressBar = ({ progress, isOverachiever }: HeaderProgressBa
     <div className="absolute inset-0 z-0 pointer-events-none">
       
       {/* 1. Static Background (Glass) */}
-      <div className="absolute inset-0 bg-white/95 dark:bg-background-dark/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-colors" />
+      <div className="absolute inset-0 bg-white/95 dark:bg-background/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-colors" />
 
 {/* 2. Moving Progress Fill */}
       <div

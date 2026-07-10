@@ -1,60 +1,56 @@
-// @ts-nocheck — TODO(E2): scoring formulas will be re-derived from the real
-// Task model (difficulty/priority/time block) in the E2/Capacity & Scoring
-// work order. The constants and helpers here still reference Impulse's
-// pre-migration task shape.
-import { Task } from '../types';
+export interface ScoreBreakdown {
+  base: number;
+  bonus: number;
+  total: number;
+}
 
-export const calculateTaskPoints = (task: Task, actualTime: number) => {
-  // 1. Base Score (Difficulty Proxy)
-  // بما أننا لا نملك حقل صعوبة، سنعتبر الأساس 5 نقاط
-  const BASE_SCORE = 5;
+// Mirrors the server-side calculateTaskPoints in server/utils/scoring.js so the UI
+// can preview the formula before completion. Server is still the source of truth —
+// this is only used for the live breakdown rendered above the confirm button.
+export const calculateTaskPointsPreview = ({
+  type,
+  difficulty,
+  actualMinutes,
+  plannedMinutes,
+}: {
+  type: 'scheduled' | 'flexible' | 'quick';
+  difficulty: 'easy' | 'medium' | 'hard';
+  actualMinutes?: number;
+  plannedMinutes?: number;
+}): ScoreBreakdown => {
+  if (type === 'quick') {
+    return { base: 2, bonus: 0, total: 2 };
+  }
 
-  // 2. Size Factor (Based on Expected Time or Type)
-  const sizeFactor =
-    task.type === 'big_task'
-      ? 2.0
-      : task.expectedTime < 30
-        ? 1.0
-        : task.expectedTime <= 90
-          ? 1.2
-          : 1.5;
+  const basePer10Min = 1;
+  const actual = Math.max(0, actualMinutes ?? plannedMinutes ?? 0);
+  const planned = Math.max(0, plannedMinutes ?? 0);
 
-  // 3. Priority Factor (As per doc)
-  const priorityFactor = 
-    task.priority === 'urgent' ? 2.0 :
-    task.priority === 'high' ? 1.7 :
-    task.priority === 'medium' ? 1.3 : 
-    1.0; // Low
+  const cappedActual = planned > 0 ? Math.min(actual, planned * 3) : actual;
 
-  // 4. Time Multiplier
-  const diff = task.expectedTime - actualTime;
-  const timeMultiplier =
-    diff >= 0
-      ? 1.5
-      : Math.abs(diff) <= 15
-        ? 1.2
-        : 1.0;
+  const difficultyMult =
+    difficulty === 'hard' ? 1.4 : difficulty === 'medium' ? 1.2 : 1.0;
 
-  // Final Calculation
-  const rawScore = (BASE_SCORE * sizeFactor * priorityFactor) * timeMultiplier;
-  
-  // Return rounded score
-  return Math.round(rawScore * 10) / 10;
-};
+  const onTime =
+    planned > 0 && Math.abs(actual - planned) <= 15 ? 1.15 : 1.0;
 
-export const getPointsBreakdown = (task: Task, actualTime: number) => {
-  const total = calculateTaskPoints(task, actualTime);
-  
-  // Calculate Base Portion (Before Time Multiplier)
-  const sizeFactor = task.type === 'big_task' ? 2.0 : (task.expectedTime < 30 ? 1.0 : task.expectedTime <= 90 ? 1.2 : 1.5);
-  const priorityFactor = task.priority === 'urgent' ? 2.0 : task.priority === 'high' ? 1.7 : task.priority === 'medium' ? 1.3 : 1.0;
-  
-  const basePortion = Math.round((5 * sizeFactor * priorityFactor) * 10) / 10;
-  const bonusPortion = Math.round((total - basePortion) * 10) / 10;
-
+  const raw = (cappedActual / 10) * basePer10Min * difficultyMult * onTime;
   return {
-    total,
-    base: basePortion,
-    bonus: bonusPortion
+    base: Math.ceil((cappedActual / 10) * basePer10Min * difficultyMult),
+    bonus: Math.ceil(raw - Math.ceil((cappedActual / 10) * basePer10Min * difficultyMult)),
+    total: Math.ceil(raw),
   };
 };
+
+export const getPointsBreakdown = (
+  _type: 'scheduled' | 'flexible' | 'quick',
+  _difficulty: 'easy' | 'medium' | 'hard',
+  actualMinutes: number,
+  plannedMinutes = 0,
+): ScoreBreakdown =>
+  calculateTaskPointsPreview({
+    type: _type,
+    difficulty: _difficulty,
+    actualMinutes,
+    plannedMinutes,
+  });

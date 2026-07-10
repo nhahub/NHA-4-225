@@ -1,33 +1,39 @@
-// @ts-nocheck — TODO(E2): rewire against the real Hadaf Task schema. The
-// sortTasks helper here uses Impulse's pre-migration priority/order/shape.
-import { Task } from '../types';
+import { Task, TaskPriority } from '../types';
+
+const PRIORITY_WEIGHT: Record<TaskPriority, number> = {
+  high: 3,
+  medium: 2,
+  low: 1,
+};
 
 export const sortTasks = (tasks: Task[]): Task[] => {
-  const priorityWeight = {
-    urgent: 4,
-    high: 3,
-    medium: 2,
-    low: 1,
-  };
-
   return [...tasks].sort((a, b) => {
-    // 1. حالة الإنتهاء (المنتهي ينزل للأسفل)
-    if (a.done !== b.done) {
-      return a.done ? 1 : -1;
+    if (a.status !== b.status) {
+      // completed tasks sink to the bottom
+      if (a.status === 'completed' && b.status !== 'completed') return 1;
+      if (a.status !== 'completed' && b.status === 'completed') return -1;
     }
 
-    // 2. الأولوية (الأعلى أولاً: Urgent -> Low)
-    const priorityDiff = priorityWeight[b.priority] - priorityWeight[a.priority];
+    const priorityDiff =
+      PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority];
     if (priorityDiff !== 0) return priorityDiff;
 
-    // 3. حجم المهمة (Big Task يظهر قبل Regular)
-    if (a.type !== b.type) {
-      return a.type === 'big_task' ? -1 : 1;
-    }
+    const dateDiff = (a.date || '').localeCompare(b.date || '');
+    if (dateDiff !== 0) return dateDiff;
 
-    // 4. وقت البداية (الأقرب أولاً)
-    const timeA = a.startTime || '23:59';
-    const timeB = b.startTime || '23:59';
-    return timeA.localeCompare(timeB);
+    const aStart = a.timeBlockStart || '23:59';
+    const bStart = b.timeBlockStart || '23:59';
+    return aStart.localeCompare(bStart);
   });
+};
+
+export const formatTime = (hhmm?: string): string => {
+  if (!hhmm) return '--:--';
+  const match = hhmm.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return hhmm;
+  const h = Number(match[1]);
+  const m = match[2];
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${m} ${period}`;
 };

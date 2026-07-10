@@ -4,6 +4,7 @@ import { format, isSameDay, differenceInCalendarDays, startOfToday } from 'date-
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/components/ui/Button';
 import { LanguageSwitcher } from '@/shared/components/layout/LanguageSwitcher';
+import { useTranslation } from '@/providers/useLocale';
 
 interface HeaderContentProps {
   currentTime: Date;
@@ -38,7 +39,7 @@ export const HeaderContent = ({
   onAddTask,
   onMenuToggle
 }: HeaderContentProps) => {
-  
+  const { t } = useTranslation();
   const dateInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const today = startOfToday();
@@ -46,11 +47,11 @@ export const HeaderContent = ({
 
   const getRelativeDateText = () => {
     const diff = differenceInCalendarDays(selectedDate, today);
-    if (diff === 0) return "Today";
-    if (diff === 1) return "Tomorrow";
-    if (diff === -1) return "Yesterday";
-    const sign = diff > 0 ? "+" : "";
-    return `${sign}${diff} Days`;
+    if (diff === 0) return t('date.today');
+    if (diff === 1) return t('date.tomorrow');
+    if (diff === -1) return t('date.yesterday');
+    const sign = diff > 0 ? '+' : '';
+    return `${sign}${diff} ${t('date.today')}`; // best-effort fallback
   };
 
   // Focus effect
@@ -62,36 +63,37 @@ export const HeaderContent = ({
 
   return (
     <div className="relative z-10 flex items-center justify-between gap-4 h-full px-4 md:px-8 w-full">
-        
+
       {/* Left: Date & Menu */}
       <div className="flex items-center gap-3 min-w-fit">
-        <button 
+        <button
           onClick={onMenuToggle}
           className="p-2 -ms-2 text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors"
+          aria-label="Toggle menu"
         >
           <PanelLeft size={22} className={cn("transition-transform", isSidebarCollapsed && "rotate-180")} />
         </button>
 
-        <div 
+        <div
           className="group/date relative cursor-pointer flex items-center gap-3 select-none"
           onClick={() => dateInputRef.current?.showPicker()}
         >
           <div className={cn(
             "hidden md:flex p-2 rounded-lg shadow-sm transition-all duration-200 border bg-white/50 dark:bg-black/20 backdrop-blur-sm",
-            isToday 
+            isToday
               ? "border-brand-200 text-brand-600 dark:border-brand-900/30 dark:text-brand-100"
               : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400"
           )}>
-             <Calendar size={18} />
+            <Calendar size={18} />
           </div>
 
           <div>
             <h2 className="text-sm md:text-base font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-2 group-hover/date:text-brand-600 transition-colors">
               {format(selectedDate, 'EEE, MMM d')}
               <ChevronDown size={14} className="text-gray-400 group-hover/date:text-brand-500 transition-transform group-hover/date:rotate-180" />
-              <input 
+              <input
                 ref={dateInputRef}
-                type="date" 
+                type="date"
                 className="absolute inset-0 opacity-0 cursor-pointer -z-10"
                 onChange={(e) => e.target.valueAsDate && onDateChange(e.target.valueAsDate)}
                 value={format(selectedDate, 'yyyy-MM-dd')}
@@ -108,7 +110,7 @@ export const HeaderContent = ({
             onClick={onResetToday}
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-brand-700 bg-white/60 border border-brand-100 dark:bg-brand-900/20 dark:text-brand-200 dark:border-brand-900/30 rounded-md hover:bg-brand-100 transition-all shadow-sm backdrop-blur-sm"
           >
-            <RotateCcw size={12} /> Today
+            <RotateCcw size={12} /> {t('date.today')}
           </button>
         )}
       </div>
@@ -128,27 +130,28 @@ export const HeaderContent = ({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2 md:gap-3 justify-end flex-1 md:flex-none">
-        
+
         <div className={cn(
           "flex items-center rounded-lg border transition-all duration-300 overflow-hidden bg-white/50 dark:bg-black/20 backdrop-blur-sm",
-          isSearchExpanded 
-            ? "w-full md:w-64 px-2 border-brand-500 ring-1 ring-brand-500/20 shadow-sm bg-white dark:bg-gray-800" 
+          isSearchExpanded
+            ? "w-full md:w-64 px-2 border-brand-500 ring-1 ring-brand-500/20 shadow-sm bg-white dark:bg-gray-800"
             : "w-9 h-9 justify-center border-transparent bg-transparent shadow-none"
         )}>
-          <button 
+          <button
             onClick={onSearchToggle}
             className={cn(
               "text-gray-500 hover:text-brand-600 dark:text-gray-400 transition-colors",
               !isSearchExpanded && "p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"
             )}
+            aria-label={t('header.search')}
           >
             <Search size={18} />
           </button>
-          
+
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search..."
+            placeholder={t('header.search')}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className={cn(
@@ -157,7 +160,7 @@ export const HeaderContent = ({
             )}
             onBlur={() => !searchQuery && onSearchToggle()}
           />
-          
+
           {searchQuery && isSearchExpanded && (
             <button onClick={onSearchClear} className="text-gray-400 hover:text-gray-600">
               <X size={14} />
@@ -165,7 +168,7 @@ export const HeaderContent = ({
           )}
         </div>
 
-        <div className="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block" />
+        <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block" />
 
         <LanguageSwitcher />
 
@@ -177,18 +180,19 @@ export const HeaderContent = ({
           {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        <Button 
+        <Button
           onClick={onAddTask}
           size="sm"
           className="rounded-lg px-4 shadow-lg shadow-brand-500/20 hidden md:flex font-semibold relative overflow-hidden"
           leftIcon={<Plus size={16} />}
         >
-          Add Task
+          {t('header.addTask')}
         </Button>
-        
-        <button 
+
+        <button
           onClick={onAddTask}
           className="w-9 h-9 rounded-lg bg-brand-600 text-white flex md:hidden items-center justify-center shadow-md active:scale-95 transition-transform"
+          aria-label={t('header.addTask')}
         >
           <Plus size={20} />
         </button>
