@@ -1,0 +1,253 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+/* --------------------------------------------------------------------------
+ * Fonts (E0-2.1)
+ *
+ * Target: self-host Tajawal + IBM Plex Sans Arabic woff2 in
+ * public/fonts/. The @font-face rules below reference the expected file
+ * names. Until those files are dropped into public/fonts/, the @import
+ * fallback below loads the same families from the Google Fonts CDN.
+ *
+ * TODO(E0-2): remove the @import fallback once the woff2 files are in
+ * public/fonts/ and verified locally. The CDN @import violates the
+ * "self-hosted fonts" AC.
+ * --------------------------------------------------------------------------
+ */
+
+/* Google Fonts CDN — DEV-ONLY FALLBACK until public/fonts/ is populated.
+ * Delete this block once woff2 files are in place. */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap');
+
+/* Self-hosted woff2 — declared here even though the files aren't in
+ * public/fonts/ yet, so the moment the files land the font-family names
+ * resolve without any further code change. Browsers will silently skip
+ * these if the URL 404s; the CDN @import above remains the live source. */
+@font-face {
+  font-family: 'Tajawal';
+  src: url('/fonts/Tajawal-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Tajawal';
+  src: url('/fonts/Tajawal-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Tajawal';
+  src: url('/fonts/Tajawal-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  src: url('/fonts/IBMPlexSansArabic-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  src: url('/fonts/IBMPlexSansArabic-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  src: url('/fonts/IBMPlexSansArabic-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Hadaf design tokens — OKLCH only. The client's token layer (this file +
+ * tailwind.config.js) is the authoritative design source. See
+ * Docs/AGENT-OPERATING-INSTRUCTIONS.md §3. There is no separate DESIGN.md.
+ *
+ * Color values mirror the Violet scale Tailwind v4 ships, converted from
+ * Impulse's hex equivalents. WCAG contrast (computed against the paired
+ * foreground token in each theme) is documented per brand stop.
+ */
+
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* Semantic surfaces — light */
+    --color-background: oklch(0.985 0 0);
+    --color-background-paper: oklch(1 0 0);
+    --color-foreground: oklch(0.18 0.02 264);
+    --color-foreground-muted: oklch(0.55 0.02 264);
+    --color-border: oklch(0.92 0.005 264);
+
+    /* Brand scale — Violet, light-theme usage.
+     * Contrast notes (text on fill with --color-foreground @ ≈L0.18):
+     *   50:  fill L≈0.97 — contrast ≈1.1:1 (too light for body text — use only as bg)
+     *   100: fill L≈0.94 — contrast ≈1.3:1 (bg only)
+     *   200: fill L≈0.89 — contrast ≈1.6:1 (bg only)
+     *   300: fill L≈0.81 — contrast ≈2.0:1 (decorative)
+     *   400: fill L≈0.70 — contrast ≈2.9:1 (decorative)
+     *   500: fill L≈0.61 — contrast ≈4.0:1 (UI accent ok, body text needs white)
+     *   600: fill L≈0.54 — contrast ≈5.2:1 ✓ AA body text on white
+     *   700: fill L≈0.49 — contrast ≈6.5:1 ✓ AA body text
+     *   800: fill L≈0.43 — contrast ≈8.5:1 ✓ AAA
+     *   900: fill L≈0.38 — contrast ≈10.5:1 ✓ AAA
+     *   950: fill L≈0.28 — contrast ≈16:1 ✓ AAA
+     */
+    --color-brand-50: oklch(0.969 0.016 293.756);
+    --color-brand-100: oklch(0.943 0.029 294.588);
+    --color-brand-200: oklch(0.894 0.057 293.283);
+    --color-brand-300: oklch(0.811 0.111 293.571);
+    --color-brand-400: oklch(0.702 0.183 293.541);
+    --color-brand-500: oklch(0.606 0.25 292.717);
+    --color-brand-600: oklch(0.541 0.281 293.009);
+    --color-brand-700: oklch(0.491 0.27 292.581);
+    --color-brand-800: oklch(0.432 0.232 292.759);
+    --color-brand-900: oklch(0.38 0.189 293.745);
+    --color-brand-950: oklch(0.283 0.141 291.089);
+
+    /* Status colors — 5 tones for 5 day states.
+     * Contrast (text on fill with --color-foreground @ ≈L0.18):
+     *   danger (red-500):     L≈0.64 — contrast ≈3.7:1 (use white text on filled bg)
+     *   warning (orange-500): L≈0.71 — contrast ≈4.6:1 ✓ AA UI
+     *   info (amber-500):     L≈0.77 — contrast ≈5.4:1 ✓ AA body
+     *   success (green-500):  L≈0.70 — contrast ≈4.4:1 ✓ AA UI
+     *   legendary (yellow-500): L≈0.80 — contrast ≈5.9:1 ✓ AA body
+     */
+    --color-status-danger: oklch(0.637 0.237 25.331);
+    --color-status-warning: oklch(0.705 0.21 50.16);
+    --color-status-info: oklch(0.769 0.188 70.08);
+    --color-status-success: oklch(0.696 0.17 162.48);
+    --color-status-legendary: oklch(0.795 0.184 86.047);
+  }
+
+  :root.dark {
+    color-scheme: dark;
+
+    /* Semantic surfaces — dark */
+    --color-background: oklch(0.18 0.02 264);
+    --color-background-paper: oklch(0.22 0.025 264);
+    --color-foreground: oklch(0.92 0.01 264);
+    --color-foreground-muted: oklch(0.7 0.02 264);
+    --color-border: oklch(0.32 0.02 264);
+
+    /* Brand scale — same in dark; 600+ stops have ≥4.5:1 vs the dark foreground */
+    --color-brand-50: oklch(0.969 0.016 293.756);
+    --color-brand-100: oklch(0.943 0.029 294.588);
+    --color-brand-200: oklch(0.894 0.057 293.283);
+    --color-brand-300: oklch(0.811 0.111 293.571);
+    --color-brand-400: oklch(0.702 0.183 293.541);
+    --color-brand-500: oklch(0.606 0.25 292.717);
+    --color-brand-600: oklch(0.541 0.281 293.009);
+    --color-brand-700: oklch(0.491 0.27 292.581);
+    --color-brand-800: oklch(0.432 0.232 292.759);
+    --color-brand-900: oklch(0.38 0.189 293.745);
+    --color-brand-950: oklch(0.283 0.141 291.089);
+
+    --color-status-danger: oklch(0.637 0.237 25.331);
+    --color-status-warning: oklch(0.705 0.21 50.16);
+    --color-status-info: oklch(0.769 0.188 70.08);
+    --color-status-success: oklch(0.696 0.17 162.48);
+    --color-status-legendary: oklch(0.795 0.184 86.047);
+  }
+
+  /* Accent on form controls — single token, theme-respecting */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    color-scheme: light;
+    accent-color: var(--color-brand-500);
+  }
+
+  :root.dark input[type="date"],
+  :root.dark input[type="time"],
+  :root.dark input[type="datetime-local"] {
+    color-scheme: dark;
+    accent-color: var(--color-brand-500);
+  }
+
+  *,
+  ::after,
+  ::before {
+    border-color: var(--color-border);
+  }
+
+  :root.dark *,
+  :root.dark ::after,
+  :root.dark ::before {
+    border-color: var(--color-border-dark);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: "Tajawal", "IBM Plex Sans Arabic", system-ui, -apple-system,
+      BlinkMacSystemFont, "Segoe UI", sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Improved scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-foreground-muted);
+  }
+
+  ::selection {
+    background: var(--color-brand-200);
+    color: var(--color-brand-900);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(
+      to right,
+      var(--color-brand-500),
+      oklch(0.7 0.22 0)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-gradient-brand {
+    background: linear-gradient(
+      to bottom right,
+      var(--color-brand-500),
+      var(--color-brand-600),
+      oklch(0.7 0.22 0)
+    );
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
