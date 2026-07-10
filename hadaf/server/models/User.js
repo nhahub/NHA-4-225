@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { z } = require("zod");
+const { comparePassword } = require("../utils/password");
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -21,6 +22,10 @@ const userSchema = new mongoose.Schema({
     }
   }
 }, { timestamps: true });
+
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return await comparePassword(candidatePassword, this.passwordHash);
+};
 
 const userSettingsValidationSchema = z.object({
   work_hours_start: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").default("09:00"),
