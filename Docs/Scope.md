@@ -1,5 +1,14 @@
 # 📋 Hadaf (هدف) — Project Scope Summary
 
+> ⚠️ **STALE — superseded by `Docs/Epics.md`.** This document describes an old 34-story/~115 SP
+> horizontal split (an `INF` epic, isolated "Goals repository" stories, etc.) and a 20-day/4-sprint
+> timeline that no longer apply. It also predates the client-stack decision: the tech-stack tables
+> below (Next.js, Drizzle, Neon, SWR, `jose`) do not reflect the current stack — see
+> `Docs/project-context.md` §Source-of-Truth Hierarchy, `Docs/Architecture.md`, and
+> `Docs/Impulse-Migration-Plan.md` for what's actually current (Vite/React Router/React Query
+> client imported from Impulse + Express/MongoDB backend, 5-day/25-story plan). Kept here for
+> historical reference only — do not plan or build from this file.
+
 > **Version:** 2.0 | **Date:** June 2026
 > **Team:** 5 humans (2 juniors + 3 entry-level, 2 agent-capable) | **Duration:** 20 days (5 × 4-day sprints)
 > **Language:** Bilingual parity — Arabic (RTL) + English (LTR), both first-class

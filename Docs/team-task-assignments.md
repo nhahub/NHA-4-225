@@ -5,6 +5,7 @@
 > **Duration:** 5 days · **Total:** 25 stories, ~99 SP
 > **Rule:** Each person owns their story **end-to-end** — DB, Backend, Frontend, everything.
 > **Focus:** Working MVP. Ship it, win it.
+> **Client stack:** UI is imported from the Impulse codebase (Vite + React Router + React Query + Zustand), not built from scratch. E0-1 and E0-2 below include copying Impulse, resolving its 3 pre-existing merge conflicts, and converting its physical CSS to logical (RTL) properties — see `Docs/Impulse-Migration-Plan.md` for the full reuse map and checklist.
 
 ---
 
@@ -29,7 +30,7 @@
 | **E0-3** | Layered Architecture Setup | 2 | **Ziad** | E0-1 | Day 1 |
 | **E0-4** | Database Connection & Analytics | 3 | **Ziad** | E0-3 | Day 1 |
 | **E0-5** | Email/Password Authentication | 5 | **Mustafa** | E0-4 | Day 1 |
-| **E0-6** | App Shell & Edge Middleware | 4 | **Ziad** | E0-5, E0-2 | Day 2 |
+| **E0-6** | App Shell & Route Guards | 4 | **Ziad** | E0-5, E0-2 | Day 2 |
 | **E1-1** | SMART Goal Wizard & Foundation | 6 | **Mustafa** | E0-4, E0-5 | Day 2 |
 | **E1-2** | Goal Dashboard & Detail View | 8 | **Hamza** | E1-1 | Day 3 |
 | **E2-1** | Task Engine & Auto-Type Creation | 6 | **Mustafa** | E1-1 | Day 2–3 |
@@ -62,7 +63,7 @@
 | E0-2: Typography & RTL Foundation | 3 | Day 1 |
 | E0-3: Layered Architecture Setup | 2 | Day 1 |
 | E0-4: Database Connection & Analytics | 3 | Day 1 |
-| E0-6: App Shell & Edge Middleware | 4 | Day 2 |
+| E0-6: App Shell & Route Guards | 4 | Day 2 |
 | E3-1: Build Habits & MVD | 5 | Day 2 |
 | E4-3: Scoring Engine & Progress Bar | 5 | Day 3–4 |
 
@@ -129,11 +130,14 @@
 ### Day 1 — Foundation
 
 ```
-Ziad    → E0-1 (Scaffold) → E0-2 (RTL) → E0-3 (Architecture) → E0-4 (DB)
+Ziad    → E0-1 (Scaffold: copy Impulse client, resolve 3 merge conflicts, rebrand,
+           OKLCH tokens converted from Impulse Violet directly in tailwind.config.js) → E0-2
+           (RTL: convert all physical→logical CSS per Docs/Impulse-Migration-Plan.md checklist,
+           i18n setup) → E0-3 (Architecture) → E0-4 (DB)
 Mustafa → E0-5 (Email/Password Auth)  [starts after Ziad finishes E0-4]
-Hamza   → Study docs, set up dev environment, read PRD + Architecture
-Khaled  → Study docs, set up dev environment, read PRD + Architecture
-Mohamed → Study docs, set up dev environment, read PRD + Architecture
+Hamza   → Study docs, set up dev environment, read PRD + Architecture + Impulse-Migration-Plan
+Khaled  → Study docs, set up dev environment, read PRD + Architecture + Impulse-Migration-Plan
+Mohamed → Study docs, set up dev environment, read PRD + Architecture + Impulse-Migration-Plan
 ```
 
 ### Day 2 — First Features (Two Parallel Tracks)

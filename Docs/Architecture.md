@@ -1,33 +1,33 @@
-# Architecture Decision Document — Hadaf (هدف) v2.0 — MVP
+# Architecture Decision Document — Hadaf (هدف) v2.1 — MVP
 
-> **Date:** June 2026
-> **Aligned with:** PRD v2.0 + UX Design Spec v2.0 + Epics v2.0
-> **Team:** 5 humans — 20 days
+> **Date:** July 2026
+> **Aligned with:** PRD v2.0 + UX Design Spec v2.0 + Epics v2.0 + `Docs/Impulse-Migration-Plan.md`
+> **Team:** 5 humans — 5 days
 > **Scope:** This document covers the MVP (Phase 1) only. The full Hadaf project spans 4 phases. After MVP, the same codebase and architecture carry forward with zero migration.
 > **Bilingual:** Arabic (RTL) + English (LTR) at parity — i18n from day 1, no language is fallback.
+> **Client stack note:** The client (Vite + React Router + React Query + Zustand) is imported from the Impulse codebase — see `Docs/Impulse-Migration-Plan.md` for the reuse map. The backend below (§3.1–§3.3, §6) was never in question and is unaffected by that reuse.
 
 ---
 
-## 0.1 MVP Scope (20 days, 5 humans + agents, bilingual)
+## 0.1 MVP Scope (5 days, 5 humans + agents, bilingual)
 
-All 8 database tables are created in Sprint 1 with all columns — including columns not used immediately (e.g., `is_spiritual`, `checklist`). Folder structure, patterns, domain logic, and CI/CD are designed for the complete product.
+All 8 database tables are created on Day 1 with all columns — including columns not used immediately (e.g., `is_spiritual`, `checklist`). Folder structure, patterns, domain logic, and CI/CD are designed for the complete product.
 
-**During the 20-day build (5 humans + agents, ~145 SP),** the team implements 34 stories + brand + i18n + demo video:
+**During the 5-day build (5 humans + agents, ~99 SP),** the team implements 25 stories + brand + i18n:
 
 | Area | What's Built |
 |---|---|
-| Foundation (Sprint 0) | Scaffold, design tokens, **i18n setup (AR + EN)**, font self-hosting, **10 illustrations**, brand mark, Vercel deploy |
-| Infrastructure | Auth, DB (all 8 tables), App Shell, RTL/LTR parity, Dark Mode, CI/CD, Accessibility |
+| Foundation (Day 1) | Scaffold (client copied from Impulse + server from scratch), design tokens (OKLCH, converted from Impulse's Violet hex tokens directly in `tailwind.config.js`), **i18n setup (AR + EN)**, font self-hosting, brand mark, RTL conversion |
+| Infrastructure | Auth, DB (all 8 tables), App Shell, RTL/LTR parity, Dark Mode, Accessibility |
 | Goals | Repository, SMART Wizard, Dashboard (rings + health + 12-week bar), Goal Detail + Milestones |
 | Tasks | Repository + Scoring Domain, Task Creation with Auto-Type, 3 Completion Types, Task List, **Backlog** |
-| Habits | Repository, Build Habits (Boolean + Counter + Quit), MVD System |
+| Habits | Repository, Build Habits (Boolean + Counter + Quit), MVD System, suggested habits library |
 | Scoring | Scoring Engine, Progress Bar + 5 Day States |
 | Settings | Day Types (Work/Light/Off) + work hours + day start |
 | Capacity | **Visual gauge on Home screen** (the moat — not backend-only) |
 | Home | Adaptive greeting, **Daily Pulse signature card**, assembled daily view |
 | Onboarding | 3-step wizard, Goal vs Habit dialog |
 | Polish | Empty States, Loading Skeletons, Error Toasts, Confirmation Dialogs |
-| Demo | Cinematic 1–3 min video (Khaled's story arc, AR VO + EN subtitles) |
 
 **Project constraints:**
 
@@ -35,15 +35,15 @@ All 8 database tables are created in Sprint 1 with all columns — including col
 |---|---|
 | **Language** | **Bilingual parity** — Arabic (RTL) + English (LTR), both first-class. i18n from day 1. No language is "fallback." |
 | **Voice / Tone** | **Non-formal but high-quality** — conversational, friendly, polished. Same person writes both. AI-assisted translation handles bilingual copy. |
-| **Design assets** | **None pre-existing** — logo, illustrations, brand mark all created from scratch in Sprint 0. Current UX spec is a baseline; final design direction owned separately. |
+| **Design assets** | **None pre-existing** — logo, illustrations, brand mark all created from scratch on Day 1. Design tokens converted from Impulse's Violet hex scale to OKLCH directly in `tailwind.config.js`/stylesheet — no separate design-system document. Current UX spec is a baseline; final design direction owned separately. |
 | **Motion** | CSS Transitions only — no Framer Motion. Push CSS limits (View Transitions API, `@keyframes`, scroll-bound animations) for premium feel. |
 | **Quick Add** | Home screen only (not FAB on every screen) |
 | **Task Sort** | Priority-based only (no manual drag reorder) |
 | **Capacity** | **Visual gauge on Home screen required** (the differentiator) |
-| **Habits** | Boolean + Counter only; users type habit names (no suggested library) |
+| **Habits** | Boolean + Counter + Quit; users type custom habit names OR pick from a suggested habits library (no religious suggestions) |
 | **Persistence** | Save on Action — no auto-save |
 | **Destructive Actions** | Confirmation Dialogs — no Undo/Redo |
-| **Deployment** | Live on Vercel from Day 2 onwards. Preview deploys per PR. Production on `main`. |
+| **Deployment** | Client (Vite SPA) live on Vercel/Netlify from Day 1 onwards, preview deploys per PR, production on `main`. Server (Express/MongoDB) deployed to a persistent Node host (Render/Railway) — a standalone Express process doesn't fit Vercel's serverless/static model. |
 
 ---
 
@@ -67,46 +67,45 @@ All 8 database tables are created in Sprint 1 with all columns — including col
 | Category | Target |
 |---|---|
 | **Performance** | ≤2s page load, Lighthouse ≥85 Desktop / ≥75 Mobile |
-| **Security** | HTTPS/TLS 1.3, JWT (15min) via `jose`, Rate limiting (100 req/min) |
+| **Security** | HTTPS/TLS 1.3, JWT (15min access token) via `jsonwebtoken`, Rate limiting (100 req/min) |
 | **Accessibility** | WCAG 2.1 AA, RTL-native, ≥4.5:1 contrast, ≥44px touch targets |
 | **Scale** | 100 concurrent users |
-| **Data Freshness** | SWR + Optimistic Updates + `mutate()` — no polling |
+| **Data Freshness** | React Query + Optimistic Updates — no polling |
 
 ### 1.3 Technical Constraints
 
-**Serverless (Hard):**
-- No persistent connections — no WebSockets, no polling
-- No `jsonwebtoken` or `bcrypt` on Edge — `jose` + Web Crypto API mandatory
-- No in-memory state between invocations — all state via Neon PostgreSQL with `-pooler` suffix
-- 10s function timeout on Serverless, limited execution on Edge
+**Runtime:**
+- Standard long-running Node.js/Express process (not serverless/Edge) — persistent MongoDB connection pool held in memory across requests
+- No WebSockets, no polling — client refetches via React Query after mutations
 
 **Free-Tier Boundaries:**
 
 | Service | Limit | Mitigation |
 |---|---|---|
-| **Vercel** | 100 GB-hours | No polling (SWR optimistic only) |
-| **Neon** | 512 MB storage, auto-suspend | Loading Skeletons handle 2-5s cold start |
+| **Client host (Vercel/Netlify)** | Free-tier bandwidth/build minutes | Static SPA build, no polling (React Query optimistic only) |
+| **MongoDB Atlas (free tier / M0)** | 512 MB storage, shared cluster | Loading Skeletons handle cold-start latency |
+| **Server host (Render/Railway free tier)** | Sleeps after inactivity | Loading Skeletons handle 2-5s cold start; confirm host choice before Day 5 deploy |
 
 **Team Constraints:**
 - 5 humans (2 juniors + 3 entry-level) — 2 of them agent-capable
-- 20-day timeline (compressed from original 8-week plan)
+- 5-day timeline
 - BMAD method: agents dispatched in `ba` / `pm` / `designer` / `frontend` / `backend` / `qa` roles
-- No dedicated UX designer for v1.0 — Shadcn UI as component foundation; final design direction elevated separately
+- No dedicated UX designer for v1.0 — Impulse's existing CVA-based components as the client foundation, extended with Shadcn UI where needed; final design direction elevated separately
 - No budget — every service must have a free tier
-- No pre-existing design assets (logo, illustrations, Figma) — designed from scratch in Sprint 0
+- No pre-existing design assets (logo, illustrations, Figma) — designed from scratch on Day 1; OKLCH tokens converted from Impulse's Violet hex scale directly in `tailwind.config.js`/stylesheet
 
-**External Dependencies:** Neon PostgreSQL, Vercel, GitHub
+**External Dependencies:** MongoDB Atlas, client host (Vercel/Netlify), server host (Render/Railway), GitHub
 
 ### 1.4 Cross-Cutting Concerns
 
 | # | Concern | Approach |
 |---|---|---|
-| 1 | **Authentication** | JWT via `jose` at Edge; Email/Password (register + login) — login flow on Node.js runtime (bcrypt), JWT validation on Edge (jose). Final runtime decision: E0-5. |
+| 1 | **Authentication** | Email/Password (register + login), `bcryptjs` hashing, JWT via `jsonwebtoken` (15min access + 7-day refresh), Express `auth.js` middleware verifies on protected routes. See §3.2. |
 | 2 | **RTL-Native** | Arabic-first with Tailwind logical properties; `Intl.NumberFormat` for locale numbers |
 | 3 | **Save on Action** | Every mutation saves immediately — no auto-save, no debouncing |
 | 4 | **Confirmation Before Destruction** | Shadcn AlertDialog before every delete/archive |
-| 5 | **Optimistic Updates** | SWR `mutate()` after every server action |
-| 6 | **Free-Tier Discipline** | No polling, projection queries, optimized joins |
+| 5 | **Optimistic Updates** | React Query mutation + cache update after every API call |
+| 6 | **Free-Tier Discipline** | No polling, projection queries, optimized indexes |
 | 7 | **Graceful Degradation** | Loading Skeletons, Empty States, Error Toasts (retry) |
 | 8 | **Day Type Adaptation** | Settings-driven (Work/Light/Off) affects capacity, habits, scoring |
 | 9 | **Spiritual Data Privacy** | `habits.is_spiritual` column exists but unused until future phases |
@@ -117,34 +116,41 @@ All 8 database tables are created in Sprint 1 with all columns — including col
 
 ### 2.1 Initialization
 
+**Client (`hadaf/client/`)** — copied from the Impulse codebase, then rebranded and adapted. See `Docs/Impulse-Migration-Plan.md` for the full reuse map and merge-conflict resolution steps.
+
 ```bash
-npx create-next-app@latest hadaf --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --turbopack --use-npm
+# Copy Impulse's frontend/ as the starting point for hadaf/client/, then:
+npm install
 
-# UI Foundation
-npx shadcn@latest init
-npx shadcn@latest add button dialog sheet input select toast progress card
-
-# Database
-npm install drizzle-orm @neondatabase/serverless
-npm install -D drizzle-kit
-
-# Core Dependencies
-npm install jose zod swr
-
-# Development
-npm install -D @types/node vitest
+# Additional shadcn primitives not already in Impulse
+npx shadcn@latest add alert-dialog sheet tabs dropdown-menu progress tooltip
 ```
 
-**7 runtime dependencies:** next, react, drizzle-orm, @neondatabase/serverless, jose, swr, zod
+Impulse already ships: `vite`, `react` 19, `react-router-dom` 7, `@tanstack/react-query` 5, `zustand`, `tailwindcss` 4, `axios`, `react-hook-form` + `@hookform/resolvers`, `zod`, `sonner`, `lucide-react`, `class-variance-authority`, `tailwind-merge`, `vitest` + `@testing-library/react`.
+
+**Server (`hadaf/server/`)** — new build, plain Express:
+
+```bash
+mkdir -p hadaf/server && cd hadaf/server
+npm init -y
+
+# Core dependencies
+npm install express mongoose jsonwebtoken bcryptjs zod cors cookie-parser dotenv
+
+# Development
+npm install -D vitest nodemon
+```
 
 ### 2.2 Key Choices
 
 | Layer | Choice |
 |---|---|
-| Language | TypeScript strict, Next.js App Router, Turbopack |
-| Styling | Tailwind CSS (cheat sheet provided for team) + Shadcn UI (limited to 8 components) + HSL CSS variables (light/dark) |
+| Client language/tooling | TypeScript strict, Vite 7, React Router 7 |
+| Client state | TanStack React Query (server state) + Zustand (auth/UI/date) + React Context (Theme/Locale/DayType) |
+| Styling | Tailwind CSS v4 (Impulse's CVA-based `ui/` components, extended with Shadcn UI where Impulse lacks a primitive) + OKLCH CSS variables (light/dark), converted from Impulse's Violet hex tokens directly in `tailwind.config.js`/stylesheet |
 | Motion | CSS Transitions only |
-| Testing | Vitest |
+| Server language/tooling | Plain JavaScript, Express, Mongoose |
+| Testing | Vitest (both client and server) |
 
 ### 3.1 Database Schema (8 Collections)
 
@@ -339,12 +345,12 @@ Tokens:
 
 * **Cross-Origin Cookie Configuration**: The Express backend must deliver the authentication JWT cookies with the following configurations:
   * `httpOnly: true` (prevents client-side scripts from reading the token)
-  * `sameSite: "none"` (allows browser to pass the cookie cross-origin from Next.js client)
+  * `sameSite: "none"` (allows browser to pass the cookie cross-origin from the Vite client, which is deployed to a different host than the Express server)
   * `secure: true` (requires HTTPS context. Note: browsers treat localhost as secure)
 * **CORS Origin Policy Binding**: If cookies are transmitted, CORS must strictly map to `process.env.FRONTEND_URL` and enable credentials. Wildcard origins (`*`) are prohibited:
   ```javascript
   app.use(cors({
-    origin: process.env.FRONTEND_URL, // e.g. http://localhost:3000
+    origin: process.env.FRONTEND_URL, // e.g. http://localhost:5173
     credentials: true
   }));
   ```
@@ -395,7 +401,7 @@ type ApiResponse<T> =
     });
   });
 
-  // Express global error-handler.js snippet
+  // Express global errorHandler.js snippet
   app.use((err, req, res, next) => {
     // Mongoose Schema Validation Failures
     if (err.name === 'ValidationError') {
@@ -429,36 +435,44 @@ type ApiResponse<T> =
 
 | State | Solution |
 |---|---|
-| Server data (tasks, goals, habits) | SWR hooks performing client-side queries fetching from `process.env.NEXT_PUBLIC_API_URL` with credentials enabled. |
-| UI state (modals, forms) | React `useState` / `useReducer` |
+| Server data (tasks, goals, habits) | TanStack React Query hooks (from Impulse) performing client-side queries/mutations against `import.meta.env.VITE_API_URL`, credentials included. |
+| UI state (modals, forms) | Zustand `useUIStore` (from Impulse, extended for Hadaf modals) + local `useState`/`useReducer` |
 | Day Type | React Context (`DayTypeProvider`) |
-| Auth | React auth context calling backend endpoints |
+| Auth | Zustand `useAuthStore` (persisted, from Impulse) calling backend endpoints |
 | Forms | React Hook Form + Zod |
 | Theme | CSS variables + `data-theme` attribute |
 | **Language (i18n)** | Custom cookie-based `LocaleProvider` (Arabic primary RTL, English first-class LTR). |
 
 **API Fetcher Guideline**:
-Frontend data mutations must target absolute backend addresses via environment variables. Relative routes to the Next.js server are prohibited:
+Frontend data mutations must target absolute backend addresses via environment variables. Relative routes are prohibited since client and server deploy to different hosts:
 ```typescript
-// client/src/lib/api.ts
-export const fetcher = (url: string) => 
-  fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
-    credentials: 'include' // Crucial for cross-origin httpOnly cookies
-  }).then(res => res.json());
+// client/src/lib/api-client.ts (adapted from Impulse, axios-based)
+import axios from 'axios';
+
+export const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true, // Crucial for cross-origin httpOnly cookies
+  headers: { 'X-Requested-With': 'XMLHttpRequest' } // CSRF header, see §3.2
+});
 ```
 
 ### 3.5 Infrastructure
 
-**CI/CD (GitHub Actions):** Runs test checks on frontend and backend separate scripts.
+**CI/CD (GitHub Actions):** Runs test checks on client and server as separate scripts/jobs.
 
 **Environment Variables:**
 
 | Variable | Scope | Purpose |
 |---|---|---|
-| `MONGODB_URI` | Server | MongoDB Connection String |
+| `MONGO_URL` | Server | MongoDB Connection String (read by `hadaf/server/config/db.js`) |
 | `JWT_SECRET` | Server | jsonwebtoken signature key |
-| `NEXT_PUBLIC_API_URL` | Client | Absolute backend server URL |
+| `FRONTEND_URL` | Server | Client origin, for CORS |
+| `VITE_API_URL` | Client | Absolute backend server URL |
 | `PORT` | Server | Express listener port (default `5000`) |
+
+Server env vars are loaded from `hadaf/server/.env.local` (see `app.js`'s `dotenv.config({ path:
+'.env.local' })`) — `.env.example` documents the shape but the actual local file is `.env.local`,
+not `.env`.
 
 **Monitoring**: Global Express error handler logs + client-side Error Boundary alerts.
 
@@ -476,7 +490,7 @@ export const fetcher = (url: string) =>
 | Timestamps | `{verb}_at` | `created_at`, `completed_at` |
 | Components | PascalCase | `GoalCard.tsx` |
 | Hooks | `use` prefix, camelCase | `useGoals()` |
-| Server Actions | camelCase verb phrases | `createGoal()` |
+| Controller functions | camelCase verb phrases | `createGoal()` |
 | Domain functions | camelCase | `calculatePoints()` |
 | Repositories | camelCase verb phrases | `goalsRepo.getActiveGoals()` |
 | Types | PascalCase | `Task`, `GoalWithProgress` |
@@ -487,16 +501,15 @@ export const fetcher = (url: string) =>
 
 | What | Where | Rule |
 |---|---|---|
-| Drizzle schema | `data/db/schema.ts` | Single file for all tables |
-| Migrations | `data/db/migrations/` | Auto-generated by `drizzle-kit generate` |
-| Server Actions | `features/{name}/actions.ts` | One file per feature |
-| SWR hooks | `features/{name}/hooks.ts` | One file per feature |
-| Zod schemas | `features/{name}/schemas.ts` | Co-located with feature |
-| Pure domain logic | `domain/{name}.ts` | **Zero imports from React, Next.js, or Drizzle** |
-| Repository queries | `data/repositories/{name}.repo.ts` | **Only files that import Drizzle** |
-| Shadcn components | `components/ui/` | Never add business logic |
-| Shared components | `components/shared/` | Empty states, skeletons, error boundary |
-| Tests | `tests/domain/` | Unit tests for domain logic |
+| Mongoose models | `server/models/{Name}.js` | One file per collection |
+| Controllers | `server/controllers/{name}Controller.js` | One file per feature |
+| Routes | `server/routes/{name}Routes.js` | One file per feature |
+| React Query hooks | `client/src/features/{name}/hooks/` | One file per feature |
+| Zod schemas | `client/src/features/{name}/schemas.ts` (client) / co-located with the Mongoose model (server, e.g. `Goal.createGoalSchema`) | Co-located with feature |
+| Pure domain/business logic | `server/utils/{name}.js` | **Zero imports from Express, Mongoose, or React — plain JS functions, unit-testable** |
+| Shadcn/Impulse UI components | `client/src/components/ui/` | Never add business logic |
+| Shared components | `client/src/components/shared/` | Empty states, skeletons, error boundary |
+| Tests | `server/tests/` (backend utils) + `client/src/**/*.test.tsx` (Vitest, from Impulse) | Unit tests for domain logic + component tests |
 
 ### 4.3 Format Rules
 
@@ -510,56 +523,74 @@ export const fetcher = (url: string) =>
 | Time display | Always hours:minutes | `١:٣٠` (not `٩٠ دقيقة`) |
 | Points | Always integers (Math.ceil) | `+١٣ نقطة` |
 
-**Drizzle Query Rule:** ALWAYS `.select({specific columns})` — never `SELECT *`. Never write Drizzle queries outside `data/repositories/`.
+**Mongoose Query Rule:** ALWAYS `.select('specific fields')` for list queries — avoid returning full documents where a projection suffices. Never write Mongoose queries outside `controllers/` (or `models/` for schema-level statics/hooks).
 
-### 4.4 Server Action Example
+### 4.4 Express Controller Example
 
-```typescript
-// features/tasks/actions.ts
-'use server'
+```javascript
+// server/controllers/taskController.js
+const { calculateTaskPoints } = require('../utils/scoring');
+const Task = require('../models/Task');
+const AnalyticsEvent = require('../models/AnalyticsEvent');
 
-export async function completeTask(input: unknown): Promise<ActionResult<{ points: number }>> {
+exports.completeTask = async (req, res, next) => {
   try {
-    const userId = await getAuthUser()
-    const data = completeTaskSchema.parse(input)
-    const task = await tasksRepo.getById(data.taskId)
-    const points = calculateTaskPoints({ /* ... */ })
-    await tasksRepo.complete(data.taskId, data.actualMinutes, points)
-    await analyticsRepo.log(userId, 'task_complete', { /* ... */ })
-    return { success: true, data: { points } }
+    const data = Task.completeTaskSchema.parse(req.body); // Zod schema co-located on the model, per the pattern in models/Goal.js
+    const task = await Task.findOne({ _id: data.taskId, userId: req.user.id });
+    if (!task) return res.status(404).json({ success: false, errorCode: 'UNKNOWN', error: 'errors.taskNotFound' });
+
+    const points = calculateTaskPoints({ /* ... */ });
+    task.status = 'completed';
+    task.pointsEarned = points;
+    task.actualDurationMinutes = data.actualMinutes;
+    task.completedAt = new Date();
+    await task.save();
+
+    await AnalyticsEvent.create({ userId: req.user.id, eventType: 'task_complete', eventData: { taskId: task._id, points } });
+    res.json({ success: true, data: { points } });
   } catch (error) {
-    if (error instanceof ZodError) return { success: false, error: error.message, errorCode: 'VALIDATION' }
-    return { success: false, error: 'حدث خطأ', errorCode: 'UNKNOWN', shouldRetry: true }
+    next(error); // handled by global errorHandler.js (§3.3)
   }
-}
+};
 ```
 
-### 4.5 SWR Hook Example
+### 4.5 React Query Hook Example
 
 ```typescript
-// features/tasks/hooks.ts — Optimistic update pattern
+// client/src/features/tasks/hooks/useTasks.ts — Optimistic update pattern (from Impulse)
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
+
 export function useTasks(date: string) {
-  const { data, error, isLoading, mutate } = useSWR(['tasks', date], () => fetchTasksByDate(date))
+  const queryClient = useQueryClient();
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['tasks', date],
+    queryFn: () => apiClient.get(`/tasks?date=${date}`).then(res => res.data.data),
+  });
 
-  const completeTask = async (taskId: string, actualMinutes?: number) => {
-    mutate(data?.map(t => t.id === taskId ? { ...t, status: 'completed' } : t), { revalidate: false })
-    const result = await completeTaskAction(taskId, actualMinutes)
-    mutate() // Revalidate with server truth
-    return result
-  }
+  const completeTask = useMutation({
+    mutationFn: ({ taskId, actualMinutes }: { taskId: string; actualMinutes?: number }) =>
+      apiClient.post(`/tasks/${taskId}/complete`, { actualMinutes }).then(res => res.data.data),
+    onMutate: async ({ taskId }) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks', date] });
+      queryClient.setQueryData(['tasks', date], (old: Task[]) =>
+        old?.map(t => t.id === taskId ? { ...t, status: 'completed' } : t));
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['tasks', date] }),
+  });
 
-  return { tasks: data ?? [], error, isLoading, completeTask, refresh: mutate }
+  return { tasks: data ?? [], error, isLoading, completeTask: completeTask.mutate };
 }
 ```
 
 ### 4.6 Enforcement Rules
 
 **Must:**
-1. Never import `drizzle-orm` outside `data/repositories/`
-2. Never import React/Next.js in `domain/` — pure TypeScript only
+1. Never import `mongoose` outside `models/` or `controllers/`
+2. Never import Express/Mongoose/React in `server/utils/` — pure JavaScript only
 3. Always validate with Zod before DB writes
 4. Always use Tailwind logical properties — `ms-`/`me-`, never `ml-`/`mr-`
-5. Always use `ActionResult<T>` return type for Server Actions
+5. Always use the `ApiResponse<T>` contract (§3.3) for controller responses
 6. Always show Confirmation Dialog before destructive actions
 7. Always provide Empty State + Loading Skeleton for every screen
 8. Always test in Arabic RTL before merge
@@ -570,12 +601,12 @@ export function useTasks(date: string) {
 
 | Anti-Pattern | Why |
 |---|---|
-| Drizzle queries in Server Actions | Bypasses repository layer |
+| Mongoose queries outside `models/`/`controllers/` | Bypasses the MVC layering (§3.3) |
 | `left`/`right` CSS | Breaks RTL |
-| `SELECT *` | Performance + security |
-| `jsonwebtoken` | Not Edge-compatible; use `jose` |
+| Unprojected list queries returning full documents | Performance + security |
+| `jose` | Not needed — standard Express is not Edge-constrained; use `jsonwebtoken` (§3.2) |
 | Auto-save / debounced save | Save on Action pattern |
-| SWR polling (`refreshInterval`) | Use `mutate()` after actions |
+| Polling / `refreshInterval` | Use React Query cache invalidation after actions |
 | Negative messaging | Always lead with accomplishments |
 | Hard-deleting user data | Soft-delete with status column |
 
@@ -585,61 +616,65 @@ export function useTasks(date: string) {
 
 ```
 hadaf/
-├── client/                               # Next.js Frontend App
+├── client/                               # Vite + React SPA — UI base imported from Impulse
+│   │                                     #   (see Docs/Impulse-Migration-Plan.md for the full reuse map)
 │   ├── public/fonts/                     # Fonts (Tajawal, IBM Plex Sans Arabic)
 │   ├── src/
-│   │   ├── app/                          # Pages & Layouts (App Router)
-│   │   │   ├── globals.css               # Tailwind + HSL tokens + CSS transitions
-│   │   │   ├── layout.tsx                # Root layout (dir, lang, font, theme)
-│   │   │   ├── page.tsx                  # Landing ➔ Redirect to /app
-│   │   │   ├── (auth)/                   # Login, Register pages
-│   │   │   └── app/                      # Authenticated Routes (wrapped in AppShell)
-│   │   │       ├── goals/                # Goals List, SMART Wizard, Detail pages
-│   │   │       └── more/                 # Settings & Analytics
+│   │   ├── app/
+│   │   │   ├── App.tsx                   # Root: ErrorBoundary → AppProviders → AppRouter
+│   │   │   ├── providers.tsx             # QueryClient, BrowserRouter, Toaster, ThemeProvider, LocaleProvider, DayTypeProvider
+│   │   │   └── router.tsx                # Routes (lazy-loaded), RequireAuth, RedirectIfAuth
 │   │   ├── components/                   # Reusable client components
-│   │   │   ├── ui/                       # Radix / shadcn primitives
-│   │   │   ├── shared/                   # Language switcher, theme toggle, states
-│   │   │   └── layouts/                  # Sidebar, BottomNav, AppShell
-│   │   ├── features/                     # Frontend Hook Slices (SWR query, validations)
-│   │   ├── providers/                    # Context providers (Theme, Locale)
-│   │   ├── i18n/                         # i18n translation catalogs & formatters
-│   │   └── lib/                          # Client-side utility functions
+│   │   │   ├── ui/                       # CVA/shadcn primitives (from Impulse + additions)
+│   │   │   ├── shared/                   # Language switcher, theme toggle, states, ErrorBoundary
+│   │   │   └── layouts/                  # Sidebar, BottomNav, AppLayout, Header
+│   │   ├── features/                     # auth/ goals/ tasks/ habits/ scoring/ home/ onboarding/ settings/ dashboard/
+│   │   │                                 #   each: api/ (React Query) components/ hooks/ pages/ types/ utils/
+│   │   ├── providers/                    # ThemeProvider, LocaleProvider, DayTypeProvider
+│   │   ├── i18n/                         # ar.ts, en.ts, useTranslation hook
+│   │   ├── stores/                       # useAuthStore, useUIStore, useDateStore (Zustand, from Impulse)
+│   │   ├── lib/                          # api-client.ts (axios), react-query.ts
+│   │   └── utils/                        # cn.ts, errorHandler.ts, rateLimiter.ts (from Impulse)
+│   ├── index.html
 │   ├── package.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.js                # OKLCH tokens (converted from Impulse Violet, design authority — no separate DESIGN.md), Tajawal+IBM Plex, logical properties
 │   └── tsconfig.json
 │
 └── server/                               # Node.js / Express Backend (MVC in pure JS)
-    ├── src/
-    │   ├── config/                       # Mongoose connection & configs
-    │   │   └── db.js
-    │   ├── models/                       # M (Model): Mongoose collections
-    │   │   ├── User.js
-    │   │   ├── Goal.js
-    │   │   ├── Milestone.js
-    │   │   ├── Task.js
-    │   │   ├── Habit.js
-    │   │   ├── HabitLog.js
-    │   │   ├── DailySummary.js
-    │   │   └── AnalyticsEvent.js
-    │   ├── controllers/                  # C (Controller): Express handlers
-    │   │   ├── auth.controller.js
-    │   │   ├── user.controller.js        # User settings update
-    │   │   ├── goals.controller.js
-    │   │   ├── milestones.controller.js  # Milestone status/order mutations
-    │   │   ├── tasks.controller.js
-    │   │   └── habits.controller.js
-    │   ├── routes/                       # Express Endpoints
-    │   │   ├── auth.routes.js
-    │   │   ├── user.routes.js
-    │   │   ├── goals.routes.js
-    │   │   ├── milestones.routes.js      # Milestone routes
-    │   │   ├── tasks.routes.js
-    │   │   └── habits.routes.js
-    │   ├── middleware/                   # Express custom middleware
-    │   │   ├── auth.js                   # JWT parse & injection
-    │   │   ├── rate-limiter.js
-    │   │   └── error-handler.js          # Mongoose code 11000 exception handling
-    │   ├── utils/                        # Password hashing & JWT sign/verify
-    │   └── server.js                     # Express bootstrap
+    ├── config/                           # Mongoose connection & configs
+    │   └── db.js
+    ├── models/                           # M (Model): Mongoose collections (+ co-located Zod schemas)
+    │   ├── User.js
+    │   ├── Goal.js
+    │   ├── Milestone.js
+    │   ├── Task.js
+    │   ├── Habit.js
+    │   ├── HabitLog.js
+    │   ├── DailySummary.js
+    │   └── AnalyticsEvent.js
+    ├── controllers/                      # C (Controller): Express handlers
+    │   ├── authController.js
+    │   ├── userController.js             # User settings update
+    │   ├── goalController.js
+    │   ├── milestoneController.js        # Milestone status/order mutations
+    │   ├── taskController.js
+    │   └── habitController.js
+    ├── routes/                           # Express Endpoints
+    │   ├── authRoutes.js
+    │   ├── userRoutes.js
+    │   ├── goalRoutes.js
+    │   ├── milestoneRoutes.js
+    │   ├── taskRoutes.js
+    │   └── habitRoutes.js
+    ├── middleware/                       # Express custom middleware
+    │   ├── auth.js                       # JWT parse & injection
+    │   └── rateLimiter.js
+    ├── utils/                            # Password hashing, JWT sign/verify, business-logic calculations, error pipeline
+    │   ├── appError.js
+    │   ├── catchAsync.js
+    │   └── errorHandler.js               # Global error handler — Mongoose code 11000, ValidationError, JWT errors
+    ├── app.js                            # Express bootstrap
     └── package.json
 ```
 
@@ -647,9 +682,9 @@ hadaf/
 
 ## 6. Business Logic Specifications (Backend Utils)
 
-All core mathematical calculations and business rules are handled by pure, unit-testable JavaScript utility files under **`hadaf/server/src/utils/`**. These utilities have zero database or HTTP framework dependencies.
+All core mathematical calculations and business rules are handled by pure, unit-testable JavaScript utility files under **`hadaf/server/utils/`**. These utilities have zero database or HTTP framework dependencies.
 
-### 6.1 Scoring (`server/src/utils/scoring.js`)
+### 6.1 Scoring (`server/utils/scoring.js`)
 
 **Formula:** `(actual_duration / 10) × difficulty_multiplier × accuracy_bonus × streak_bonus`
 
@@ -665,7 +700,7 @@ All core mathematical calculations and business rules are handled by pure, unit-
 
 **Key functions:** `calculateTaskPoints(input)`, `calculateCounterHabitPoints(value, target, mvd)`, `calculateHabitPoints(type, isMvd)`, `predictTaskPoints(type, difficulty, planned)`
 
-### 6.2 Goal Progress (`server/src/utils/goal-progress.js`)
+### 6.2 Goal Progress (`server/utils/goal-progress.js`)
 
 **Hybrid Progress (FR6):** `(tasks × 60%) + (milestones × 40%)`
 
@@ -673,7 +708,7 @@ All core mathematical calculations and business rules are handled by pure, unit-
 
 **Key functions:** `calculateHybridProgress(input)`, `calculateGoalHealth(actual, week, total)`, `getCurrentWeek(cycleStart, today)`, `calculateWeeklyExecutionScore(completed, total)`
 
-### 6.3 Capacity (`server/src/utils/capacity.js`)
+### 6.3 Capacity (`server/utils/capacity.js`)
 
 ```
 capacity = (work_end - work_start - lunch) × 0.80
@@ -683,7 +718,7 @@ if off_day: capacity = 0
 
 **Key functions:** `calculateDailyCapacity(input)`, `calculatePlannedTime(tasks)`, `parseTimeToMinutes(time)`
 
-### 6.4 Day State (`server/src/utils/day-state.js`)
+### 6.4 Day State (`server/utils/day-state.js`)
 
 | Ratio | State |
 |---|---|
@@ -697,7 +732,7 @@ if off_day: capacity = 0
 
 **Key functions:** `calculateDayState(points, target)`, `calculateAdaptiveDailyTarget(recent, dayType)`
 
-### 6.5 Task Type Detection (`server/src/utils/task-type.js`)
+### 6.5 Task Type Detection (`server/utils/task-type.js`)
 
 ```
 if time_block_start AND time_block_end → 'scheduled'
@@ -709,7 +744,10 @@ else → 'quick'
 
 ### 6.7 Zod Schemas (Summary)
 
-Each feature has co-located schemas in `features/{name}/schemas.ts`:
+Server-side, each schema is co-located directly on its Mongoose model file (e.g.
+`server/models/Goal.js` exports `Goal.createGoalSchema` and `Goal.softDeleteGoalSchema` — the
+pattern already established in the committed `Goal.js`/`User.js`), not in a separate `schemas/`
+folder:
 
 - **goals:** `createGoalSchema` (title, category, measure, milestones array), `softDeleteGoalSchema` (goalId + reason)
 - **tasks:** `createTaskSchema` (title, goalId, difficulty, priority, date, timeBlock, duration, checklist), `completeTaskSchema` (taskId, actualMinutes)
@@ -728,7 +766,7 @@ Scheduled task → Smart Complete Dialog (planned vs actual) → full scoring
 Flexible task → Manual Complete Dialog ("How long?" slider) → full scoring
 ```
 
-Every completion: optimistic mutate → server action → revalidate.
+Every completion: optimistic React Query mutation → Express controller call → cache invalidation/revalidate.
 
 ### 7.2 Streak Calculation
 
@@ -784,21 +822,21 @@ export default defineConfig({
 
 ### 9.1 Performance Targets
 
-FCP ≤1.5s, LCP ≤2.0s, TTI ≤2.5s, CLS ≤0.1, JS ≤150KB gzip, DB query ≤200ms, Server Action ≤500ms
+FCP ≤1.5s, LCP ≤2.0s, TTI ≤2.5s, CLS ≤0.1, JS ≤150KB gzip, DB query ≤200ms, API response ≤500ms
 
-**Optimization:** No Framer Motion (-40KB), self-hosted fonts, font subsetting, dynamic imports, projection queries, SWR dedup, no polling, skeleton loading.
+**Optimization:** No Framer Motion (-40KB), self-hosted fonts, font subsetting, Vite code-splitting/dynamic imports, projection queries, React Query dedup, no polling, skeleton loading.
 
 ### 9.2 Security
 
 | Area | Implementation |
 |---|---|
-| JWT | `jose` HS256, 15min access, 7-day refresh, httpOnly cookies |
-| Input | Zod client + server, Drizzle parameterized queries |
-| Authorization | Every query `WHERE user_id = ?` from JWT |
+| JWT | `jsonwebtoken` HS256, 15min access, 7-day refresh, httpOnly cookies |
+| Input | Zod on client (React Hook Form) + server (controllers), Mongoose schema validation |
+| Authorization | Every query scoped to `userId` from the verified JWT |
 | Rate limit | 100 req/min, in-memory Map |
-| Privacy | `is_spiritual` column, `is_relapse` never exposed |
+| Privacy | `isSpiritual` field, `isRelapse` never exposed |
 | Headers | X-Content-Type-Options, X-Frame-Options, HSTS, Referrer-Policy |
-| HTTPS | Vercel enforced |
+| HTTPS | Enforced by client host (Vercel/Netlify) and server host (Render/Railway) |
 
 ---
 
@@ -808,27 +846,36 @@ FCP ≤1.5s, LCP ≤2.0s, TTI ≤2.5s, CLS ≤0.1, JS ≤150KB gzip, DB query �
 
 ```bash
 git clone https://github.com/{org}/hadaf.git && cd hadaf
+
+# Client
+cd hadaf/client
 npm install
-cp .env.example .env.local   # Fill: DATABASE_URL, JWT_SECRET
-npm run db:generate && npm run db:migrate
-npm run dev                     # → http://localhost:3000
+cp .env.example .env.local   # Fill: VITE_API_URL
+npm run dev                  # → http://localhost:5173
+
+# Server (separate terminal)
+cd hadaf/server
+npm install
+cp .env.example .env.local   # Fill: MONGO_URL, JWT_SECRET, FRONTEND_URL
+npm run dev                  # → http://localhost:5000
 ```
 
 ### 10.2 Scripts
 
-`dev`, `build`, `start`, `lint`, `type-check`, `test`, `db:generate`, `db:migrate`, `db:studio`
+Client: `dev`, `build`, `preview`, `lint`, `type-check`, `test`.
+Server: `dev` (nodemon), `start`, `test`.
 
 ### 10.3 Pre-Deploy Checklist
 
-1. `npm run type-check` + `npm run lint` + `npm run test` + `npm run build`
-2. Env vars in Vercel
-3. `npm run db:migrate`
+1. Client: `npm run type-check` + `npm run lint` + `npm run test` + `npm run build`
+2. Server: `npm run test`
+3. Env vars set on both hosts (client: `VITE_API_URL`; server: `MONGO_URL`, `JWT_SECRET`, `FRONTEND_URL`)
 4. RTL + dark mode + mobile verified
 5. Lighthouse ≥85 Desktop, ≥75 Mobile
 
 ### 10.4 Rollback
 
-Vercel: Deployments → previous → Promote to Production. DB: Neon → point-in-time restore.
+Client host (Vercel/Netlify): Deployments → previous → Promote to Production. Server host (Render/Railway): redeploy previous build/commit. DB: MongoDB Atlas → point-in-time restore (if on a tier that supports it) or manual backup restore.
 
 ---
 
@@ -836,20 +883,21 @@ Vercel: Deployments → previous → Promote to Production. DB: Neon → point-i
 
 | # | Decision | Chosen | Rationale |
 |---|---|---|---|
-| 1 | JWT library | **jose** | Edge Runtime compatible |
-| 2 | Database ORM | **Drizzle** | Edge-compatible, SQL-like, smallest bundle |
-| 3 | Connection | **Pooled (-pooler)** | Required for serverless |
-| 4 | Data freshness | **SWR + Optimistic** | Zero background requests |
-| 5 | Motion | **CSS Transitions** | No dependency, smaller bundle |
-| 6 | Persistence | **Save on Action** | Simpler than auto-save |
-| 7 | Destructive protection | **Confirmation Dialogs** | Simpler than Command Pattern |
-| 8 | Subtask model | **Checklist (JSONB)** | 90% value at 10% complexity |
-| 9 | Cold start | **Loading Skeletons** | No cron cost, acceptable UX |
-| 10 | Rate limiting | **In-memory Map** | Sufficient for 100 users |
-| 11 | Task types | **Auto-detect** | Zero decisions for user |
-| 12 | Streak storage | **Computed from tasks/logs** | No staleness, no sync issues |
-| 13 | Test framework | **Vitest** | Fast, ESM-native |
+| 1 | JWT library | **jsonwebtoken** | Standard Node.js server, no Edge Runtime constraint |
+| 2 | Database | **MongoDB + Mongoose** | Document model fits nested settings/checklist fields; team familiarity |
+| 3 | Client framework | **Vite + React Router** (via Impulse reuse) | Fast dev loop, team already has a working codebase to adapt — see `Docs/Impulse-Migration-Plan.md` |
+| 4 | Data freshness | **React Query + Optimistic Updates** (via Impulse reuse) | Cache-aware, zero background polling |
+| 5 | Client local state | **Zustand** (via Impulse reuse) | Already wired for auth/UI/date in Impulse; avoids introducing Redux/other state libs |
+| 6 | Motion | **CSS Transitions** | No dependency, smaller bundle |
+| 7 | Persistence | **Save on Action** | Simpler than auto-save |
+| 8 | Destructive protection | **Confirmation Dialogs** | Simpler than Command Pattern |
+| 9 | Subtask model | **Checklist (embedded array)** | 90% value at 10% complexity |
+| 10 | Cold start | **Loading Skeletons** | Free-tier Node host sleeps on inactivity; acceptable UX cost |
+| 11 | Rate limiting | **In-memory Map** | Sufficient for 100 users |
+| 12 | Task types | **Auto-detect** | Zero decisions for user |
+| 13 | Streak storage | **Computed from tasks/logs** | No staleness, no sync issues |
+| 14 | Test framework | **Vitest** | Fast, ESM-native; shared across client (from Impulse) and server |
 
 ---
 
-**— End of Architecture v2.0 — MVP —**
+**— End of Architecture v2.1 — MVP —**
