@@ -1,6 +1,7 @@
 import { useTranslation, useLocale } from '@/providers/useLocale';
 import { ProgressRing } from './ProgressRing';
 import { HealthDot } from './HealthDot';
+import { TwelveWeekBar } from './TwelveWeekBar';
 import { Goal, GOAL_CATEGORY_LABELS } from '../types';
 
 interface GoalCardProps {
@@ -46,6 +47,7 @@ export const GoalCard = ({ goal, onOpen }: GoalCardProps) => {
           {goal.description}
         </p>
       )}
+      <TwelveWeekBar cycleStart={goal.cycleStart} cycleEnd={goal.cycleEnd} compact />
       <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
         <span>
           {t('goals.milestonesCount', {

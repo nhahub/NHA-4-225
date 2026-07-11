@@ -12,6 +12,7 @@ const GoalDetailPage = lazy(() => import('@/features/goals/pages/GoalDetailPage'
 const HabitsPage = lazy(() => import('@/features/habits/pages/HabitsPage').then((m) => ({ default: m.HabitsPage })));
 const OverviewPage = lazy(() => import('@/features/overview/pages/OverviewPage').then((m) => ({ default: m.OverviewPage })));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
+const OnboardingPage = lazy(() => import('@/features/onboarding/pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -53,6 +54,15 @@ export const AppRouter = () => {
             <RedirectIfAuth>
               <LoginPage />
             </RedirectIfAuth>
+          }
+        />
+
+        <Route
+          path="/onboarding"
+          element={
+            <RequireAuth>
+              <OnboardingPage />
+            </RequireAuth>
           }
         />
 

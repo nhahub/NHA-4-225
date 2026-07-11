@@ -34,6 +34,64 @@ exports.updateDayType = catchAsync(async (req, res) => {
   });
 });
 
+// HOME-1: fetch a single day's DailySummary by date (used for "yesterday's
+// summary" toast on first open). Scoped to the authenticated user, per
+// Architecture.md §9.2. Returns a zeroed placeholder (not a 404) when no
+// summary exists yet for that date, since "nothing happened that day" is a
+// valid, common state (e.g. day 1 of using the app) rather than an error.
+exports.getByDate = catchAsync(async (req, res) => {
+  const { date } = req.params;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "Invalid date format. Must be YYYY-MM-DD.",
+    });
+  }
+
+  const summary = await DailySummary.findOne({ userId: req.user.id, date }).lean();
+
+  res.status(200).json({
+    success: true,
+    data: summary || {
+      date,
+      dayType: "work",
+      tasksCompleted: 0,
+      habitsCompleted: 0,
+      pointsEarned: 0,
+      dailyTarget: 0,
+      dayState: "low",
+      summaryShown: true, // nothing to show for a day with no summary yet
+    },
+  });
+});
+
+// HOME-1: mark a day's summary as shown, so the "yesterday" toast (FR84.1)
+// only ever appears once per day, not on every page load.
+exports.markShown = catchAsync(async (req, res) => {
+  const { date } = req.params;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "Invalid date format. Must be YYYY-MM-DD.",
+    });
+  }
+
+  const summary = await DailySummary.findOneAndUpdate(
+    { userId: req.user.id, date },
+    { $set: { summaryShown: true } },
+    { upsert: true, new: true, runValidators: true }
+  ).lean();
+
+  res.status(200).json({
+    success: true,
+    data: summary,
+  });
+});
+
 const { resolveLogicalDate } = require("../utils/date");
 const { calculateDailyCapacity, calculatePlannedTime } = require("../utils/capacity");
 const User = require("../models/User");

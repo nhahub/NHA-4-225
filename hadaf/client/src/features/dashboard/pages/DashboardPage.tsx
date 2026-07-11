@@ -1,6 +1,4 @@
 import { Clock, Lock, CheckCircle2, Hourglass, Zap } from 'lucide-react';
-import { useEffect } from 'react';
-import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { useDateStore } from '@/shared/stores/useDateStore';
 import { useTranslation, useLocale } from '@/providers/useLocale';
 import { Skeleton } from '@/shared/components/ui/Skeleton';
@@ -10,6 +8,8 @@ import { useCapacity } from '../hooks/useCapacity';
 import { ProgressBar } from '../components/ProgressBar';
 import { DayStateBadge } from '../components/DayStateBadge';
 import { CapacityGauge } from '../components/CapacityGauge';
+import { AdaptiveGreeting } from '../components/AdaptiveGreeting';
+import { DailySummaryToast } from '../components/DailySummaryToast';
 
 const formatFocusTime = (minutes: number, locale: 'ar' | 'en') => {
   const hrs = Math.floor(minutes / 60);
@@ -23,17 +23,9 @@ const formatFocusTime = (minutes: number, locale: 'ar' | 'en') => {
 export const DashboardPage = () => {
   const { t } = useTranslation();
   const { locale } = useLocale();
-  const user = useAuthStore((state) => state.user);
   const { selectedDate } = useDateStore();
   const stats = useDashboardStats(selectedDate);
   const { data: capacity } = useCapacity();
-
-  useEffect(() => {
-    // Daily summary toast is rendered client-side via the toast portal; the
-    // `summaryShown` flag on `DailySummary` would gate re-display. We surface
-    // it here when the daily summary first loads — see DailySummaryToast.tsx.
-    void locale;
-  }, [locale]);
 
   if (stats.isLoading) {
     return <Skeleton className="h-64 w-full rounded-3xl" />;
@@ -45,16 +37,13 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-8">
+      <DailySummaryToast />
       <header className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {t('dashboard.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {user?.name
-              ? t('dashboard.welcome', { name: user.name })
-              : t('dashboard.welcomeFallback')}
-          </p>
+          <AdaptiveGreeting />
         </div>
         {stats.dailyTarget > 0 && (
           <DayStateBadge state={deriveDayState(pointsRatio)} />

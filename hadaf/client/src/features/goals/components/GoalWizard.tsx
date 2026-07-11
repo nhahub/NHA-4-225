@@ -30,15 +30,28 @@ interface GoalWizardProps {
   isOpen: boolean;
   onClose: () => void;
   editGoal?: Goal | null;
+  /** Set false for non-skippable contexts (ONB-1) — see GoalReadinessDialog's
+   * matching prop for the same rationale. The wizard still calls onClose()
+   * internally after a successful submit regardless of this flag; that's
+   * "done", not "dismissed". */
+  dismissible?: boolean;
 }
 
-export const GoalWizard: React.FC<GoalWizardProps> = ({ isOpen, onClose, editGoal }) => {
+export const GoalWizard: React.FC<GoalWizardProps> = ({
+  isOpen,
+  onClose,
+  editGoal,
+  dismissible = true,
+}) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+        onClick={dismissible ? onClose : undefined}
+      />
       <div className="relative bg-white dark:bg-background-paper rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-scale-in flex flex-col border border-gray-100 dark:border-gray-800">
-        <WizardBody editGoal={editGoal ?? null} onClose={onClose} />
+        <WizardBody editGoal={editGoal ?? null} onClose={onClose} dismissible={dismissible} />
       </div>
     </div>
   );
@@ -46,9 +59,10 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ isOpen, onClose, editGoa
 
 const STEPS = ['basics', 'cycle', 'milestones'] as const;
 
-const WizardBody: React.FC<{ editGoal: Goal | null; onClose: () => void }> = ({
+const WizardBody: React.FC<{ editGoal: Goal | null; onClose: () => void; dismissible: boolean }> = ({
   editGoal,
   onClose,
+  dismissible,
 }) => {
   const { t, locale } = useTranslation();
   const createGoal = useCreateGoal();
@@ -127,13 +141,15 @@ const WizardBody: React.FC<{ editGoal: Goal | null; onClose: () => void }> = ({
           <Sparkles size={18} className="text-brand-500" />
           {isEdit ? t('goals.editGoal') : t('goals.newGoal')}
         </h2>
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400"
-          aria-label={t('common.cancel')}
-        >
-          <X size={20} />
-        </button>
+        {dismissible && (
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400"
+            aria-label={t('common.cancel')}
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-2 px-6 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">

@@ -1,14 +1,19 @@
 import { useEffect } from 'react';
-import { Settings as SettingsIcon, Sun, Moon, Bell, Calendar, Save } from 'lucide-react';
+import { Settings as SettingsIcon, Sun, Moon, Bell, Calendar, Save, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation, useLocale } from '@/providers/useLocale';
 import { useTheme } from '@/providers/useTheme';
+import { useDayType } from '@/providers/useDayType';
 import { Card } from '@/shared/components/ui/Card';
 import { Skeleton } from '@/shared/components/ui/Skeleton';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
 import { useSettings, useUpdateSettings } from '../hooks/useSettings';
+import { useUpdateDayType } from '../hooks/useUpdateDayType';
+import { DAY_TYPE_LABELS, type DayType } from '../hooks/useDayType';
 import type { UpdateSettingsInput } from '../api/settingsApi';
+
+const DAY_TYPES: DayType[] = ['work', 'light', 'off'];
 
 const WEEKDAYS = [
   { value: 'sunday', label_en: 'Sunday', label_ar: 'الأحد' },
@@ -26,6 +31,8 @@ export const SettingsPage = () => {
   const { theme, setTheme } = useTheme();
   const { data: settings, isLoading } = useSettings();
   const updateSettings = useUpdateSettings();
+  const { dayType: resolvedDayType, isLoading: isDayTypeLoading } = useDayType();
+  const updateDayType = useUpdateDayType();
 
   useEffect(() => {
     document.title = `${t('nav.settings')} · ${t('app.name')}`;
@@ -168,6 +175,41 @@ export const SettingsPage = () => {
           </div>
           <p className="text-[11px] text-gray-400 mt-2">{t('settings.offDaysHelper')}</p>
         </div>
+      </Card>
+
+      <Card padding="lg">
+        <div className="flex items-center gap-3 mb-3">
+          <Zap className="text-brand-500" />
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            {t('settings.dayTypeOverride')}
+          </h2>
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          {t('settings.dayTypeOverrideHelper')}
+        </p>
+        {isDayTypeLoading ? (
+          <Skeleton className="h-10 w-full rounded-lg" />
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {DAY_TYPES.map((dt) => (
+              <Button
+                key={dt}
+                type="button"
+                variant={resolvedDayType === dt ? 'primary' : 'secondary'}
+                isLoading={updateDayType.isPending && updateDayType.variables === dt}
+                onClick={() => {
+                  if (resolvedDayType === dt) return;
+                  updateDayType.mutate(dt, {
+                    onSuccess: () => toast.success(t('settings.saved')),
+                    onError: () => toast.error(t('common.error')),
+                  });
+                }}
+              >
+                {DAY_TYPE_LABELS[dt][locale]}
+              </Button>
+            ))}
+          </div>
+        )}
       </Card>
 
       <Card padding="lg">

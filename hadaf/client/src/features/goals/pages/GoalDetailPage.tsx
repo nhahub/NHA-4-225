@@ -13,6 +13,7 @@ import { ProgressRing } from '../components/ProgressRing';
 import { HealthDot } from '../components/HealthDot';
 import { MilestoneList } from '../components/MilestoneList';
 import { WeeklyHeatmap } from '../components/WeeklyHeatmap';
+import { TwelveWeekBar } from '../components/TwelveWeekBar';
 import { GoalWizard } from '../components/GoalWizard';
 import { GOAL_CATEGORY_LABELS } from '../types';
 
@@ -195,6 +196,10 @@ export const GoalDetailPage = () => {
             </div>
           </div>
         )}
+      </Card>
+
+      <Card padding="lg">
+        <TwelveWeekBar cycleStart={goal.cycleStart} cycleEnd={goal.cycleEnd} />
       </Card>
 
       <Card padding="lg">

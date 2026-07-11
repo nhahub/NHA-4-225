@@ -107,4 +107,60 @@ describe('Epic 4: Daily Summary & Scoring API', () => {
       expect(summaryRes.body.data.pointsEarned).toBeGreaterThan(0);
     });
   });
+
+  describe('GET /api/daily-summaries/:date (HOME-1)', () => {
+    it('returns a zeroed placeholder for a date with no summary yet', async () => {
+      const res = await request(app)
+        .get('/api/daily-summaries/2020-01-01')
+        .set('Cookie', cookie)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.date).toBe('2020-01-01');
+      expect(res.body.data.pointsEarned).toBe(0);
+      expect(res.body.data.summaryShown).toBe(true);
+    });
+
+    it('rejects a malformed date', async () => {
+      const res = await request(app)
+        .get('/api/daily-summaries/not-a-date')
+        .set('Cookie', cookie)
+        .expect(400);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.errorCode).toBe('VALIDATION');
+    });
+
+    it('returns the real summary once today has data', async () => {
+      const today = new Date().toISOString().split('T')[0];
+      await request(app).get('/api/daily-summaries/today').set('Cookie', cookie);
+
+      const res = await request(app)
+        .get(`/api/daily-summaries/${today}`)
+        .set('Cookie', cookie)
+        .expect(200);
+
+      expect(res.body.data.date).toBe(today);
+    });
+  });
+
+  describe('PATCH /api/daily-summaries/:date/shown (HOME-1)', () => {
+    it('marks a summary as shown, upserting if it does not exist yet', async () => {
+      const res = await request(app)
+        .patch('/api/daily-summaries/2020-01-01/shown')
+        .set('X-Requested-With', 'XMLHttpRequest')
+        .set('Cookie', cookie)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.summaryShown).toBe(true);
+
+      // Second read reflects the persisted flag, not the placeholder default.
+      const readBack = await request(app)
+        .get('/api/daily-summaries/2020-01-01')
+        .set('Cookie', cookie)
+        .expect(200);
+      expect(readBack.body.data.summaryShown).toBe(true);
+    });
+  });
 });
