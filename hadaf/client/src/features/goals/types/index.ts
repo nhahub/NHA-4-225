@@ -1,3 +1,5 @@
+import type { HealthLevel } from '@/shared/components/ui/healthTokens';
+
 export type GoalCategory =
   | 'education_work'
   | 'family'
@@ -7,7 +9,8 @@ export type GoalCategory =
 
 export type GoalStatus = 'active' | 'completed' | 'archived' | 'replaced';
 
-export type GoalHealth = 'green' | 'yellow' | 'orange' | 'red';
+/** Goals-domain alias for the shared HealthLevel union. */
+export type GoalHealth = HealthLevel;
 
 export const GOAL_CATEGORY_LABELS: Record<GoalCategory, { ar: string; en: string }> = {
   education_work: { ar: 'تعليم/عمل', en: 'Education/Work' },
@@ -40,6 +43,14 @@ export interface GoalStats {
   completedMilestonesCount: number;
 }
 
+export interface WeeklyCompletionBucket {
+  week: number;
+  total: number;
+  completed: number;
+  /** Completion percentage 0–100. */
+  ratio: number;
+}
+
 export interface Goal {
   _id: string;
   userId?: string;
@@ -63,6 +74,8 @@ export interface Goal {
   isOverride?: boolean;
   weeklyExecutionScore?: number;
   stats?: GoalStats;
+  /** Per-week completion buckets (12 entries, week 1–12). */
+  weeklyCompletion?: WeeklyCompletionBucket[];
 }
 
 export interface CreateGoalInput {

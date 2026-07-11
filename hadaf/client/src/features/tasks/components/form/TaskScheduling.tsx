@@ -1,13 +1,21 @@
-﻿import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { Input } from '@/shared/components/ui/Input';
 import { cn } from '@/shared/utils/cn';
 import { format, addDays, differenceInMinutes, parse } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from '@/providers/useLocale';
 import type { TaskFormValues } from './formValues';
 
-export const TaskScheduling = () => {
+interface TaskSchedulingProps {
+  // True while a big task's end time is being derived from its subtasks'
+  // durations (see the auto-calc effect in TaskFormModal) — locks the end
+  // time input and swaps in the "Auto-calculated" badge instead of the
+  // flexible-duration toggle.
+  isAutoScheduled?: boolean;
+}
+
+export const TaskScheduling = ({ isAutoScheduled }: TaskSchedulingProps) => {
   const { t } = useTranslation();
   const { register, control, setValue } = useFormContext<TaskFormValues>();
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -16,6 +24,18 @@ export const TaskScheduling = () => {
   const startTime = useWatch({ control, name: 'timeBlockStart' });
   const endTime = useWatch({ control, name: 'timeBlockEnd' });
   const plannedMinutes = useWatch({ control, name: 'plannedDurationMinutes' });
+
+  const [flexibleMode, setFlexibleMode] = useState(
+    () => !startTime && !!plannedMinutes,
+  );
+
+  // A big task's time is always derived from its subtasks — flexible-duration
+  // mode has no meaning there. If the user picked flexible duration on a
+  // regular task and then switches it to a big task, drop back to the
+  // time-block view so the auto-calc badge and computed end time are visible.
+  useEffect(() => {
+    if (isAutoScheduled) setFlexibleMode(false);
+  }, [isAutoScheduled]);
 
   const today = new Date();
   const tomorrow = addDays(today, 1);
@@ -30,6 +50,17 @@ export const TaskScheduling = () => {
   const setDay = (d: Date) => {
     setValue('date', format(d, 'yyyy-MM-dd'), { shouldDirty: true });
     setShowDatePicker(false);
+  };
+
+  const switchToFlexible = () => {
+    setValue('timeBlockStart', '', { shouldDirty: true });
+    setValue('timeBlockEnd', '', { shouldDirty: true });
+    setFlexibleMode(true);
+  };
+
+  const switchToTimeBlock = () => {
+    setValue('plannedDurationMinutes', undefined, { shouldDirty: true });
+    setFlexibleMode(false);
   };
 
   let duration = 0;
@@ -130,40 +161,79 @@ export const TaskScheduling = () => {
           {t('tasks.timeBlock')}
         </label>
 
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 w-fit">
-            <Input
-              type="time"
-              {...register('timeBlockStart')}
-              className="bg-transparent border-none h-8 p-0 text-center font-semibold text-sm w-20 focus:ring-0"
-            />
-            <span className="text-gray-400">-</span>
-            <Input
-              type="time"
-              {...register('timeBlockEnd')}
-              className="bg-transparent border-none h-8 p-0 text-center font-semibold text-sm w-20 focus:ring-0"
-            />
-          </div>
+        {!flexibleMode ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 w-fit">
+                <Input
+                  type="time"
+                  {...register('timeBlockStart')}
+                  className="bg-transparent border-none h-8 p-0 text-center font-semibold text-sm w-20 focus:ring-0"
+                />
+                <ArrowRight size={14} className="text-gray-400 shrink-0 rtl:rotate-180" />
+                <Input
+                  type="time"
+                  {...register('timeBlockEnd')}
+                  className={cn(
+                    'bg-transparent border-none h-8 p-0 text-center font-semibold text-sm w-20 focus:ring-0',
+                    isAutoScheduled && 'text-brand-600 dark:text-brand-400',
+                  )}
+                  readOnly={isAutoScheduled}
+                />
+              </div>
+              {duration > 0 && (
+                <div className="text-[10px] text-gray-400 mt-1.5 font-medium ms-1">
+                  {t('tasks.durationMinutes', { count: duration })}
+                </div>
+              )}
+            </div>
 
-          <div>
-            <label className="text-[10px] uppercase tracking-wider text-gray-400 block mb-1">
-              {t('tasks.plannedMinutes')}
-            </label>
+            {isAutoScheduled ? (
+              <div className="flex-1 min-w-[200px] flex items-center gap-2 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 px-3 py-2 rounded-xl animate-fade-in self-start h-[46px]">
+                <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-300">
+                  <Sparkles size={12} fill="currentColor" />
+                </div>
+                <div className="flex flex-col justify-center leading-none gap-1">
+                  <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">
+                    {t('tasks.autoCalculated')}
+                  </span>
+                  <span className="text-[10px] text-blue-600/80 dark:text-blue-400 font-medium">
+                    {t('tasks.autoCalculatedHelper')}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={switchToFlexible}
+                className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                {t('tasks.flexibleDuration')}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-3">
             <Input
               type="number"
               min="0"
               {...register('plannedDurationMinutes', { valueAsNumber: true })}
               className="w-24 h-10 text-center"
-              placeholder="0"
+              placeholder="30"
+              autoFocus
             />
-          </div>
-
-          {(duration > 0 || (plannedMinutes && plannedMinutes > 0)) && (
             <span className="text-[11px] text-gray-400 font-medium">
-              {t('tasks.durationMinutes', { count: duration || plannedMinutes || 0 })}
+              {t('tasks.plannedMinutes')}
             </span>
-          )}
-        </div>
+            <button
+              type="button"
+              onClick={switchToTimeBlock}
+              className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors"
+            >
+              {t('tasks.useTimeBlock')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

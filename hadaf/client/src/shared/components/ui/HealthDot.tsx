@@ -1,13 +1,15 @@
-import { GoalHealth } from '../types';
 import type { Locale } from '@/providers/LocaleContextValue';
-import { HEALTH_COLOR, HEALTH_LABEL } from './healthTokens';
+import { HEALTH_COLOR, type HealthLevel } from './healthTokens';
+import { HEALTH_LABEL } from './healthLabels';
 
 interface HealthDotProps {
-  health: GoalHealth;
+  health: HealthLevel;
   size?: 'sm' | 'md';
   label?: boolean;
   locale?: Locale;
 }
+
+export type { HealthLevel };
 
 export const HealthDot = ({ health, size = 'md', label = false, locale = 'en' }: HealthDotProps) => {
   const dot = HEALTH_COLOR[health];

@@ -40,10 +40,9 @@ describe('Epic 1: Goals & Milestones API', () => {
           description: 'Master backend development',
           category: 'education_work',
           measure: 'Complete 2 milestones',
-          priority: 'high',
           cycleStart: new Date().toISOString(),
           cycleEnd: new Date(Date.now() + 86400000 * 84).toISOString(),
-          milestones: ['Learn Express', 'Learn MongoDB']
+          milestones: ['Learn Express', 'Learn MongoDB']        
         })
         .expect(201);
       
@@ -58,7 +57,6 @@ describe('Epic 1: Goals & Milestones API', () => {
         .send({
           title: 'Invalid category goal',
           category: 'invalid', // should fail enum check
-          priority: 'high'
         })
         .expect(400);
 
@@ -81,7 +79,6 @@ describe('Epic 1: Goals & Milestones API', () => {
           category: 'other',
           customCategory: 'My Custom Category',
           measure: 'Complete 1 milestone',
-          priority: 'medium',
           cycleStart: new Date().toISOString(),
           cycleEnd: new Date(Date.now() + 86400000 * 84).toISOString(),
           milestones: ['Milestone 1']

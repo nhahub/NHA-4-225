@@ -89,7 +89,10 @@ async function performRefresh(): Promise<string | null> {
     const response = await axios.post(
       `${BASE_URL}/auth/refresh`,
       {},
-      { withCredentials: true }
+      {
+        withCredentials: true,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      }
     );
     const data = unwrapEnvelope<{ accessToken?: string }>(response.data);
     const accessToken = data?.accessToken;

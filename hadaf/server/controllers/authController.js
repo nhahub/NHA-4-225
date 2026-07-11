@@ -55,10 +55,15 @@ const hashToken = (token) => {
 };
 
 // Cookie options helper
+// The app and API are served same-origin (dev: Vite proxies /api → Express;
+// prod: one origin behind a reverse proxy / static-serve). So `sameSite: "lax"`
+// works everywhere and cross-site `"none"` is unnecessary. `secure` must be off
+// in dev (plain HTTP localhost drops Secure cookies) and on in prod (HTTPS).
+const isProd = process.env.NODE_ENV === "production";
 const getCookieOptions = (maxAgeMs) => ({
   httpOnly: true,
-  secure: true, // required for sameSite: "none"
-  sameSite: "none",
+  secure: isProd,
+  sameSite: "lax",
   maxAge: maxAgeMs,
 });
 
@@ -137,9 +142,14 @@ exports.register = catchAsync(async (req, res, next) => {
   //     console.error("Error sending verification email:", err);
   //   });
 
+  // 6) Issue tokens so the client can treat registration as an immediate
+  // login (matches the frontend's onRegister, which never calls /login).
+  const { accessToken } = await sendTokens(newUser, res);
+
   res.status(201).json({
     success: true,
     data: {
+      accessToken,
       user: {
         id: newUser._id,
         email: newUser.email,
@@ -194,11 +204,12 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 
   // 5) Issue new tokens
-  await sendTokens(user, res);
+  const { accessToken } = await sendTokens(user, res);
 
   res.status(200).json({
     success: true,
     data: {
+      accessToken,
       user: {
         id: user._id,
         email: user.email,
@@ -288,11 +299,12 @@ exports.refreshToken = catchAsync(async (req, res, next) => {
   }
 
   // Rotate to a new pair of tokens
-  await sendTokens(user, res);
+  const { accessToken } = await sendTokens(user, res);
 
   res.status(200).json({
     success: true,
     data: {
+      accessToken,
       user: {
         id: user._id,
         email: user.email,
@@ -392,7 +404,7 @@ exports.exchangeResetToken = catchAsync(async (req, res, next) => {
   const cookieOptions = {
     expires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: "strict",
   };
 
@@ -454,7 +466,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   res.cookie("resetToken", "", {
     expires: new Date(Date.now() - 10 * 1000),
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: "strict",
   });
 

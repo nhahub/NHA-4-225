@@ -30,6 +30,9 @@ const STREAK_BONUS_CAP = 1.5;
 const QUICK_TASK_POINTS = 2;
 const TIME_CAP_MULTIPLIER = 3;
 const ACCURACY_WINDOW_MINUTES = 15;
+// Points awarded when a goal milestone is flipped to completed (E1-2, FR6.1).
+// Rolled into DailySummary.pointsEarned by the dailySummary controller.
+const MILESTONE_BONUS_POINTS = 10;
 
 /**
  * Calculates the final points earned when a task is completed (E2-2 scoring).
@@ -133,3 +136,8 @@ exports.calculateCounterHabitPoints = (value, target, mvd = 0) => {
   if (value > 0 && value < mvd) return 3;
   return 0;
 };
+
+// Exposed for the DailySummary controller (E1-2). Single source of truth —
+// before this move it was duplicated in dailySummaryController.js, which
+// violated the SRP rule that controllers must not own scoring constants.
+exports.MILESTONE_BONUS_POINTS = MILESTONE_BONUS_POINTS;

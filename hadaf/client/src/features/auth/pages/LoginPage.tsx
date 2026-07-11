@@ -23,7 +23,7 @@ const loginSchema = z.object({
 const registerSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Invalid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 export const LoginPage = () => {
@@ -59,10 +59,12 @@ export const LoginPage = () => {
       toast.success(t('auth.welcome'));
       navigate(resolveRedirect(), { replace: true });
     } catch (error: unknown) {
-      const msg =
+      const key =
         (error instanceof Error && error.message) ||
         'auth.errors.invalidCredentials';
-      toast.error(msg);
+      // The API layer surfaces errors as i18n keys (ApiError.message = i18nKey);
+      // translate before showing so users see a real message, not a raw key.
+      toast.error(t(key));
     }
   };
 
@@ -73,10 +75,10 @@ export const LoginPage = () => {
       toast.success(t('auth.accountCreated'));
       navigate(resolveRedirect(), { replace: true });
     } catch (error: unknown) {
-      const msg =
+      const key =
         (error instanceof Error && error.message) ||
         'auth.errors.validationFailed';
-      toast.error(msg);
+      toast.error(t(key));
     }
   };
 

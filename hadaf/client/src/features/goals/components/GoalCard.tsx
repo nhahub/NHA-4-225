@@ -1,12 +1,22 @@
+import { useState } from 'react';
 import { useTranslation, useLocale } from '@/providers/useLocale';
-import { ProgressRing } from './ProgressRing';
-import { HealthDot } from './HealthDot';
+import { ProgressRing } from '@/shared/components/ui/ProgressRing';
+import { HealthDot } from '@/shared/components/ui/HealthDot';
+import { WeeklyBars } from './WeeklyBars';
 import { Goal, GOAL_CATEGORY_LABELS } from '../types';
 
 interface GoalCardProps {
   goal: Goal;
   onOpen: (id: string) => void;
 }
+
+const computeCurrentWeek = (cycleStart: Date | null) => {
+  if (!cycleStart) return undefined;
+  const diff = Date.now() - cycleStart.getTime();
+  if (diff < 0) return 1;
+  const week = Math.floor(diff / (1000 * 60 * 60 * 24 * 7)) + 1;
+  return Math.min(12, Math.max(1, week));
+};
 
 export const GoalCard = ({ goal, onOpen }: GoalCardProps) => {
   const { t } = useTranslation();
@@ -16,6 +26,13 @@ export const GoalCard = ({ goal, onOpen }: GoalCardProps) => {
   const categoryLabel = goal.category === 'other'
     ? goal.customCategory
     : GOAL_CATEGORY_LABELS[goal.category][locale];
+
+  // Captured once at mount (lazy initializer) so the component stays pure on
+  // re-render. The marker week will refresh on full reload, which is fine for
+  // a dashboard card.
+  const [currentWeek] = useState(() =>
+    computeCurrentWeek(goal.cycleStart ? new Date(goal.cycleStart) : null),
+  );
 
   return (
     <button
@@ -45,6 +62,9 @@ export const GoalCard = ({ goal, onOpen }: GoalCardProps) => {
         <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
           {goal.description}
         </p>
+      )}
+      {goal.weeklyCompletion && goal.weeklyCompletion.length > 0 && (
+        <WeeklyBars buckets={goal.weeklyCompletion} currentWeek={currentWeek} />
       )}
       <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
         <span>

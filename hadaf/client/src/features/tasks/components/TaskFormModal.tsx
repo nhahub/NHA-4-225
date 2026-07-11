@@ -1,13 +1,13 @@
-import React from 'react';
-import { useForm, FormProvider, SubmitHandler } from 'react-hook-form';
+import React, { useEffect, useState } from 'react';
+import { useForm, useWatch, FormProvider, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Sparkles } from 'lucide-react';
+import { X, Sparkles, CheckSquare, Layers } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { useCreateTask } from '../hooks/useTasks';
 import type { Task } from '../types';
 import { cn } from '@/shared/utils/cn';
-import { format } from 'date-fns';
+import { format, addMinutes, parse, isValid } from 'date-fns';
 import { useTranslation } from '@/providers/useLocale';
 import type { TaskFormValues } from './form/formValues';
 import { TaskHeader } from './form/TaskHeader';
@@ -99,9 +99,47 @@ const CreateTaskForm: React.FC<{
     },
   });
 
-  const { handleSubmit, formState: { isSubmitting } } = methods;
+  const { handleSubmit, setValue, getValues, formState: { isSubmitting } } = methods;
   const isEdit = !!editTask;
   const hadChecklist = (editTask?.checklist?.length ?? 0) > 0;
+
+  // Regular vs. Big Task is a client-only distinction — the backend has no
+  // such field. "Big task" just means: show the subtasks panel, and derive
+  // the time-block end from the sum of subtask durations instead of letting
+  // the user set it directly.
+  const [isProject, setIsProject] = useState(hadChecklist);
+
+  const checklist = useWatch({ control: methods.control, name: 'checklist' });
+  const startTime = useWatch({ control: methods.control, name: 'timeBlockStart' });
+
+  useEffect(() => {
+    if (!isProject) return;
+    const validItems = (checklist ?? []).filter(
+      (c) => c?.title && c.title.trim().length > 0,
+    );
+    const totalMinutes = validItems.reduce((acc, c) => acc + (c.durationMinutes || 0), 0);
+    const durationToAdd = totalMinutes > 0 ? totalMinutes : 30;
+    if (startTime) {
+      const startDate = parse(startTime, 'HH:mm', new Date());
+      if (isValid(startDate)) {
+        setValue('timeBlockEnd', format(addMinutes(startDate, durationToAdd), 'HH:mm'));
+      }
+    }
+  }, [isProject, checklist, startTime, setValue]);
+
+  const handleSelectRegular = () => {
+    setIsProject(false);
+    setValue('checklist', []);
+  };
+
+  const handleSelectProject = () => {
+    setIsProject(true);
+    if (!getValues('timeBlockStart')) {
+      const now = new Date();
+      setValue('timeBlockStart', format(now, 'HH:00'));
+      setValue('timeBlockEnd', format(addMinutes(now, 30), 'HH:00'));
+    }
+  };
 
   const onSubmit: SubmitHandler<TaskFormValues> = async (data) => {
     try {
@@ -166,10 +204,39 @@ const CreateTaskForm: React.FC<{
             className={cn('space-y-6')}
           >
             <TaskHeader />
-            <TaskScheduling />
+
+            <div className="grid grid-cols-2 gap-3 p-1 bg-gray-100 dark:bg-gray-800/50 rounded-xl">
+              <button
+                type="button"
+                onClick={handleSelectRegular}
+                className={cn(
+                  'flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wide rounded-lg transition-all duration-200',
+                  !isProject
+                    ? 'bg-white dark:bg-gray-700 text-brand-600 shadow-sm ring-1 ring-black/5'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
+                )}
+              >
+                <CheckSquare size={16} /> {t('tasks.regularTask')}
+              </button>
+              <button
+                type="button"
+                onClick={handleSelectProject}
+                className={cn(
+                  'flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wide rounded-lg transition-all duration-200',
+                  isProject
+                    ? 'bg-white dark:bg-gray-700 text-purple-600 shadow-sm ring-1 ring-black/5'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
+                )}
+              >
+                <Layers size={16} /> {t('tasks.bigTask')}
+              </button>
+            </div>
+
+            {isProject && <div className="animate-slide-in-up"><TaskChecklist /></div>}
+
+            <TaskScheduling isAutoScheduled={isProject} />
             <TaskPriorityPicker />
             <TaskDifficultyPicker />
-            <TaskChecklist />
 
             {isEdit && hadChecklist && (
               <p className="text-[11px] text-amber-600 dark:text-amber-400 italic">

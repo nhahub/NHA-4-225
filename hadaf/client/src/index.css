@@ -267,6 +267,21 @@
     background: var(--color-brand-200);
     color: var(--color-brand-900);
   }
+
+  /* Arabic script has no letter case and its glyphs must stay joined to read
+   * correctly. `uppercase` is a silent no-op on Arabic text, but `tracking-*`
+   * (letter-spacing) breaks glyph joining and renders words as disconnected,
+   * "cut" fragments. Neutralize both wherever they're used as label styling
+   * on RTL content, instead of stripping the utilities from every label. */
+  :dir(rtl) .uppercase {
+    text-transform: none;
+  }
+
+  :dir(rtl) .tracking-wide,
+  :dir(rtl) .tracking-wider,
+  :dir(rtl) .tracking-widest {
+    letter-spacing: normal;
+  }
 }
 
 @layer utilities {

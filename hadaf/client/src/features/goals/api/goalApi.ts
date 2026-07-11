@@ -15,14 +15,12 @@ export interface GetGoalsParams {
 
 export const getActiveGoals = async (): Promise<Goal[]> => {
   const response = await apiClient.get<Goal[]>('/goals/active');
-  return Array.isArray(response.data) ? response.data : ((response.data as { data: Goal[] }).data ?? []);
+  return response.data;
 };
 
 export const getGoals = async (params: GetGoalsParams = {}): Promise<Goal[]> => {
   const response = await apiClient.get<Goal[]>('/goals', { params });
-  return Array.isArray(response.data)
-    ? response.data
-    : ((response.data as { data: Goal[] }).data ?? []);
+  return response.data;
 };
 
 export const getGoalDetail = async (id: string): Promise<GoalDetailResponse> => {

@@ -96,11 +96,19 @@ const replaceGoalSchema = createGoalSchema.extend({
   reason: z.string().min(1, "Replacement reason is required")
 });
 
+// Body for PATCH /api/goals/:id/override. Pass `null`, omit the field, or
+// send `undefined` to clear the override (controller uses $unset);
+// any number 0–100 sets manualProgress.
+const overrideGoalSchema = z.object({
+  progress: z.number().min(0).max(100).nullable().optional(),
+});
+
 const Goal = mongoose.model("Goal", goalSchema);
 
 Goal.createGoalSchema = createGoalSchema;
 Goal.softDeleteGoalSchema = softDeleteGoalSchema;
 Goal.updateGoalSchema = updateGoalSchema;
 Goal.replaceGoalSchema = replaceGoalSchema;
+Goal.overrideGoalSchema = overrideGoalSchema;
 
 module.exports = Goal;

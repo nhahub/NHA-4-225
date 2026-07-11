@@ -76,13 +76,11 @@ exports.getCapacity = catchAsync(async (req, res) => {
 
 const { getLogicalDateRange } = require("../utils/date");
 const { calculateDayState, calculateAdaptiveDailyTarget } = require("../utils/dayState");
-const { calculateHabitPoints, calculateCounterHabitPoints } = require("../utils/scoring");
+const { calculateHabitPoints, calculateCounterHabitPoints, MILESTONE_BONUS_POINTS } = require("../utils/scoring");
 const Goal = require("../models/Goal");
 const Habit = require("../models/Habit");
 const HabitLog = require("../models/HabitLog");
 const Milestone = require("../models/Milestone");
-
-const MILESTONE_BONUS_POINTS = 10;
 
 async function resolveDayType(userId, dateStr, offDays) {
   const summary = await DailySummary.findOne({ userId, date: dateStr }).lean();
