@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
 import { useTranslation } from '@/providers/useLocale';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
 import { useCreateHabit } from '@/features/habits/hooks/useHabits';
 import { SUGGESTED_HABITS, type SuggestedHabit } from '@/shared/constants/suggestedHabits';
 import { cn } from '@/shared/utils/cn';
+import { useApiErrorHandler } from '@/shared/hooks/useApiErrorHandler';
 
 interface SelectedHabit {
   suggestion: SuggestedHabit;
@@ -34,6 +34,7 @@ interface HabitsStepProps {
 export const HabitsStep = ({ onComplete, onBack }: HabitsStepProps) => {
   const { t } = useTranslation();
   const createHabit = useCreateHabit();
+  const handleError = useApiErrorHandler();
 
   const [selected, setSelected] = useState<Record<string, SelectedHabit>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -89,8 +90,8 @@ export const HabitsStep = ({ onComplete, onBack }: HabitsStepProps) => {
         ),
       );
       onComplete(created.map((h) => h._id));
-    } catch {
-      toast.error(t('onboarding.habitsStep.createError'));
+    } catch (e) {
+      handleError(e, { title: 'onboarding.habitsStep.createError' });
       setSubmitting(false);
     }
   };

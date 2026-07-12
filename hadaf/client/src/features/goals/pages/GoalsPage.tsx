@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Compass } from 'lucide-react';
 import { Card } from '@/shared/components/ui/Card';
 import { Skeleton } from '@/shared/components/ui/Skeleton';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
+import { EmptyState } from '@/shared/components/EmptyState';
 import { useTranslation } from '@/providers/useLocale';
 import { useGoals } from '../hooks/useGoals';
 import { GoalCard } from '../components/GoalCard';
@@ -117,17 +118,34 @@ export const GoalsPage = () => {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <Card padding="lg">
-          <div className="text-center py-12">
-            <Search className="mx-auto mb-4 text-gray-300 dark:text-gray-600" size={48} />
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              {t('goals.noGoals')}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-              {t('goals.noGoalsHelper')}
-            </p>
-          </div>
-        </Card>
+        search.trim() || categoryFilter !== 'all' || statusFilter !== 'all' ? (
+          <Card padding="lg">
+            <div className="text-center py-12">
+              <Search className="mx-auto mb-4 text-gray-300 dark:text-gray-600" size={48} />
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                {t('goals.noGoals')}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+                {t('goals.noGoalsHelper')}
+              </p>
+            </div>
+          </Card>
+        ) : (
+          <EmptyState
+            icon={<Compass size={28} strokeWidth={1.75} />}
+            title={t('pol.empty.goalsTitle')}
+            body={t('pol.empty.goalsBody')}
+            cta={
+              <Button
+                variant="primary"
+                onClick={() => setReadinessOpen(true)}
+                leftIcon={<Plus size={16} />}
+              >
+                {t('goals.newGoal')}
+              </Button>
+            }
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((g) => (

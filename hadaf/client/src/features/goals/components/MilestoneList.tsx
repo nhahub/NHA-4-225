@@ -9,7 +9,6 @@ import {
 } from '../hooks/useGoals';
 import { Input } from '@/shared/components/ui/Input';
 import { Button } from '@/shared/components/ui/Button';
-import { toast } from 'sonner';
 
 interface MilestoneListProps {
   goalId: string;
@@ -33,7 +32,6 @@ export const MilestoneList = ({ goalId, milestones, canEdit }: MilestoneListProp
       { goalId, title },
       {
         onSuccess: () => setDraft(''),
-        onError: () => toast.error(t('common.error')),
       },
     );
   };

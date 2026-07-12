@@ -24,7 +24,6 @@ export const HabitCounter = ({ habit }: HabitCounterProps) => {
       },
       {
         onSuccess: () => toast.success(t('habits.logged')),
-        onError: () => toast.error(t('common.error')),
       },
     );
   };

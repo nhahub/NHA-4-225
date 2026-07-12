@@ -11,6 +11,7 @@ import { Goal, GOAL_CATEGORY_LABELS, GoalCategory } from '../types';
 import { addDays, format } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/shared/utils/cn';
+import { useApiErrorHandler } from '@/shared/hooks/useApiErrorHandler';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -53,6 +54,7 @@ const WizardBody: React.FC<{ editGoal: Goal | null; onClose: () => void }> = ({
   const { t, locale } = useTranslation();
   const createGoal = useCreateGoal();
   const updateGoal = useUpdateGoal();
+  const handleError = useApiErrorHandler();
   const isEdit = !!editGoal;
 
   const typedLocale = locale as 'ar' | 'en';
@@ -115,8 +117,9 @@ const WizardBody: React.FC<{ editGoal: Goal | null; onClose: () => void }> = ({
       toast.success(t('goals.saved'));
       onClose();
     } catch (e) {
-      toast.error(t('common.error'));
-      console.error(e);
+      handleError(e, {
+        title: isEdit ? 'goals.errors.updateFailed' : 'goals.errors.createFailed',
+      });
     }
   };
 

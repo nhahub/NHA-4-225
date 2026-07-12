@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Plus, Loader2, ShieldCheck } from 'lucide-react';
-import { Card } from '@/shared/components/ui/Card';
 import { Skeleton } from '@/shared/components/ui/Skeleton';
 import { Button } from '@/shared/components/ui/Button';
 import { Input, Textarea } from '@/shared/components/ui/Input';
+import { EmptyState } from '@/shared/components/EmptyState';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/shared/components/ui/AlertDialog';
 import { useTranslation } from '@/providers/useLocale';
 import { useHabits, useCreateHabit } from '../hooks/useHabits';
@@ -60,7 +60,6 @@ export const HabitsPage = () => {
           mvdDescription: '',
         });
       },
-      onError: () => toast.error(t('common.error')),
     });
   };
 
@@ -89,17 +88,20 @@ export const HabitsPage = () => {
       {isLoading ? (
         <Skeleton className="h-32 w-full rounded-2xl" />
       ) : habits.length === 0 ? (
-        <Card padding="lg">
-          <div className="text-center py-12">
-            <ShieldCheck className="mx-auto mb-4 text-gray-300 dark:text-gray-600" size={48} />
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              {t('habits.noHabits')}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-              {t('habits.noHabitsHelper')}
-            </p>
-          </div>
-        </Card>
+        <EmptyState
+          icon={<ShieldCheck size={28} strokeWidth={1.75} />}
+          title={t('pol.empty.habitsTitle')}
+          body={t('pol.empty.habitsBody')}
+          cta={
+            <Button
+              variant="primary"
+              leftIcon={<Plus size={16} />}
+              onClick={() => setCreating(true)}
+            >
+              {t('habits.newHabit')}
+            </Button>
+          }
+        />
       ) : (
         <div className="space-y-6">
           {byType('boolean').length > 0 && (

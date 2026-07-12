@@ -14,6 +14,7 @@ import { useGoal, useOverrideProgress, useArchiveGoal } from '../hooks/useGoals'
 import { MilestoneList } from '../components/MilestoneList';
 import { WeeklyHeatmap } from '../components/WeeklyHeatmap';
 import { GoalWizard } from '../components/GoalWizard';
+import { GoalDeleteDialog } from '../components/GoalDeleteDialog';
 import { GOAL_CATEGORY_LABELS } from '../types';
 
 export const GoalDetailPage = () => {
@@ -23,6 +24,7 @@ export const GoalDetailPage = () => {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [overrideDraft, setOverrideDraft] = useState<number | ''>('');
+  const [archiveOpen, setArchiveOpen] = useState(false);
 
   const { data: detail, isLoading } = useGoal(id);
   const overrideProgress = useOverrideProgress();
@@ -66,7 +68,6 @@ export const GoalDetailPage = () => {
           toast.success(t('goals.overrideSaved'));
           setOverrideDraft('');
         },
-        onError: () => toast.error(t('common.error')),
       },
     );
   };
@@ -76,14 +77,15 @@ export const GoalDetailPage = () => {
       { id: goal._id, progress: null },
       {
         onSuccess: () => toast.success(t('goals.overrideCleared')),
-        onError: () => toast.error(t('common.error')),
       },
     );
   };
 
   const handleArchive = () => {
-    const reason = window.prompt(t('goals.archivePrompt'));
-    if (!reason) return;
+    setArchiveOpen(true);
+  };
+
+  const confirmArchive = (reason: string) => {
     archiveGoal.mutate(
       { id: goal._id, reason },
       {
@@ -91,7 +93,7 @@ export const GoalDetailPage = () => {
           toast.success(t('goals.archived'));
           navigate('/goals');
         },
-        onError: () => toast.error(t('common.error')),
+        onSettled: () => setArchiveOpen(false),
       },
     );
   };
@@ -212,6 +214,14 @@ export const GoalDetailPage = () => {
         isOpen={editing}
         onClose={() => setEditing(false)}
         editGoal={goal}
+      />
+
+      <GoalDeleteDialog
+        isOpen={archiveOpen}
+        goalTitle={goal.title}
+        isPending={archiveGoal.isPending}
+        onCancel={() => setArchiveOpen(false)}
+        onConfirm={confirmArchive}
       />
     </div>
   );

@@ -147,15 +147,15 @@ Epic E0 · FR: — (infra)
 **🗄️ Database:** _None._
 **⚙️ Backend:** _None._
 **🎨 Frontend:**
-- [ ] Copy Impulse's `frontend/` into `hadaf/client/`, `npm install`
-- [ ] Resolve the 3 merge conflicts: `features/auth/api/authApi.ts`, `features/tasks/api/taskApi.ts`, `shared/lib/api-client.ts`
-- [ ] Remove duplicate `shared/api/apiClient.ts` if present
-- [ ] `npx shadcn@latest add alert-dialog sheet tabs dropdown-menu progress tooltip` (primitives Impulse doesn't already have)
-- [ ] OKLCH design tokens converted from Impulse's Violet hex scale directly in `tailwind.config.js`/global stylesheet — no separate design-system document
-- [ ] OKLCH color tokens (light + dark) applied to the client's global stylesheet
-- [ ] CSS transition utility tokens confirmed (Framer Motion is not a dependency — Impulse doesn't ship it)
-- [ ] Rebrand: app name, favicon, metadata Impulse → Hadaf
-- [ ] `npm run dev` runs clean — no lint/type errors
+- [x] Copy Impulse's `frontend/` into `hadaf/client/`, `npm install`
+- [x] Resolve the 3 merge conflicts: `features/auth/api/authApi.ts`, `features/tasks/api/taskApi.ts`, `shared/lib/api-client.ts`
+- [x] Remove duplicate `shared/api/apiClient.ts` if present
+- [x] `npx shadcn@latest add alert-dialog sheet tabs dropdown-menu progress tooltip` (primitives Impulse doesn't already have)
+- [x] OKLCH design tokens converted from Impulse's Violet hex scale directly in `tailwind.config.js`/global stylesheet — no separate design-system document
+- [x] OKLCH color tokens (light + dark) applied to the client's global stylesheet
+- [x] CSS transition utility tokens confirmed (Framer Motion is not a dependency — Impulse doesn't ship it)
+- [x] Rebrand: app name, favicon, metadata Impulse → Hadaf
+- [x] `npm run dev` runs clean — no lint/type errors
 
 **Sequencing:** First story, no dependencies. **Owners:** default pairing (Frontend-only story).
 
@@ -168,13 +168,13 @@ Epic E0 · FR: — (enables NFR10 Arabic RTL + PRD bilingual mandate)
 **🗄️ Database:** _None._
 **⚙️ Backend:** _None._
 **🎨 Frontend:**
-- [ ] Self-host Tajawal + IBM Plex Sans Arabic in `public/fonts/`
-- [ ] `@font-face` declarations + Tailwind `fontFamily` config
-- [ ] `<html dir>` / `<html lang>` wired to active locale in `App.tsx`/`providers.tsx`
-- [ ] Convert every Impulse component's physical CSS (`ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-`/`text-left`/`text-right`/`border-l`/`border-r`) to logical equivalents (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`/`text-start`/`text-end`/`border-s`/`border-e`) per the RTL Conversion Checklist in `Docs/Impulse-Migration-Plan.md`
-- [ ] `providers/LocaleProvider.tsx` — cookie-based locale state, AR default
-- [ ] `i18n/ar.ts` + `i18n/en.ts` dictionaries + `useTranslation` hook
-- [ ] Verify `Intl.NumberFormat` / `Intl.DateTimeFormat` locale plumbing
+- [x] Self-host Tajawal + IBM Plex Sans Arabic in `public/fonts/`
+- [x] `@font-face` declarations + Tailwind `fontFamily` config
+- [x] `<html dir>` / `<html lang>` wired to active locale in `App.tsx`/`providers.tsx`
+- [x] Convert every Impulse component's physical CSS (`ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-`/`text-left`/`text-right`/`border-l`/`border-r`) to logical equivalents (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`/`text-start`/`text-end`/`border-s`/`border-e`) per the RTL Conversion Checklist in `Docs/Impulse-Migration-Plan.md`
+- [x] `providers/LocaleProvider.tsx` — cookie-based locale state, AR default
+- [x] `i18n/ar.ts` + `i18n/en.ts` dictionaries + `useTranslation` hook
+- [x] Verify `Intl.NumberFormat` / `Intl.DateTimeFormat` locale plumbing
 
 **Sequencing:** Depends on E0-1. **Owners:** agent-capable dev — i18n + a full-codebase RTL conversion pass is spec-heavy and easy to get subtly wrong; this story is bigger than its name suggests since it carries the i18n gap-fill and the RTL conversion of every reused Impulse component.
 
@@ -187,13 +187,13 @@ Epic E0 · FR: — (infra)
 **🗄️ Database:** _None (see E0-4)._
 
 **⚙️ Backend:**
-- [ ] Create `server/{models,controllers,routes,middleware,utils}/` folders
-- [ ] `server/vitest.config.ts` + `server/tests/` folder
-- [ ] Document/enforce: zero Express/Mongoose/React imports inside `server/utils/`
+- [x] Create `server/{models,controllers,routes,middleware,utils}/` folders
+- [x] `server/vitest.config.ts` + `server/tests/` folder
+- [x] Document/enforce: zero Express/Mongoose/React imports inside `server/utils/`
 
 **🎨 Frontend:**
-- [ ] Confirm Impulse's existing `components/{ui,shared,layouts}/`, `features/`, `providers/`, `stores/`, `lib/` folders carry over as-is
-- [ ] Create `providers/DayTypeProvider.tsx`, `i18n/` folders (Hadaf-specific, no Impulse equivalent)
+- [x] Confirm Impulse's existing `components/{ui,shared,layouts}/`, `features/`, `providers/`, `stores/`, `lib/` folders carry over as-is
+- [x] Create `providers/DayTypeProvider.tsx`, `i18n/` folders (Hadaf-specific, no Impulse equivalent)
 
 **Sequencing:** Depends on E0-1. **Owners:** default pairing.
 
@@ -204,15 +204,15 @@ Epic E0 · FR: — (infra; underlies every KPI in §2.4)
 > Connect MongoDB via Mongoose, create the `AnalyticsEvent` collection.
 
 **🗄️ Database:**
-- [ ] Provision MongoDB Atlas project (free/M0 tier)
-- [ ] `MONGO_URL` in `server/.env.local` + `server/.env.example`
-- [ ] `server/models/AnalyticsEvent.js`: Mongoose schema (userId ref, eventType, eventData Map, createdAt)
-- [ ] `idx_analytics_user_created` compound index (`{ userId: 1, createdAt: -1 }`)
-- [ ] `server/config/db.js` — Mongoose connection setup
+- [x] Provision MongoDB Atlas project (free/M0 tier)
+- [x] `MONGO_URL` in `server/.env.local` + `server/.env.example`
+- [x] `server/models/AnalyticsEvent.js`: Mongoose schema (userId ref, eventType, eventData Map, createdAt)
+- [x] `idx_analytics_user_created` compound index (`{ userId: 1, createdAt: -1 }`)
+- [x] `server/config/db.js` — Mongoose connection setup
 
 **⚙️ Backend:**
-- [ ] Analytics logging helper: `AnalyticsEvent.create({ userId, eventType, eventData })`
-- [ ] Connectivity smoke test
+- [x] Analytics logging helper: `AnalyticsEvent.create({ userId, eventType, eventData })`
+- [x] Connectivity smoke test
 
 **🎨 Frontend:** _None._
 
@@ -225,21 +225,21 @@ Epic E0 · FR: — (NFR6 Security: HTTPS/JWT)
 > Sign in/up with Email and Password, establish the user, JWT session.
 
 **🗄️ Database:**
-- [ ] `server/models/User.js`: Mongoose schema (email unique, passwordHash, name, avatarUrl, `settings` sub-document per Architecture §3.1 including `language` and `theme`, `refreshToken`, `refreshTokenExp`, `onboardingCompleted`, timestamps)
+- [x] `server/models/User.js`: Mongoose schema (email unique, passwordHash, name, avatarUrl, `settings` sub-document per Architecture §3.1 including `language` and `theme`, `refreshToken`, `refreshTokenExp`, `onboardingCompleted`, timestamps)
 
 **⚙️ Backend:**
-- [ ] `server/utils/jwt.js` — sign/verify via `jsonwebtoken`, HS256, 15min access token
-- [ ] `server/middleware/auth.js` — verify JWT from Authorization header/cookie, attach `req.user`
-- [ ] `server/utils/password.js` — hash and verify passwords via `bcryptjs`
-- [ ] `server/routes/authRoutes.js` + `server/controllers/authController.js` — register/login/refresh/logout endpoints
-- [ ] Refresh token: 7-day, stored hashed, rotated on use, httpOnly cookie (`sameSite: 'none'`, `secure: true`)
-- [ ] Token-reuse detection → invalidate all user tokens
-- [ ] Analytics event: `login` & `register`
+- [x] `server/utils/jwt.js` — sign/verify via `jsonwebtoken`, HS256, 15min access token
+- [x] `server/middleware/auth.js` — verify JWT from Authorization header/cookie, attach `req.user`
+- [x] `server/utils/password.js` — hash and verify passwords via `bcryptjs`
+- [x] `server/routes/authRoutes.js` + `server/controllers/authController.js` — register/login/refresh/logout endpoints
+- [x] Refresh token: 7-day, stored hashed, rotated on use, httpOnly cookie (`sameSite: 'none'`, `secure: true`)
+- [x] Token-reuse detection → invalidate all user tokens
+- [x] Analytics event: `login` & `register`
 
 **🎨 Frontend:**
-- [ ] Adapt Impulse's `features/auth/pages/LoginPage.tsx` (sliding dual-panel) — bilingual labels, RTL layout
-- [ ] Adapt Impulse's `features/auth/stores/useAuthStore.ts` (Zustand persist) — point to Express endpoints, add refresh rotation
-- [ ] Redirect-after-login handling (`?redirect={path}`)
+- [x] Adapt Impulse's `features/auth/pages/LoginPage.tsx` (sliding dual-panel) — bilingual labels, RTL layout
+- [x] Adapt Impulse's `features/auth/stores/useAuthStore.ts` (Zustand persist) — point to Express endpoints, add refresh rotation
+- [x] Redirect-after-login handling (`?redirect={path}`)
 
 **Sequencing:** Depends on E0-4 (DB conn pattern established). **Owners:** default pairing; highest-SP E0 story — keep one owner across DB+Backend for continuity.
 
@@ -251,17 +251,17 @@ Epic E0 · FR: — (NFR6/7/8/10; language switcher is **[PRD gap-fill]**, §3 In
 
 **🗄️ Database:** _None._
 **⚙️ Backend:**
-- [ ] Confirm `server/middleware/auth.js` (from E0-5) protects every `/api/*` route that requires a session
-- [ ] Silent-refresh on expired access token endpoint; client redirects to `/login?redirect={path}` if refresh fails
-- [ ] Rate limiting — in-memory `Map`, 100 req/min/user
+- [x] Confirm `server/middleware/auth.js` (from E0-5) protects every `/api/*` route that requires a session
+- [x] Silent-refresh on expired access token endpoint; client redirects to `/login?redirect={path}` if refresh fails
+- [x] Rate limiting — in-memory `Map`, 100 req/min/user
 
 **🎨 Frontend:**
-- [ ] `app/router.tsx` — `RequireAuth` / `RedirectIfAuth` React Router guards
-- [ ] Adapt Impulse's `components/layouts/Sidebar.tsx` — desktop >1024px, fixed right for RTL (Home/Goals/Habits/Settings — see §2.2 re: "Overview"), converted to logical CSS (E0-2)
-- [ ] New `components/layouts/BottomNav.tsx` — mobile <768px, 4 items (🏠 الرئيسية | 🎯 الأهداف | ✅ العادات | ⋯ المزيد)
-- [ ] Adapt Impulse's `ThemeProvider` — Dark/Light toggle, `data-theme` attribute
-- [ ] **[PRD gap-fill]** Language switcher control, visible from any screen in the shell (toggle AR ↔ EN; writes to `users.settings.language` via E4-1's settings endpoint and updates `LocaleProvider`)
-- [ ] Keyboard navigation / focus states (a11y pass)
+- [x] `app/router.tsx` — `RequireAuth` / `RedirectIfAuth` React Router guards
+- [x] Adapt Impulse's `components/layouts/Sidebar.tsx` — desktop >1024px, fixed right for RTL (Home/Goals/Habits/Settings — see §2.2 re: "Overview"), converted to logical CSS (E0-2)
+- [x] New `components/layouts/BottomNav.tsx` — mobile <768px, 4 items (🏠 الرئيسية | 🎯 الأهداف | ✅ العادات | ⋯ المزيد)
+- [x] Adapt Impulse's `ThemeProvider` — Dark/Light toggle, `data-theme` attribute
+- [x] **[PRD gap-fill]** Language switcher control, visible from any screen in the shell (toggle AR ↔ EN; writes to `users.settings.language` via E4-1's settings endpoint and updates `LocaleProvider`)
+- [x] Keyboard navigation / focus states (a11y pass)
 
 **Sequencing:** Depends on E0-5 (needs JWT to protect routes) and E0-2 (locale provider must exist before the switcher can flip it). **Owners:** default pairing.
 
@@ -297,7 +297,7 @@ Epic E1 · FR1, FR1.1, FR2, FR3, FR4, FR11 *(+FR5/6/6.2/6.3/7/9/10 shared with E
 - [x] `components/goals/goal-wizard.tsx` — Step 2: Category + Relevance
 - [x] `components/goals/goal-wizard.tsx` — Step 3: Milestones breakdown
 - [x] `features/goals/pages/` route wiring (via `app/router.tsx`)
-- [ ] `features/goals/hooks/useCreateGoal.ts` (React Query mutation, optimistic cache update)
+- [x] `features/goals/hooks/useCreateGoal.ts` (React Query mutation, optimistic cache update)
 - [x] i18n strings in `ar.json`/`en.json` (wizard copy, limit dialog - defined in messages.ts)
 - [x] Field-level validation error states
 
@@ -315,28 +315,28 @@ Epic E1 · FR8, FR11.2, FR11.3 *(+FR5/6/6.2/6.3/7/9/10 shared with E1-1)*. Heat 
 
 **🗄️ Database:** _None new — uses `goals`/`milestones` from E1-1._
 **⚙️ Backend:**
-- [ ] `data/repositories/goals.repo.ts`: extend `getById` to join milestones + linked tasks
-- [ ] `data/repositories/goals.repo.ts`: `reorderMilestones`, `toggleMilestone`
-- [ ] `data/repositories/goals.repo.ts`: `softDelete` (sets status + `deletion_reason`)
-- [ ] `data/repositories/goals.repo.ts`: `updateManualProgress`
-- [ ] `features/goals/schemas.ts`: `softDeleteGoalSchema` (goalId + reason)
-- [ ] `features/goals/actions.ts`: `deleteGoal`, `toggleMilestone`, `reorderMilestones`, `overrideProgress`
-- [ ] **[PRD gap-fill]** `data/repositories/goals.repo.ts`: query for weekly task-completion density per goal (grouped by week within the 12-week cycle) — powers the heat map (FR8)
+- [x] `data/repositories/goals.repo.ts`: extend `getById` to join milestones + linked tasks
+- [x] `data/repositories/goals.repo.ts`: `reorderMilestones`, `toggleMilestone`
+- [x] `data/repositories/goals.repo.ts`: `softDelete` (sets status + `deletion_reason`)
+- [x] `data/repositories/goals.repo.ts`: `updateManualProgress`
+- [x] `features/goals/schemas.ts`: `softDeleteGoalSchema` (goalId + reason)
+- [x] `features/goals/actions.ts`: `deleteGoal`, `toggleMilestone`, `reorderMilestones`, `overrideProgress`
+- [x] **[PRD gap-fill]** `data/repositories/goals.repo.ts`: query for weekly task-completion density per goal (grouped by week within the 12-week cycle) — powers the heat map (FR8)
 
 **🎨 Frontend:**
-- [ ] `components/goals/twelve-week-bar.tsx` — 12 segments, current week highlighted, **week 1 on the right (RTL)**
-- [ ] `components/goals/goal-card.tsx`
-- [ ] `components/goals/goal-progress-ring.tsx` (SVG)
-- [ ] `components/goals/goal-health-dot.tsx` (🟢🟡🟠🔴)
-- [ ] **[PRD gap-fill]** `components/goals/weekly-heatmap.tsx` — the 3rd required Goal Dashboard visual per FR8; cell intensity = task-completion density per week
-- [ ] `features/goals/pages/GoalDashboardPage.tsx` (route `/goals`) — Dashboard + Weekly Execution Score
-- [ ] **[PRD gap-fill]** Basic search/filter input on the Dashboard (client-side, filters by title/category — no new DB query needed for MVP's "basic" bar, PT6)
-- [ ] Empty state (no goals)
-- [ ] `components/goals/goal-detail.tsx` — ring, health dot, category, measure, relevance, cycle dates, total time invested
-- [ ] `components/goals/milestone-list.tsx` — checkable + reorderable
-- [ ] `features/goals/pages/GoalDetailPage.tsx` (route `/goals/:id`)
-- [ ] Manual progress override slider **+ "Manual" badge + "revert to computed value" option** (FR7 — the override must be visibly distinguishable and reversible)
-- [ ] Delete-goal confirmation dialog (reason required — depends on POL-4 primitive; stub inline for now)
+- [x] `components/goals/twelve-week-bar.tsx` — 12 segments, current week highlighted, **week 1 on the right (RTL)**
+- [x] `components/goals/goal-card.tsx`
+- [x] `components/goals/goal-progress-ring.tsx` (SVG)
+- [x] `components/goals/goal-health-dot.tsx` (🟢🟡🟠🔴)
+- [x] **[PRD gap-fill]** `components/goals/weekly-heatmap.tsx` — the 3rd required Goal Dashboard visual per FR8; cell intensity = task-completion density per week
+- [x] `features/goals/pages/GoalDashboardPage.tsx` (route `/goals`) — Dashboard + Weekly Execution Score
+- [x] **[PRD gap-fill]** Basic search/filter input on the Dashboard (client-side, filters by title/category — no new DB query needed for MVP's "basic" bar, PT6)
+- [x] Empty state (no goals)
+- [x] `components/goals/goal-detail.tsx` — ring, health dot, category, measure, relevance, cycle dates, total time invested
+- [x] `components/goals/milestone-list.tsx` — checkable + reorderable
+- [x] `features/goals/pages/GoalDetailPage.tsx` (route `/goals/:id`)
+- [x] Manual progress override slider **+ "Manual" badge + "revert to computed value" option** (FR7 — the override must be visibly distinguishable and reversible)
+- [x] Delete-goal confirmation dialog (reason required — depends on POL-4 primitive; stub inline for now)
 
 **Sequencing:** The core dashboard/detail work depends only on E1-1's schema + repo. **The weekly heat map specifically needs completed-task data — sequence that sub-task after E2-1/E2-2 land**, even though the rest of E1-2 can start right after E1-1. **Owners:** Repo/action extensions → agent-capable dev. Dashboard vs Detail are independently testable screens — consider splitting Frontend across 2 entry-level devs; the heat map is a good fit for whoever is strongest visually, alongside E4-2's capacity gauge.
 
@@ -349,31 +349,31 @@ Epic E2 · FR12, FR12.1, FR12.2, FR12.3, FR13, FR14, FR15, FR16, FR17, FR18, FR1
 > `tasks` table, Quick Add sheet, auto-type detection, points preview.
 
 **🗄️ Database:**
-- [ ] `task_type` enum (scheduled, flexible, quick)
-- [ ] `task_difficulty` enum (easy, medium, hard)
-- [ ] `task_priority` enum (high, medium, low)
-- [ ] `task_status` enum (pending, completed, postponed)
-- [ ] `tasks` table (goal_id FK nullable, title, description, type, difficulty, priority, date, time_block_start/end, planned_duration_minutes, actual_duration_minutes, checklist JSONB, status, points_earned, completed_at, timestamps)
-- [ ] `idx_tasks_user_date_priority`, `idx_tasks_user_goal` indexes
+- [x] `task_type` enum (scheduled, flexible, quick)
+- [x] `task_difficulty` enum (easy, medium, hard)
+- [x] `task_priority` enum (high, medium, low)
+- [x] `task_status` enum (pending, completed, postponed)
+- [x] `tasks` table (goal_id FK nullable, title, description, type, difficulty, priority, date, time_block_start/end, planned_duration_minutes, actual_duration_minutes, checklist JSONB, status, points_earned, completed_at, timestamps)
+- [x] `idx_tasks_user_date_priority`, `idx_tasks_user_goal` indexes
 
 **⚙️ Backend:**
-- [ ] `domain/task-type.ts`: `detectTaskType` (time block → scheduled; duration only → flexible; neither → quick)
-- [ ] `domain/task-type.ts`: `calculateBlockDuration`
-- [ ] `tests/domain/task-type.test.ts` — title-only→quick, +duration→flexible, +time→scheduled, both→scheduled (P0)
-- [ ] `domain/scoring.ts`: `predictTaskPoints` (live pre-completion preview)
-- [ ] `data/repositories/tasks.repo.ts`: `createTask`
-- [ ] `features/tasks/schemas.ts`: `createTaskSchema` (title, goalId, difficulty, priority, date, timeBlock, duration, checklist)
-- [ ] `features/tasks/actions.ts`: `createTask()`
-- [ ] Analytics event: `task_created`
+- [x] `domain/task-type.ts`: `detectTaskType` (time block → scheduled; duration only → flexible; neither → quick)
+- [x] `domain/task-type.ts`: `calculateBlockDuration`
+- [x] `tests/domain/task-type.test.ts` — title-only→quick, +duration→flexible, +time→scheduled, both→scheduled (P0)
+- [x] `domain/scoring.ts`: `predictTaskPoints` (live pre-completion preview)
+- [x] `data/repositories/tasks.repo.ts`: `createTask`
+- [x] `features/tasks/schemas.ts`: `createTaskSchema` (title, goalId, difficulty, priority, date, timeBlock, duration, checklist)
+- [x] `features/tasks/actions.ts`: `createTask()`
+- [x] Analytics event: `task_created`
 
 **🎨 Frontend:**
-- [ ] `components/tasks/quick-add-sheet.tsx` — title (required, auto-focused)
-- [ ] Goal dropdown (optional) + priority/difficulty selectors (default: medium)
-- [ ] Collapsible `[+ Add Time]` / `[+ Add Duration]` / `[+ Add Checklist]`
-- [ ] Live expected-points preview
-- [ ] `components/tasks/checklist.tsx` — JSONB checklist, editable items
-- [ ] `features/tasks/hooks.ts`: `useCreateTask`
-- [ ] Confirm user never sees "scheduled/flexible/quick" labels anywhere in UI
+- [x] `components/tasks/quick-add-sheet.tsx` — title (required, auto-focused)
+- [x] Goal dropdown (optional) + priority/difficulty selectors (default: medium)
+- [x] Collapsible `[+ Add Time]` / `[+ Add Duration]` / `[+ Add Checklist]`
+- [x] Live expected-points preview
+- [x] `components/tasks/checklist.tsx` — JSONB checklist, editable items
+- [x] `features/tasks/hooks.ts`: `useCreateTask`
+- [x] Confirm user never sees "scheduled/flexible/quick" labels anywhere in UI
 
 **Sequencing:** Depends on E1-1 (goal dropdown needs `getActiveGoals`). **Owners:** Domain + schema/action → agent-capable dev. Quick Add sheet UI → entry-level dev.
 
@@ -385,25 +385,25 @@ Epic E2 · FR6.1, FR26, FR26.1, FR26.2, FR26.3, FR27, FR27.1, FR27.2, FR27.3, FR
 
 **🗄️ Database:** _None new — writes to existing `tasks` columns (`status`, `points_earned`, `completed_at`, `actual_duration_minutes`)._
 **⚙️ Backend:**
-- [ ] `domain/scoring.ts`: `calculateTaskPoints` — `(actual_duration/10) × difficulty × accuracy × streak`
-- [ ] Difficulty multipliers: easy ×1.0, medium ×1.2, hard ×1.4
-- [ ] Accuracy bonus ×1.15 if actual within ±15min of planned
-- [ ] Streak bonus ×1.05/consecutive day, capped ×1.5
-- [ ] Time cap: actual duration capped at 3× planned
-- [ ] Quick tasks always = 2 points flat
-- [ ] `Math.ceil` on final point value
-- [ ] `tests/domain/scoring.test.ts` — every rule above (P0)
-- [ ] `data/repositories/tasks.repo.ts`: `completeTask` + 60-day streak lookback query
-- [ ] `features/tasks/actions.ts`: `completeTask()` per Architecture §4.4 pattern (auth → Zod → domain calc → repo → analytics log)
-- [ ] Analytics event: `task_complete`
+- [x] `domain/scoring.ts`: `calculateTaskPoints` — `(actual_duration/10) × difficulty × accuracy × streak`
+- [x] Difficulty multipliers: easy ×1.0, medium ×1.2, hard ×1.4
+- [x] Accuracy bonus ×1.15 if actual within ±15min of planned
+- [x] Streak bonus ×1.05/consecutive day, capped ×1.5
+- [x] Time cap: actual duration capped at 3× planned
+- [x] Quick tasks always = 2 points flat
+- [x] `Math.ceil` on final point value
+- [x] `tests/domain/scoring.test.ts` — every rule above (P0)
+- [x] `data/repositories/tasks.repo.ts`: `completeTask` + 60-day streak lookback query
+- [x] `features/tasks/actions.ts`: `completeTask()` per Architecture §4.4 pattern (auth → Zod → domain calc → repo → analytics log)
+- [x] Analytics event: `task_complete`
 
 **🎨 Frontend:**
-- [ ] `components/tasks/smart-complete-dialog.tsx` — Scheduled: planned vs actual, no negative framing (FR27.4)
-- [ ] `components/tasks/manual-complete-dialog.tsx` — Flexible: "How long?" duration slider
-- [ ] Quick type: one tap, no dialog
-- [ ] `components/shared/contribution-pulse.tsx` — **exact spec (FR6.1): text only** ("+X% نحو [اسم الهدف]"), **CSS fade in/out over 3 seconds**, **positioned inline directly above the completed task card** — not a generic animated badge
-- [ ] `features/tasks/hooks.ts`: optimistic `mutate()` completion per Architecture §4.5
-- [ ] No interruption/alert while task is in progress (FR27.2)
+- [x] `components/tasks/smart-complete-dialog.tsx` — Scheduled: planned vs actual, no negative framing (FR27.4)
+- [x] `components/tasks/manual-complete-dialog.tsx` — Flexible: "How long?" duration slider
+- [x] Quick type: one tap, no dialog
+- [x] `components/shared/contribution-pulse.tsx` — **exact spec (FR6.1): text only** ("+X% نحو [اسم الهدف]"), **CSS fade in/out over 3 seconds**, **positioned inline directly above the completed task card** — not a generic animated badge
+- [x] `features/tasks/hooks.ts`: optimistic `mutate()` completion per Architecture §4.5
+- [x] No interruption/alert while task is in progress (FR27.2)
 
 **Sequencing:** Depends on E2-1. **Owners:** Scoring domain is correctness-critical — agent-capable dev, test-first. Completion dialogs → entry-level dev.
 
@@ -415,21 +415,21 @@ Epic E2 · FR29, FR30, FR31, FR31.1, FR32, FR32.1, FR32.2, FR32.3, FR33, FR90. S
 
 **🗄️ Database:** _None new._
 **⚙️ Backend:**
-- [ ] `data/repositories/tasks.repo.ts`: `getByDate` — scheduled sorted by `time_block_start`, others by priority+created_at
-- [ ] `data/repositories/tasks.repo.ts`: `getBacklog` — status=pending AND date < today
-- [ ] `features/tasks/actions.ts`: `rescheduleTask`, `deleteTask`, `postponeTask`
+- [x] `data/repositories/tasks.repo.ts`: `getByDate` — scheduled sorted by `time_block_start`, others by priority+created_at
+- [x] `data/repositories/tasks.repo.ts`: `getBacklog` — status=pending AND date < today
+- [x] `features/tasks/actions.ts`: `rescheduleTask`, `deleteTask`, `postponeTask`
 
 **🎨 Frontend:**
-- [ ] `components/tasks/task-list.tsx` — sort logic applied (no manual drag-reorder, FR29)
-- [ ] **[PRD gap-fill]** Basic search/filter on the Task List (client-side, by title/priority/goal — PT6)
-- [ ] `components/tasks/backlog-ribbon.tsx` — "N tasks from previous days"
-- [ ] Backlog list UI — oldest first
-- [ ] Backlog actions: `[Schedule Today]` `[Schedule Date]` `[Delete]` `[Clean All]`
-- [ ] Backlog-full warning (FR32.3)
-- [ ] Browser Notification permission request
-- [ ] 5-min-before time-block notification trigger (client-side only, no FCM — FR31/NFR11)
-- [ ] Quick Add entry point restricted to Home screen only (not a FAB everywhere)
-- [ ] "All tasks done" celebratory message **+ a smart follow-up suggestion** (e.g. a backlog item, an undone habit, or "add another task?") — FR33's full requirement, not just the congratulations half
+- [x] `components/tasks/task-list.tsx` — sort logic applied (no manual drag-reorder, FR29)
+- [x] **[PRD gap-fill]** Basic search/filter on the Task List (client-side, by title/priority/goal — PT6)
+- [x] `components/tasks/backlog-ribbon.tsx` — "N tasks from previous days"
+- [x] Backlog list UI — oldest first
+- [x] Backlog actions: `[Schedule Today]` `[Schedule Date]` `[Delete]` `[Clean All]`
+- [x] Backlog-full warning (FR32.3)
+- [x] Browser Notification permission request
+- [x] 5-min-before time-block notification trigger (client-side only, no FCM — FR31/NFR11)
+- [x] Quick Add entry point restricted to Home screen only (not a FAB everywhere)
+- [x] "All tasks done" celebratory message **+ a smart follow-up suggestion** (e.g. a backlog item, an undone habit, or "add another task?") — FR33's full requirement, not just the congratulations half
 
 **Sequencing:** Depends on E2-1 + E2-2. **Owners:** Repo query extensions → agent-capable dev. Backlog UI + notifications → entry-level dev.
 
@@ -442,28 +442,28 @@ Epic E3 · FR34, FR34.1, FR35, FR36, FR36.1, FR37
 > `habits`+`habit_logs` tables, Boolean+Counter, MVD on Light Days.
 
 **🗄️ Database:**
-- [ ] `habit_type` enum (boolean, counter, quit)
-- [ ] `habits` table (title, category, type, frequency JSONB, target_value, mvd_value, mvd_description, is_spiritual, is_archived, timestamps)
-- [ ] `habit_logs` table (habit_id FK cascade, date, value, is_mvd, is_relapse) + `UNIQUE(habit_id, date)` + `idx_habit_logs_habit_date`
+- [x] `habit_type` enum (boolean, counter, quit)
+- [x] `habits` table (title, category, type, frequency JSONB, target_value, mvd_value, mvd_description, is_spiritual, is_archived, timestamps)
+- [x] `habit_logs` table (habit_id FK cascade, date, value, is_mvd, is_relapse) + `UNIQUE(habit_id, date)` + `idx_habit_logs_habit_date`
 
 **⚙️ Backend:**
-- [ ] `domain/scoring.ts`: `calculateHabitPoints` (boolean_full=5, boolean_mvd=3)
-- [ ] `domain/scoring.ts`: `calculateCounterHabitPoints` (full=5, partial=4, mvd=3)
-- [ ] `tests/domain/scoring.test.ts` extend — habit point cases
-- [ ] `data/repositories/habits.repo.ts`: `createHabit`, `logHabit` (upsert by date), `getTodayHabits`
-- [ ] `features/habits/schemas.ts`: `createHabitSchema`, `logHabitSchema`
-- [ ] `features/habits/actions.ts`: `createHabit`, `logHabit`
-- [ ] Analytics events: `habit_created`, `habit_logged`
+- [x] `domain/scoring.ts`: `calculateHabitPoints` (boolean_full=5, boolean_mvd=3)
+- [x] `domain/scoring.ts`: `calculateCounterHabitPoints` (full=5, partial=4, mvd=3)
+- [x] `tests/domain/scoring.test.ts` extend — habit point cases
+- [x] `data/repositories/habits.repo.ts`: `createHabit`, `logHabit` (upsert by date), `getTodayHabits`
+- [x] `features/habits/schemas.ts`: `createHabitSchema`, `logHabitSchema`
+- [x] `features/habits/actions.ts`: `createHabit`, `logHabit`
+- [x] Analytics events: `habit_created`, `habit_logged`
 
 **🎨 Frontend:**
-- [ ] `components/habits/habit-card.tsx`
-- [ ] `components/habits/habit-list.tsx`
-- [ ] `components/habits/habit-counter.tsx` — `[+]`/`[-]` stepper
-- [ ] Boolean habit toggle (`✅`/`☐`)
-- [ ] `components/habits/mvd-indicator.tsx` — reads `DayTypeProvider`; Light Day → MVD version, Off Day → essential-only
-- [ ] `features/habits/pages/HabitsPage.tsx` (route `/habits`)
-- [ ] `features/habits/hooks/`: `useHabits`, `useLogHabit` (React Query, optimistic)
-- [ ] Free-text habit name input (no suggested-library chips here — that's ONB-2 only)
+- [x] `components/habits/habit-card.tsx`
+- [x] `components/habits/habit-list.tsx`
+- [x] `components/habits/habit-counter.tsx` — `[+]`/`[-]` stepper
+- [x] Boolean habit toggle (`✅`/`☐`)
+- [x] `components/habits/mvd-indicator.tsx` — reads `DayTypeProvider`; Light Day → MVD version, Off Day → essential-only
+- [x] `features/habits/pages/HabitsPage.tsx` (route `/habits`)
+- [x] `features/habits/hooks/`: `useHabits`, `useLogHabit` (React Query, optimistic)
+- [x] Free-text habit name input (no suggested-library chips here — that's ONB-2 only)
 
 **Sequencing:** Depends on E0-4 only — independent of E1/E2, can run in parallel with them. **Owners:** default pairing; good candidate for the 2nd agent-capable dev to own in parallel with whoever owns E2.
 
@@ -475,19 +475,19 @@ Epic E3 · FR41, FR42, FR42.1, FR43
 
 **🗄️ Database:** _None new — uses `habit_type='quit'` and `habit_logs.is_relapse`, already in E3-1's schema._
 **⚙️ Backend:**
-- [ ] `data/repositories/habits.repo.ts`: `logRelapse` (resets counter, sets `is_relapse=true`)
-- [ ] `features/habits/actions.ts`: `logRelapse`
-- [ ] Streak calc: days since creation OR since last relapse
-- [ ] Confirm point value is always 0 for quit habits (never negative)
-- [ ] Relapse stats query (FR42.1)
+- [x] `data/repositories/habits.repo.ts`: `logRelapse` (resets counter, sets `is_relapse=true`)
+- [x] `features/habits/actions.ts`: `logRelapse`
+- [x] Streak calc: days since creation OR since last relapse
+- [x] Confirm point value is always 0 for quit habits (never negative)
+- [x] Relapse stats query (FR42.1)
 
 **🎨 Frontend:**
-- [ ] Quit-habit card variant — 🚫 + auto-incrementing day counter (e.g. "15 days")
-- [ ] "Log Relapse" button
-- [ ] Relapse confirmation dialog (depends on POL-4 primitive; stub inline for now)
-- [ ] Encouraging (not shaming) microcopy on relapse — **PRD tone anchor (Journey 4): "لا بأس. التقدم ليس خطًا مستقيمًا. 💪"** — mirror this register in the English copy, don't just translate literally
-- [ ] Visually separate Build vs Quit habits (FR43)
-- [ ] `is_relapse` never exposed outside the user's own view
+- [x] Quit-habit card variant — 🚫 + auto-incrementing day counter (e.g. "15 days")
+- [x] "Log Relapse" button
+- [x] Relapse confirmation dialog (depends on POL-4 primitive; stub inline for now)
+- [x] Encouraging (not shaming) microcopy on relapse — **PRD tone anchor (Journey 4): "لا بأس. التقدم ليس خطًا مستقيمًا. 💪"** — mirror this register in the English copy, don't just translate literally
+- [x] Visually separate Build vs Quit habits (FR43)
+- [x] `is_relapse` never exposed outside the user's own view
 
 **Sequencing:** Depends on E3-1. **Owners:** default pairing (quick story, reuses E3-1 patterns).
 
@@ -503,20 +503,20 @@ Epic E4 · FR53, FR55, FR55.1, FR55.2, FR55.3. Notification toggle is **[PRD gap
 
 **🗄️ Database:** _None new — uses `users.settings` JSONB from E0-5._
 **⚙️ Backend:**
-- [ ] `features/settings/schemas.ts`: `updateSettingsSchema` (workHours, dayStart, offDays, theme, **language**, notifications) — `language` here is what E0-6's switcher writes to
-- [ ] `features/settings/actions.ts`: `updateSettings`
-- [ ] `data/repositories/users.repo.ts`: extend with `updateSettings`
+- [x] `features/settings/schemas.ts`: `updateSettingsSchema` (workHours, dayStart, offDays, theme, **language**, notifications) — `language` here is what E0-6's switcher writes to
+- [x] `features/settings/actions.ts`: `updateSettings`
+- [x] `data/repositories/users.repo.ts`: extend with `updateSettings`
 
 **🎨 Frontend:**
-- [ ] `features/settings/pages/SettingsPage.tsx` (route `/settings`)
-- [ ] Day Type config per weekday (Work/Light/Off)
-- [ ] Work-hours start/end pickers
-- [ ] Day-start time picker — **default 04:00, valid range 01:00–06:00, validated in the Zod schema** (FR55.2 — don't leave this an open time field, an out-of-range value breaks the whole day-boundary concept)
-- [ ] Manual day-type override control (today only)
-- [ ] `providers/day-type.tsx` context
-- [ ] `hooks/use-day-type.ts`
-- [ ] Theme toggle confirmed here too (dark/light, FR53)
-- [ ] **[PRD gap-fill]** Notification preferences toggle (e.g. enable/disable the time-block reminder)
+- [x] `features/settings/pages/SettingsPage.tsx` (route `/settings`)
+- [x] Day Type config per weekday (Work/Light/Off)
+- [x] Work-hours start/end pickers
+- [x] Day-start time picker — **default 04:00, valid range 01:00–06:00, validated in the Zod schema** (FR55.2 — don't leave this an open time field, an out-of-range value breaks the whole day-boundary concept)
+- [x] Manual day-type override control (today only)
+- [x] `providers/day-type.tsx` context
+- [x] `hooks/use-day-type.ts`
+- [x] Theme toggle confirmed here too (dark/light, FR53)
+- [x] **[PRD gap-fill]** Notification preferences toggle (e.g. enable/disable the time-block reminder)
 
 **Sequencing:** Depends on E0-5 (`users.settings` must exist) and E0-6 (language switcher writes here). **Owners:** default pairing.
 
@@ -528,19 +528,19 @@ Epic E4 · FR83, FR83.1, FR83.2, FR83.3
 
 **🗄️ Database:** _None new — capacity is computed, not persisted._
 **⚙️ Backend:**
-- [ ] `domain/capacity.ts`: `calculateDailyCapacity` — `(work_end - work_start - breaks) × 0.80`
-- [ ] Light Day → ×0.50; Off Day → 0
-- [ ] `domain/capacity.ts`: `calculatePlannedTime` (sum of today's task durations)
-- [ ] `domain/capacity.ts`: `parseTimeToMinutes`
-- [ ] `tests/domain/capacity.test.ts` — Work/Light/Off, custom hours, time parsing (P0)
-- [ ] `features/capacity/types.ts`
+- [x] `domain/capacity.ts`: `calculateDailyCapacity` — `(work_end - work_start - breaks) × 0.80`
+- [x] Light Day → ×0.50; Off Day → 0
+- [x] `domain/capacity.ts`: `calculatePlannedTime` (sum of today's task durations)
+- [x] `domain/capacity.ts`: `parseTimeToMinutes`
+- [x] `tests/domain/capacity.test.ts` — Work/Light/Off, custom hours, time parsing (P0)
+- [x] `features/capacity/types.ts`
 
 **🎨 Frontend:**
-- [ ] **Visual capacity gauge on Home screen** — required, not backend-only
-- [ ] Overload warning — **gentle/light indicator, not alarming** (a subtle red accent, not a hard error state) when planned time > capacity (FR83.1)
-- [ ] Task-suggestion prompt, triggered specifically when planned time is **<30% of capacity** (FR83.2 — this exact threshold, not "whenever it looks light")
-- [ ] `features/capacity/hooks.ts`: `useCapacity`
-- [ ] Work-hours setup entry point reachable from here too (FR83.3, links to E4-1)
+- [x] **Visual capacity gauge on Home screen** — required, not backend-only
+- [x] Overload warning — **gentle/light indicator, not alarming** (a subtle red accent, not a hard error state) when planned time > capacity (FR83.1)
+- [x] Task-suggestion prompt, triggered specifically when planned time is **<30% of capacity** (FR83.2 — this exact threshold, not "whenever it looks light")
+- [x] `features/capacity/hooks.ts`: `useCapacity`
+- [x] Work-hours setup entry point reachable from here too (FR83.3, links to E4-1)
 
 **Sequencing:** Depends on E4-1. **Owners:** Domain fn → agent-capable dev (small, pure, test-first). Gauge component is the product's signature visual — give it to whoever on the team is strongest at visual/SVG work, alongside E1-2's heat map, with extra design review.
 
@@ -551,22 +551,22 @@ Epic E4 · FR44, FR45, FR46, FR47
 > `daily_summaries` table, 4-color progress bar, 5 Day States.
 
 **🗄️ Database:**
-- [ ] `day_type` enum (work, light, off)
-- [ ] `day_state` enum (legendary, amazing, perfect, good_enough, low)
-- [ ] `daily_summaries` table (user_id, date, day_type, tasks_completed, habits_completed, points_earned, daily_target, day_state, summary_shown) + `UNIQUE(user_id, date)`
+- [x] `day_type` enum (work, light, off)
+- [x] `day_state` enum (legendary, amazing, perfect, good_enough, low)
+- [x] `daily_summaries` table (user_id, date, day_type, tasks_completed, habits_completed, points_earned, daily_target, day_state, summary_shown) + `UNIQUE(user_id, date)`
 
 **⚙️ Backend:**
-- [ ] `domain/day-state.ts`: `calculateDayState` — ≥150% legendary / ≥120% amazing / ≥100% perfect / ≥50% good_enough / <50% low
-- [ ] `domain/day-state.ts`: `calculateAdaptiveDailyTarget` — rolling 7-day avg, Light×0.5, Off×0.2
-- [ ] `tests/domain/day-state.test.ts` — all 5 boundaries (49/50/100/120/150%), zero target (P0)
-- [ ] `data/repositories/daily-summaries.repo.ts`: `upsertDailySummary`, `getToday`
-- [ ] Hook recompute into E2-2's `completeTask` and E3-1's `logHabit` actions
+- [x] `domain/day-state.ts`: `calculateDayState` — ≥150% legendary / ≥120% amazing / ≥100% perfect / ≥50% good_enough / <50% low
+- [x] `domain/day-state.ts`: `calculateAdaptiveDailyTarget` — rolling 7-day avg, Light×0.5, Off×0.2
+- [x] `tests/domain/day-state.test.ts` — all 5 boundaries (49/50/100/120/150%), zero target (P0)
+- [x] `data/repositories/daily-summaries.repo.ts`: `upsertDailySummary`, `getToday`
+- [x] Hook recompute into E2-2's `completeTask` and E3-1's `logHabit` actions
 
 **🎨 Frontend:**
-- [ ] `components/scoring/progress-bar.tsx` — 4 CSS color states 🔴🟠🟣🟢, animated width transition (500ms ease-out)
-- [ ] `components/shared/day-state-badge.tsx` — 5 states
-- [ ] "Good Enough Day" badge — positive framing, not a consolation prize
-- [ ] `components/scoring/daily-summary-toast.tsx`
+- [x] `components/scoring/progress-bar.tsx` — 4 CSS color states 🔴🟠🟣🟢, animated width transition (500ms ease-out)
+- [x] `components/shared/day-state-badge.tsx` — 5 states
+- [x] "Good Enough Day" badge — positive framing, not a consolation prize
+- [x] `components/scoring/daily-summary-toast.tsx`
 
 **Sequencing:** Depends on E2-2 (task points), E3-1 (habit points), E4-1 (day type) — this is E4's capstone, sequence it last within the epic. **Owners:** default pairing.
 
@@ -580,16 +580,16 @@ Epic HOME · FR60, FR84, FR84.1
 
 **🗄️ Database:** _None new — reads `daily_summaries.summary_shown`._
 **⚙️ Backend:**
-- [ ] Greeting-scenario decision logic (has-tasks / no-tasks-has-goals / new-user / no-goals) — implement as an Express endpoint/controller feeding `features/home/`'s React Query hook, or extend the analytics controller
-- [ ] Mark `summary_shown=true` on first render after day start
-- [ ] Compute yesterday's daily-summary if not already stored
+- [x] Greeting-scenario decision logic (has-tasks / no-tasks-has-goals / new-user / no-goals) — implement as an Express endpoint/controller feeding `features/home/`'s React Query hook, or extend the analytics controller
+- [x] Mark `summary_shown=true` on first render after day start
+- [x] Compute yesterday's daily-summary if not already stored
 
 **🎨 Frontend:**
-- [ ] `components/home/adaptive-greeting.tsx` — branch: has planned tasks
-- [ ] `components/home/adaptive-greeting.tsx` — branch: no tasks but has goals (+ suggestion)
-- [ ] `components/home/adaptive-greeting.tsx` — branch: new user
-- [ ] `components/home/adaptive-greeting.tsx` — branch: no goals (empty state, "ابدأ بهدف واحد")
-- [ ] Reuse `daily-summary-toast.tsx` from E4-3 — dismiss in 3s or on tap
+- [x] `components/home/adaptive-greeting.tsx` — branch: has planned tasks
+- [x] `components/home/adaptive-greeting.tsx` — branch: no tasks but has goals (+ suggestion)
+- [x] `components/home/adaptive-greeting.tsx` — branch: new user
+- [x] `components/home/adaptive-greeting.tsx` — branch: no goals (empty state, "ابدأ بهدف واحد")
+- [x] Reuse `daily-summary-toast.tsx` from E4-3 — dismiss in 3s or on tap
 
 **Sequencing:** Depends on E1-1 (goals-exist check), E2-1 (tasks-exist check), E4-3 (`daily_summaries` table). **Owners:** Decision logic → agent-capable dev. Greeting copy/UI (4 voice-sensitive branches) → entry-level dev + copy review.
 
@@ -603,10 +603,10 @@ Epic HOME · FR: — (layout assembly, no new FR)
 **⚙️ Backend:** _None new — reuses existing task/habit/backlog/summary endpoints._
 
 **🎨 Frontend:**
-- [ ] `features/home/pages/HomePage.tsx` (route `/`) — parallel React Query fetch on mount: today's tasks, today's habits, backlog count, daily summary
-- [ ] `components/home/daily-overview.tsx` — compose: Greeting → Today's Tasks → Habits → Backlog Ribbon → Progress Bar (exact order)
-- [ ] Full-page loading skeleton (backend cold start 2–5s, see `Architecture.md` §1.3)
-- [ ] Mobile + desktop responsive layout
+- [x] `features/home/pages/HomePage.tsx` (route `/`) — parallel React Query fetch on mount: today's tasks, today's habits, backlog count, daily summary
+- [x] `components/home/daily-overview.tsx` — compose: Greeting → Today's Tasks → Habits → Backlog Ribbon → Progress Bar (exact order)
+- [x] Full-page loading skeleton (backend cold start 2–5s, see `Architecture.md` §1.3)
+- [x] Mobile + desktop responsive layout
 
 **Sequencing:** Depends on HOME-1, E2-3, E3-1, E4-2 — this is the last story that can land in this phase, since it integrates all of them. **Owners:** Mostly integration work (low new-logic risk, high integration-correctness risk) — good paired task for one agent-capable + one entry-level dev together.
 
@@ -622,13 +622,13 @@ Epic ONB · FR: — (reuses FR1.1 dialog + E1-1 wizard)
 
 **🗄️ Database:** _None new._
 **⚙️ Backend:**
-- [ ] `features/onboarding/actions.ts` — wizard-step state (client-side until final submit in ONB-3)
-- [ ] Reuse `features/goals/actions.ts`: `createGoal`
+- [x] `features/onboarding/actions.ts` — wizard-step state (client-side until final submit in ONB-3)
+- [x] Reuse `features/goals/actions.ts`: `createGoal`
 
 **🎨 Frontend:**
-- [ ] `components/onboarding/onboarding-wizard.tsx` — stepper shell (Step 1/3, 2/3, 3/3)
-- [ ] `components/onboarding/goal-readiness-step.tsx` — wraps E1-1's Goal-vs-Habit dialog + wizard, cannot be skipped
-- [ ] `features/onboarding/pages/OnboardingPage.tsx` (route `/onboarding`)
+- [x] `components/onboarding/onboarding-wizard.tsx` — stepper shell (Step 1/3, 2/3, 3/3)
+- [x] `components/onboarding/goal-readiness-step.tsx` — wraps E1-1's Goal-vs-Habit dialog + wizard, cannot be skipped
+- [x] `features/onboarding/pages/OnboardingPage.tsx` (route `/onboarding`)
 
 **Sequencing:** Depends on E1-1. **Owners:** mostly wiring existing E1-1 components → entry-level dev.
 
@@ -640,12 +640,12 @@ Epic ONB · FR: — (reuses E3-1 habit creation). Category restriction is **[PRD
 
 **🗄️ Database:** _None new._
 **⚙️ Backend:**
-- [ ] Suggested-habits list as a static constant in `lib/constants.ts` (no DB table — not one of the 8 schema tables). **Categories: health, educational, relationships only — no religious/spiritual suggestions in MVP** (FR36.1). Users can still create a custom spiritual habit manually via free-text in E3-1; `habits.is_spiritual` just isn't set by anything in the suggested list.
-- [ ] Reuse `features/habits/actions.ts`: `createHabit`
+- [x] Suggested-habits list as a static constant in `lib/constants.ts` (no DB table — not one of the 8 schema tables). **Categories: health, educational, relationships only — no religious/spiritual suggestions in MVP** (FR36.1). Users can still create a custom spiritual habit manually via free-text in E3-1; `habits.is_spiritual` just isn't set by anything in the suggested list.
+- [x] Reuse `features/habits/actions.ts`: `createHabit`
 
 **🎨 Frontend:**
-- [ ] `components/onboarding/habits-step.tsx` — chip picker from suggested-habits constant
-- [ ] Per-habit "What's the MINIMUM? (MVD)" prompt
+- [x] `components/onboarding/habits-step.tsx` — chip picker from suggested-habits constant
+- [x] Per-habit "What's the MINIMUM? (MVD)" prompt
 
 **Sequencing:** Depends on E3-1. **Owners:** entry-level dev.
 
@@ -657,15 +657,15 @@ Epic ONB · FR: — (reuses E4-1 settings + E2-1 task creation)
 
 **🗄️ Database:** _None new — writes `users.settings`, `users.onboarding_completed`, one `tasks` row._
 **⚙️ Backend:**
-- [ ] Reuse `features/settings/actions.ts`: `updateSettings`
-- [ ] `features/onboarding/actions.ts`: `completeOnboarding` — sets `onboarding_completed=true`
-- [ ] Analytics event: `onboarding_complete`
-- [ ] Reuse `features/tasks/actions.ts`: `createTask` (pre-filled `goalId`)
+- [x] Reuse `features/settings/actions.ts`: `updateSettings`
+- [x] `features/onboarding/actions.ts`: `completeOnboarding` — sets `onboarding_completed=true`
+- [x] Analytics event: `onboarding_complete`
+- [x] Reuse `features/tasks/actions.ts`: `createTask` (pre-filled `goalId`)
 
 **🎨 Frontend:**
-- [ ] `components/onboarding/settings-step.tsx` — condensed work hours + days off
-- [ ] First-task quick-create, pre-filled from the goal created in ONB-1
-- [ ] Completion screen: "🎉 Welcome! Start with one." → redirect to Home
+- [x] `components/onboarding/settings-step.tsx` — condensed work hours + days off
+- [x] First-task quick-create, pre-filled from the goal created in ONB-1
+- [x] Completion screen: "🎉 Welcome! Start with one." → redirect to Home
 
 **Sequencing:** Depends on E4-1, E2-1; last onboarding step, sequence after ONB-1/ONB-2. **Owners:** entry-level dev, with the agent-capable dev on call for `completeOnboarding`.
 
@@ -712,14 +712,14 @@ Epic POL · FR: — (NFR5 interruption handling, NFR13 Save on Action)
 
 **🗄️ Database:** _None._
 **⚙️ Backend:**
-- [ ] Audit every `features/*/actions.ts` returns the full `ActionResult` error shape (`VALIDATION`/`AUTH`/`DB_ERROR`/`RATE_LIMIT`/`UNKNOWN`)
+- [x] Audit every `features/*/actions.ts` returns the full `ActionResult` error shape (`VALIDATION`/`AUTH`/`DB_ERROR`/`RATE_LIMIT`/`UNKNOWN`)
 - [ ] Auto-retry ×3 on DB failure before surfacing an error
 
 **🎨 Frontend:**
-- [ ] `components/shared/error-toast.tsx` — sonner-based + retry action ("فشل الحفظ. [حاول مرة أخرى]")
-- [ ] `components/shared/error-boundary.tsx`
-- [ ] Persistent offline banner ("لا يوجد اتصال")
-- [ ] Wire into every mutation call site across all features
+- [x] `components/shared/error-toast.tsx` — sonner-based + retry action ("فشل الحفظ. [حاول مرة أخرى]")
+- [x] `components/shared/error-boundary.tsx`
+- [x] Persistent offline banner ("لا يوجد اتصال")
+- [x] Wire into every mutation call site across all features
 
 **Sequencing:** Needs all actions from every other phase to exist. **Owners:** Backend audit → agent-capable dev. Toast/banner components → entry-level dev.
 

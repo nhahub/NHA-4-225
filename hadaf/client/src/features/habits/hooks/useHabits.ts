@@ -9,6 +9,7 @@ import {
 } from '../api/habitApi';
 import type { Habit, CreateHabitInput, LogHabitInput } from '../types';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
+import { useApiErrorHandler } from '@/shared/hooks/useApiErrorHandler';
 
 export const useHabits = () =>
   useQuery({
@@ -36,16 +37,23 @@ export const useHabitLogs = (
 
 export const useCreateHabit = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: (input: CreateHabitInput) => apiCreateHabit(input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.HABITS });
     },
+    onError: (err, input) =>
+      handleError(err, {
+        title: 'habits.errors.createFailed',
+        retry: () => apiCreateHabit(input),
+      }),
   });
 };
 
 export const useLogHabit = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: LogHabitInput }) =>
       apiLogHabit(id, input),
@@ -53,16 +61,24 @@ export const useLogHabit = () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.HABITS });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'habits.errors.logFailed',
+        retry: () => apiLogHabit(vars.id, vars.input),
+      }),
   });
 };
 
 export const useLogRelapse = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: (id: string) => apiLogRelapse(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.HABITS });
     },
+    onError: (err, id) =>
+      handleError(err, { title: 'habits.errors.relapseFailed', retry: () => apiLogRelapse(id) }),
   });
 };
 

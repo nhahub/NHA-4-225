@@ -5,6 +5,7 @@ import { Footer } from './Footer';
 import { BottomNav } from './BottomNav';
 import { TaskFormModal } from '@/features/tasks/components/TaskFormModal';
 import { GlobalTaskCompletion } from '@/features/tasks/components/GlobalTaskCompletion';
+import { OfflineBanner } from '@/shared/components/OfflineBanner';
 import { useUIStore } from '@/shared/stores/useUIStore';
 import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats';
 import { useDateStore } from '@/shared/stores/useDateStore';
@@ -17,6 +18,8 @@ export const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-background dark:bg-background text-foreground dark:bg-background transition-colors flex relative isolate">
+      <OfflineBanner onRetry={() => window.location.reload()} />
+
       <Sidebar stats={stats} />
 
       <div

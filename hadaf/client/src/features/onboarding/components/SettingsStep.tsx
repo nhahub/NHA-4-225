@@ -10,6 +10,7 @@ import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { completeOnboarding } from '../api/onboardingApi';
 import { cn } from '@/shared/utils/cn';
 import { format } from 'date-fns';
+import { useApiErrorHandler } from '@/shared/hooks/useApiErrorHandler';
 
 const WEEKDAYS = [
   { value: 'sunday' },
@@ -50,6 +51,7 @@ export const SettingsStep = ({ goalId, goalTitle, onComplete, onBack }: Settings
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
   const createTask = useCreateTask();
+  const handleError = useApiErrorHandler();
 
   const [workStart, setWorkStart] = useState<string>(settings?.work_hours_start ?? '09:00');
   const [workEnd, setWorkEnd] = useState<string>(settings?.work_hours_end ?? '17:00');
@@ -118,8 +120,8 @@ export const SettingsStep = ({ goalId, goalTitle, onComplete, onBack }: Settings
       }
 
       onComplete();
-    } catch {
-      toast.error(t('onboarding.errors.completeFailed'));
+    } catch (e) {
+      handleError(e, { title: 'onboarding.errors.completeFailed' });
       setSubmitting(false);
     }
   };

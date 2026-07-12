@@ -4,6 +4,7 @@ import { subDays, format } from 'date-fns';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from '@/providers/useLocale';
 import { markSummaryShown } from '../api/homeApi';
+import { useApiErrorHandler } from '@/shared/hooks/useApiErrorHandler';
 
 /**
  * HOME-1 yesterday's-summary toast.
@@ -18,10 +19,16 @@ import { markSummaryShown } from '../api/homeApi';
  */
 export const useYesterdaySummaryToast = (isReady: boolean) => {
   const { t } = useTranslation();
+  const handleError = useApiErrorHandler();
   const firedRef = useRef(false);
 
   const mutation = useMutation({
     mutationFn: (date: string) => markSummaryShown(date),
+    onError: (err, date) =>
+      handleError(err, {
+        title: 'home.errors.summaryPingFailed',
+        retry: () => markSummaryShown(date),
+      }),
   });
 
   useEffect(() => {

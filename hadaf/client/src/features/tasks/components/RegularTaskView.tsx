@@ -1,7 +1,9 @@
 ﻿import { Trash2, Edit2, Clock, Check, Zap, CalendarClock } from 'lucide-react';
+import { useState } from 'react';
 import { Task, TaskPriority } from '../types';
 import { useDeleteTask } from '../hooks/useTasks';
 import { useUIStore } from '@/shared/stores/useUIStore';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { cn } from '@/shared/utils/cn';
 import { formatTime } from '../utils/taskUtils';
 import { useTranslation } from '@/providers/useLocale';
@@ -28,6 +30,7 @@ export const RegularTaskView = ({ task, onEdit, className }: RegularTaskViewProp
   const { t } = useTranslation();
   const deleteTask = useDeleteTask();
   const setTaskToComplete = useUIStore((state) => state.setTaskToComplete);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const isDone = task.status === 'completed';
 
@@ -137,12 +140,27 @@ export const RegularTaskView = ({ task, onEdit, className }: RegularTaskViewProp
           </button>
         )}
         <button
-          onClick={() => deleteTask.mutate(task._id)}
+          onClick={() => setConfirmDelete(true)}
           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
         >
           <Trash2 size={15} />
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDelete}
+        variant="danger"
+        title={t('pol.taskDelete.title')}
+        body={t('pol.taskDelete.body')}
+        cancelLabel={t('pol.confirm.cancel')}
+        confirmLabel={t('pol.taskDelete.confirm')}
+        isPending={deleteTask.isPending}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          deleteTask.mutate(task._id);
+          setConfirmDelete(false);
+        }}
+      />
     </div>
   );
 };

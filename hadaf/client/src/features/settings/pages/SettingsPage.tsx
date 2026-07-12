@@ -38,7 +38,6 @@ export const SettingsPage = () => {
   const save = (patch: UpdateSettingsInput, message: string) => {
     updateSettings.mutate(patch, {
       onSuccess: () => toast.success(message),
-      onError: () => toast.error(t('common.error')),
     });
   };
 

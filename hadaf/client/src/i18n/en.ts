@@ -1,4 +1,4 @@
-// English dictionary. Mirrors the shape of ar.ts exactly — every key in
+// English dictionary. Mirrors the shape of ar.ts exactly â€” every key in
 // ar.ts has a counterpart here. Missing keys fall back to the i18n key
 // string at the call site (useTranslation helper), so the dev loop is
 // never broken by missing translations.
@@ -24,7 +24,7 @@ const en = {
     no: 'No',
   },
   language: {
-    ar: 'العربية',
+    ar: 'Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©',
     en: 'English',
   },
   languageSwitcher: {
@@ -134,7 +134,7 @@ const en = {
     checklist: 'Subtasks',
     checklistItemPlaceholder: 'Subtask name...',
     addChecklistItem: 'Add subtask',
-    checklistHelper: 'Break this task into subtasks — the end time is calculated from their durations.',
+    checklistHelper: 'Break this task into subtasks â€” the end time is calculated from their durations.',
     checklistEditHint: 'Editing the checklist here is not yet supported. Will be expanded in a future update.',
     difficulty: 'Difficulty',
     difficultyHelper: 'Affects points earned on completion',
@@ -169,7 +169,13 @@ const en = {
     noTasksForQuery: 'No tasks matching "{q}"',
     emptySchedule: 'Your schedule is clear. Enjoy your free time or add a new task to stay productive.',
     errors: {
-      loadFailed: 'Error loading tasks',
+      loadFailed: 'Could not load tasks',
+      createFailed: 'Could not create the task. Please try again.',
+      completeFailed: 'Could not mark the task complete. Please try again.',
+      postponeFailed: 'Could not postpone the task. Please try again.',
+      rescheduleFailed: 'Could not reschedule the task. Please try again.',
+      deleteFailed: 'Could not delete the task. Please try again.',
+      updateFailed: 'Could not update the task. Please try again.',
     },
   },
   header: {
@@ -193,7 +199,7 @@ const en = {
     mvd: 'MVD',
     mvdPlaceholder: 'What can you do on a hard day?',
     mvdDescription: 'Description',
-    mvdTooltip: 'MVD: {value} — {description}',
+    mvdTooltip: 'MVD: {value} â€” {description}',
     decrement: 'Decrement',
     increment: 'Increment',
     mark: 'Mark',
@@ -204,14 +210,19 @@ const en = {
     logged: 'Habit logged',
     relapseTitle: 'Notice: logging a relapse',
     relapseBody:
-      "It's okay. Progress isn't a straight line. 💪\nRelapse is part of the journey, not the end of it.",
+      "It's okay. Progress isn't a straight line. ðŸ’ª\nRelapse is part of the journey, not the end of it.",
     relapseConfirm: 'Log the relapse',
     relapseLogged: 'Relapse logged. Keep going.',
     daysSinceRelapse: 'days since relapse',
-    createHelper: 'Define your habit. Start small — you can increase the target later.',
+    createHelper: 'Define your habit. Start small â€” you can increase the target later.',
     noHabits: 'No habits yet',
     noHabitsHelper: 'Start with one small habit. Each repetition matters.',
     created: 'Habit created',
+    errors: {
+      createFailed: 'Could not create the habit. Please try again.',
+      logFailed: 'Could not log the habit. Please try again.',
+      relapseFailed: 'Could not log the relapse. Please try again.',
+    },
   },
   settings: {
     subtitle: 'Customize your Hadaf experience',
@@ -231,9 +242,12 @@ const en = {
     timeBlockReminderHelper: 'Notify me 5 minutes before a scheduled task starts.',
     saved: 'Settings saved',
     saveAll: 'Save changes',
+    errors: {
+      updateFailed: 'Could not save your settings. Please try again.',
+    },
   },
   goals: {
-    subtitle: 'Your 12-week goals — measurable, actionable, yours.',
+    subtitle: 'Your 12-week goals â€” measurable, actionable, yours.',
     newGoal: 'New goal',
     editGoal: 'Edit goal',
     saved: 'Goal saved',
@@ -247,18 +261,18 @@ const en = {
     relevance: 'Why this matters',
     relevancePlaceholder: 'Why does this goal matter to you?',
     description: 'Additional description (optional)',
-    descriptionPlaceholder: 'Context or notes…',
+    descriptionPlaceholder: 'Context or notesâ€¦',
     cycleHelper: 'Goals run in 12-week (84-day) cycles.',
     cycleStart: 'Cycle start',
     cycleEnd: 'Cycle end',
     cycleEndHelper: 'Must be exactly 84 days from cycle start.',
-    cycleRange: '{from} → {to}',
+    cycleRange: '{from} â†’ {to}',
     milestones: 'Milestones',
     milestonesHelper: 'List the key milestones you want to reach during this goal.',
     milestonesOptional: 'Milestones are optional. Add them later on the goal page.',
     milestonePlaceholder: 'Milestone',
     addMilestone: 'Add milestone',
-    search: 'Search goals…',
+    search: 'Search goalsâ€¦',
     totalActive: '{count} active',
     all: 'All',
     noGoals: 'No goals match',
@@ -268,7 +282,7 @@ const en = {
     weeklyHeatmap: 'Weekly completion heatmap',
     weeklyHeatmapHelper: 'Each cell is one day of the goal cycle. Darker = more completed tasks.',
     weeklyBars: '12-week cycle',
-    weeklyBarsRange: 'Weeks {from}–{to}',
+    weeklyBarsRange: 'Weeks {from}â€“{to}',
     week: 'Week',
     task: 'task',
     tasks: 'tasks',
@@ -293,6 +307,16 @@ const en = {
     wizardStep3: 'Milestones',
     noMilestones: 'No milestones yet.',
     confirmDelete: 'Delete this goal?',
+    errors: {
+      createFailed: 'Could not create the goal. Please try again.',
+      updateFailed: 'Could not update the goal. Please try again.',
+      archiveFailed: 'Could not archive the goal. Please try again.',
+      replaceFailed: 'Could not replace the goal. Please try again.',
+      overrideFailed: 'Could not save the override. Please try again.',
+      toggleMilestoneFailed: 'Could not update the milestone. Please try again.',
+      reorderMilestonesFailed: 'Could not reorder milestones. Please try again.',
+      addMilestoneFailed: 'Could not add the milestone. Please try again.',
+    },
   },
   home: {
     title: 'Home',
@@ -349,6 +373,9 @@ const en = {
       title: "Yesterday's summary",
       description: 'How was your day?',
     },
+    errors: {
+      summaryPingFailed: "Couldn't update yesterday's summary. Please try again.",
+    },
     loadError: "Couldn't load today's data.",
     retry: 'Try again',
   },
@@ -397,7 +424,7 @@ const en = {
     },
     accuracy: {
       title: 'Planning accuracy',
-      onTarget: 'Within planned time (±20%)',
+      onTarget: 'Within planned time (Â±20%)',
       planned: 'Planned time',
       actual: 'Actual time',
       noData: 'Complete tasks with planned and actual time to measure your planning accuracy.',
@@ -450,7 +477,7 @@ const en = {
     habitsStep: {
       title: 'Pick a few daily habits',
       body: 'Start with one or two small habits. You can add more later.',
-      skipHelper: 'Creating zero habits is fine — you can add them later from the habits page.',
+      skipHelper: 'Creating zero habits is fine â€” you can add them later from the habits page.',
       chipLabel: '{title}',
       mvdTitle: 'Minimum viable dose',
       mvdHelper: 'What can you do on a hard, busy day? Write the smallest version that keeps momentum.',
@@ -502,16 +529,61 @@ const en = {
       taskTitleLabel: 'Task title',
       taskTitlePlaceholder: 'Example: review chapter one',
       goalFixedHelper: 'Linked to goal: {title}',
-      goalFixedMissing: 'Goal was not saved — please go back to step 1.',
+      goalFixedMissing: 'Goal was not saved â€” please go back to step 1.',
     },
     completion: {
-      title: '🎉 Welcome! Start with one.',
+      title: 'ðŸŽ‰ Welcome! Start with one.',
       body: 'Your account is set up. Begin with one task and watch the difference.',
       cta: "Let's go",
     },
     errors: {
       completeFailed: 'Could not finish setup. Please try again.',
       alreadyCompleted: 'Setup was already completed.',
+    },
+  },
+  pol: {
+    offline: {
+      title: 'No connection',
+      body: "Looks like you're offline. Your changes will sync when you're back.",
+      retry: 'Retry',
+    },
+    errors: {
+      genericTitle: 'Could not complete the action',
+      retry: 'Retry',
+      networkFallback: 'Could not reach the server. Check your connection and try again.',
+      unauthenticated: 'Your session expired. Redirecting to sign in.',
+    },
+    confirm: {
+      cancel: 'Cancel',
+      confirm: 'Confirm',
+    },
+    taskDelete: {
+      title: 'Delete this task?',
+      body: 'This task will be removed. This cannot be undone.',
+      confirm: 'Yes, delete task',
+    },
+    goalDelete: {
+      title: 'Archive this goal?',
+      body: 'This goal will be removed from your active list. This cannot be undone.',
+      reasonLabel: 'Why?',
+      reasonOptional: 'Pick a reason (optional)',
+      reasonPlaceholder: 'Add a note (optional)',
+      confirm: 'Yes, archive goal',
+      reasons: {
+        priorityShifted: 'Priority shifted',
+        tooAmbitious: 'Was too ambitious',
+        achieved: 'Already achieved',
+        notRightNow: 'Not the right time',
+        other: 'Other reason',
+      },
+    },
+    empty: {
+      tasksTitle: 'Your day is light today',
+      tasksBody: 'Start with one small task and log your progress. Even simple tasks add up.',
+      goalsTitle: 'No goal yet',
+      goalsBody: 'Define one 12-week goal to focus on. Starting with one is easier than juggling many.',
+      habitsTitle: 'Begin one habit',
+      habitsBody: 'Small repeated habits build real progress. Add a habit with a minimum that fits today.',
     },
   },
 };

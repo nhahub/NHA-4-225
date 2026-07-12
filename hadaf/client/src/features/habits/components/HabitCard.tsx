@@ -33,7 +33,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
       },
       {
         onSuccess: () => toast.success(t('habits.logged')),
-        onError: () => toast.error(t('common.error')),
       },
     );
   };
@@ -42,7 +41,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
     setShowRelapse(false);
     logRelapse.mutate(habit._id, {
       onSuccess: () => toast.success(t('habits.relapseLogged')),
-      onError: () => toast.error(t('common.error')),
     });
   };
 

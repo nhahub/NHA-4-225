@@ -15,6 +15,7 @@ import {
 } from '../api/goalApi';
 import type { CreateGoalInput } from '../types';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
+import { useApiErrorHandler } from '@/shared/hooks/useApiErrorHandler';
 
 export const useActiveGoals = () =>
   useQuery({
@@ -37,16 +38,23 @@ export const useGoal = (id: string | undefined) =>
 
 export const useCreateGoal = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: (input: CreateGoalInput) => apiCreateGoal(input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
     },
+    onError: (err, input) =>
+      handleError(err, {
+        title: 'goals.errors.createFailed',
+        retry: () => apiCreateGoal(input),
+      }),
   });
 };
 
 export const useUpdateGoal = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: Partial<CreateGoalInput> }) =>
       apiUpdateGoal(id, input),
@@ -54,22 +62,34 @@ export const useUpdateGoal = () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.GOAL_DETAIL(goal._id) });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'goals.errors.updateFailed',
+        retry: () => apiUpdateGoal(vars.id, vars.input),
+      }),
   });
 };
 
 export const useArchiveGoal = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       apiArchiveGoal(id, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'goals.errors.archiveFailed',
+        retry: () => apiArchiveGoal(vars.id, vars.reason),
+      }),
   });
 };
 
 export const useReplaceGoal = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: ({
       id,
@@ -81,11 +101,17 @@ export const useReplaceGoal = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'goals.errors.replaceFailed',
+        retry: () => apiReplaceGoal(vars.id, vars.input),
+      }),
   });
 };
 
 export const useOverrideProgress = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: ({ id, progress }: { id: string; progress: number | null }) =>
       apiOverrideProgress(id, progress),
@@ -93,11 +119,17 @@ export const useOverrideProgress = () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.GOAL_DETAIL(goal._id) });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'goals.errors.overrideFailed',
+        retry: () => apiOverrideProgress(vars.id, vars.progress),
+      }),
   });
 };
 
 export const useToggleMilestone = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: (milestoneId: string) => apiToggleMilestone(milestoneId),
     onSuccess: () => {
@@ -105,22 +137,34 @@ export const useToggleMilestone = () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS, 'detail'] });
       qc.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
     },
+    onError: (err, milestoneId) =>
+      handleError(err, {
+        title: 'goals.errors.toggleMilestoneFailed',
+        retry: () => apiToggleMilestone(milestoneId),
+      }),
   });
 };
 
 export const useReorderMilestones = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: (milestones: Array<{ id: string; sort_order: number }>) =>
       apiReorderMilestones(milestones),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS, 'detail'] });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'goals.errors.reorderMilestonesFailed',
+        retry: () => apiReorderMilestones(vars),
+      }),
   });
 };
 
 export const useAddMilestone = () => {
   const qc = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: ({ goalId, title }: { goalId: string; title: string }) =>
       apiAddMilestone(goalId, title),
@@ -128,5 +172,10 @@ export const useAddMilestone = () => {
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
       qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS, 'detail'] });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'goals.errors.addMilestoneFailed',
+        retry: () => apiAddMilestone(vars.goalId, vars.title),
+      }),
   });
 };

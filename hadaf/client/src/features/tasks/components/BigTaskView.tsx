@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Task } from '../types';
 import { useDeleteTask, useCreateTask } from '../hooks/useTasks';
 import { useUIStore } from '@/shared/stores/useUIStore';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { cn } from '@/shared/utils/cn';
 import { formatTime } from '../utils/taskUtils';
 import { useTranslation } from '@/providers/useLocale';
@@ -16,6 +17,7 @@ interface BigTaskViewProps {
 export const BigTaskView = ({ task, onEdit, className }: BigTaskViewProps) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const deleteTask = useDeleteTask();
   const createTask = useCreateTask();
   const setTaskToComplete = useUIStore((state) => state.setTaskToComplete);
@@ -242,13 +244,28 @@ export const BigTaskView = ({ task, onEdit, className }: BigTaskViewProps) => {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            deleteTask.mutate(task._id);
+            setConfirmDelete(true);
           }}
           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-white dark:hover:bg-gray-800 rounded-md transition-colors shadow-sm"
         >
           <Trash2 size={14} />
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDelete}
+        variant="danger"
+        title={t('pol.taskDelete.title')}
+        body={t('pol.taskDelete.body')}
+        cancelLabel={t('pol.confirm.cancel')}
+        confirmLabel={t('pol.taskDelete.confirm')}
+        isPending={deleteTask.isPending}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          deleteTask.mutate(task._id);
+          setConfirmDelete(false);
+        }}
+      />
     </div>
   );
 };

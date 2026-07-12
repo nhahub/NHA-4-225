@@ -15,6 +15,7 @@ import type {
   RescheduleTaskInput,
 } from '../types';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
+import { useApiErrorHandler } from '@/shared/hooks/useApiErrorHandler';
 
 /**
  * useUpdateTask — partial-update shim. The backend currently has no general
@@ -60,6 +61,7 @@ export const useBacklogTasks = () =>
 
 export const useCreateTask = () => {
   const queryClient = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: (input: CreateTaskInput) => apiCreateTask(input),
     onSuccess: (task) => {
@@ -68,11 +70,17 @@ export const useCreateTask = () => {
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
     },
+    onError: (err, input) =>
+      handleError(err, {
+        title: 'tasks.errors.createFailed',
+        retry: () => apiCreateTask(input),
+      }),
   });
 };
 
 export const useCompleteTask = () => {
   const queryClient = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input?: CompleteTaskInput }) =>
       apiCompleteTask(id, input),
@@ -80,21 +88,30 @@ export const useCompleteTask = () => {
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'tasks.errors.completeFailed',
+        retry: () => apiCompleteTask(vars.id, vars.input),
+      }),
   });
 };
 
 export const usePostponeTask = () => {
   const queryClient = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: (id: string) => apiPostponeTask(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
     },
+    onError: (err, id) =>
+      handleError(err, { title: 'tasks.errors.postponeFailed', retry: () => apiPostponeTask(id) }),
   });
 };
 
 export const useRescheduleTask = () => {
   const queryClient = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: RescheduleTaskInput }) =>
       apiRescheduleTask(id, input),
@@ -102,17 +119,25 @@ export const useRescheduleTask = () => {
       queryClient.invalidateQueries({ queryKey: tasksQueryKey(task.date) });
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
     },
+    onError: (err, vars) =>
+      handleError(err, {
+        title: 'tasks.errors.rescheduleFailed',
+        retry: () => apiRescheduleTask(vars.id, vars.input),
+      }),
   });
 };
 
 export const useDeleteTask = () => {
   const queryClient = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: (id: string) => apiDeleteTask(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
     },
+    onError: (err, id) =>
+      handleError(err, { title: 'tasks.errors.deleteFailed', retry: () => apiDeleteTask(id) }),
   });
 };
 
@@ -124,6 +149,7 @@ export const useDeleteTask = () => {
  */
 export const useUpdateTask = () => {
   const queryClient = useQueryClient();
+  const handleError = useApiErrorHandler();
   return useMutation({
     mutationFn: async ({ id, input }: UpdateTaskInput) => {
       const changedTime =
@@ -156,5 +182,6 @@ export const useUpdateTask = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
     },
+    onError: (err) => handleError(err, { title: 'tasks.errors.updateFailed' }),
   });
 };
