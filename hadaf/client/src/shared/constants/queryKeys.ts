@@ -8,4 +8,8 @@ export const QUERY_KEYS = {
   DAILY_SUMMARY: ['daily-summaries', 'today'] as const,
   DAILY_CAPACITY: ['daily-summaries', 'capacity'] as const,
   SETTINGS: ['user', 'settings'] as const,
+  ANALYTICS_OVERVIEW: (from: string, to: string) =>
+    ['analytics', 'overview', from, to] as const,
+  ANALYTICS_HABITS: (from: string, to: string) =>
+    ['analytics', 'habits', from, to] as const,
 } as const;
