@@ -190,7 +190,7 @@ exports.getToday = catchAsync(async (req, res) => {
   const todayStr = resolveLogicalDate(new Date(), user.settings.day_start);
 
   let summary = await DailySummary.findOne({ userId: req.user.id, date: todayStr }).lean();
-  
+
   if (!summary) {
     // Missing summary for today, run the full helper to generate a blank/computed one
     await exports.upsertDailySummaryHelper(req.user.id, todayStr);
@@ -200,5 +200,49 @@ exports.getToday = catchAsync(async (req, res) => {
   res.status(200).json({
     success: true,
     data: summary || { date: todayStr, dayType: "work", tasksCompleted: 0, habitsCompleted: 0, pointsEarned: 0, dayState: "good_enough" }
+  });
+});
+
+// HOME-1 toast gating — marks a specific day's DailySummary as "shown" so the
+// one-time-per-day morning toast doesn't repeat. Idempotent: re-marking an
+// already-shown day is a no-op. Reuses `upsertDailySummaryHelper` so the
+// summary exists (and its day-state is computed) before we flip the flag —
+// covers the "user completed things but roll-up never ran" case from the work
+// order without duplicating scoring logic.
+//
+// Returns `{ summary, wasNewlyShown }` so the client can fire its toast
+// exactly when the flag just transitioned false → true (subsequent calls in
+// the same day see `wasNewlyShown: false` and skip the toast).
+exports.markSummaryShown = catchAsync(async (req, res) => {
+  const { date } = req.params;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "Invalid date format. Must be YYYY-MM-DD.",
+    });
+  }
+
+  const existing = await DailySummary.findOne({ userId: req.user.id, date })
+    .select("summaryShown")
+    .lean();
+  const wasNewlyShown = !existing || existing.summaryShown !== true;
+
+  if (!existing) {
+    // Summary never rolled up for that day — compute it (day-state, points)
+    // before flipping the flag, so the response carries a real summary.
+    await exports.upsertDailySummaryHelper(req.user.id, date);
+  }
+
+  const summary = await DailySummary.findOneAndUpdate(
+    { userId: req.user.id, date },
+    { $set: { summaryShown: true } },
+    { upsert: true, new: true, runValidators: true }
+  ).lean();
+
+  res.status(200).json({
+    success: true,
+    data: { summary, wasNewlyShown },
   });
 });

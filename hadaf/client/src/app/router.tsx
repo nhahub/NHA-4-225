@@ -5,6 +5,7 @@ import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const HomePage = lazy(() => import('@/features/home/pages/HomePage').then((m) => ({ default: m.HomePage })));
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const TasksPage = lazy(() => import('@/features/tasks/pages/TasksPage').then((m) => ({ default: m.TasksPage })));
 const GoalsPage = lazy(() => import('@/features/goals/pages/GoalsPage').then((m) => ({ default: m.GoalsPage })));
@@ -64,8 +65,8 @@ export const AppRouter = () => {
             </RequireAuth>
           }
         >
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/goals/:id" element={<GoalDetailPage />} />
