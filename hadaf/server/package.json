@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest run --globals",
+    "test:api": "vitest run --config vitest.api.config.js",
     "dev": "nodemon app.js"
   },
   "keywords": [],
