@@ -1,55 +1,12 @@
 const Milestone = require("../models/Milestone");
 const Goal = require("../models/Goal");
-const Task = require("../models/Task");
 const catchAsync = require("../utils/catchAsync");
 
-// Toggle Milestone Checked State (manual — only allowed when the milestone has no
-// linked tasks; once tasks exist, completion is derived automatically)
-exports.toggleMilestone = catchAsync(async (req, res, next) => {
-  const milestone = await Milestone.findById(req.params.id).populate("goalId");
-
-  if (!milestone || milestone.goalId.userId.toString() !== req.user.id) {
-    return res.status(404).json({
-      success: false,
-      errorCode: "VALIDATION",
-      error: "milestones.errors.notFound",
-    });
-  }
-
-  const linkedTaskCount = await Task.countDocuments({ milestoneId: milestone._id });
-  if (linkedTaskCount > 0) {
-    return res.status(400).json({
-      success: false,
-      errorCode: "VALIDATION",
-      error: "milestones.errors.derivedFromTasks",
-    });
-  }
-
-  milestone.is_completed = !milestone.is_completed;
-  milestone.completed_at = milestone.is_completed ? new Date() : null;
-  await milestone.save();
-
-  const { upsertDailySummaryHelper } = require("./dailySummaryController");
-  const { resolveLogicalDate } = require("../utils/date");
-  const User = require("../models/User");
-
-  // Recompute summary for the logical date of the toggle event
-  const user = await User.findById(req.user.id).lean();
-  if (user) {
-    const todayStr = resolveLogicalDate(new Date(), user.settings.day_start);
-    await upsertDailySummaryHelper(req.user.id, todayStr);
-  }
-
-  res.status(200).json({
-    success: true,
-    data: {
-      id: milestone._id,
-      title: milestone.title,
-      is_completed: milestone.is_completed,
-      completed_at: milestone.completed_at,
-    },
-  });
-});
+// Milestone completion has no manual toggle — it is always derived from the
+// points earned on its linked tasks (see taskController's
+// recomputeMilestoneCompletion), so a milestone can never be marked done by
+// clicking a checkbox, and never leaks unearned bonus points into a day's
+// summary.
 
 // Reorder Milestones inside a Goal
 exports.reorderMilestones = catchAsync(async (req, res, next) => {

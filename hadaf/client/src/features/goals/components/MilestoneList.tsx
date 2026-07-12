@@ -1,14 +1,9 @@
 import { CheckCircle2, Circle, Plus, GripVertical } from 'lucide-react';
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { toast } from 'sonner';
 import { useTranslation, useLocale } from '@/providers/useLocale';
 import { Milestone } from '../types';
-import {
-  useAddMilestone,
-  useToggleMilestone,
-  useReorderMilestones,
-} from '../hooks/useGoals';
+import { useAddMilestone, useReorderMilestones } from '../hooks/useGoals';
 import { Input } from '@/shared/components/ui/Input';
 import { Button } from '@/shared/components/ui/Button';
 import { Progress } from '@/shared/components/ui/Progress';
@@ -19,10 +14,12 @@ interface MilestoneListProps {
   canEdit: boolean;
 }
 
+// Milestone completion has no manual toggle — it is always derived from the
+// points earned on its linked tasks. The circle below is a read-only status
+// indicator, never a click target.
 export const MilestoneList = ({ goalId, milestones, canEdit }: MilestoneListProps) => {
   const { t } = useTranslation();
   const { locale } = useLocale();
-  const toggle = useToggleMilestone();
   const add = useAddMilestone();
   const reorder = useReorderMilestones();
   const [draft, setDraft] = useState('');
@@ -51,15 +48,6 @@ export const MilestoneList = ({ goalId, milestones, canEdit }: MilestoneListProp
     reorder.mutate(payload);
   };
 
-  const handleToggle = (m: Milestone) => {
-    if (!canEdit) return;
-    if ((m.tasksCount ?? 0) > 0) {
-      toast.error(t('goals.derivedFromTasks'));
-      return;
-    }
-    toggle.mutate(m._id);
-  };
-
   const formatDate = (value?: string | null) => {
     if (!value) return '';
     try {
@@ -76,8 +64,7 @@ export const MilestoneList = ({ goalId, milestones, canEdit }: MilestoneListProp
       </h3>
       <ul className="space-y-2">
         {sorted.map((m, idx) => {
-          const isDerived = (m.tasksCount ?? 0) > 0;
-          const progress = isDerived ? m.progress ?? 0 : m.is_completed ? 100 : 0;
+          const progress = m.progress ?? 0;
           const range = m.startDate && m.endDate ? `${formatDate(m.startDate)} – ${formatDate(m.endDate)}` : null;
           return (
             <li
@@ -96,21 +83,18 @@ export const MilestoneList = ({ goalId, milestones, canEdit }: MilestoneListProp
                     <GripVertical size={14} className="rotate-90" />
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => handleToggle(m)}
-                  className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                <span
+                  className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     m.is_completed
                       ? 'bg-emerald-500 border-emerald-500'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-emerald-400'
-                  } ${isDerived ? 'cursor-default' : ''}`}
-                  disabled={!canEdit}
-                  aria-label={m.is_completed ? t('goals.uncomplete') : t('goals.complete')}
-                  title={isDerived ? t('goals.derivedFromTasks') : undefined}
+                      : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                  aria-label={m.is_completed ? t('goals.complete') : undefined}
+                  title={t('goals.derivedFromTasks')}
                 >
                   {m.is_completed && <CheckCircle2 size={12} className="text-white" />}
                   {!m.is_completed && <Circle size={12} className="opacity-0" />}
-                </button>
+                </span>
                 <div className="flex-1 min-w-0">
                   <span
                     className={`block text-sm font-medium ${
@@ -123,13 +107,11 @@ export const MilestoneList = ({ goalId, milestones, canEdit }: MilestoneListProp
                   </span>
                   {range && <span className="block text-[11px] text-gray-400">{range}</span>}
                 </div>
-                {isDerived && (
-                  <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 shrink-0">
-                    {progress}%
-                  </span>
-                )}
+                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 shrink-0">
+                  {progress}%
+                </span>
               </div>
-              {isDerived && <Progress value={progress} className="h-1.5" />}
+              <Progress value={progress} className="h-1.5" />
             </li>
           );
         })}
@@ -139,6 +121,7 @@ export const MilestoneList = ({ goalId, milestones, canEdit }: MilestoneListProp
           </li>
         )}
       </ul>
+      <p className="text-[11px] text-gray-400 italic">{t('goals.derivedFromTasks')}</p>
 
       {canEdit && (
         <div className="flex gap-2">
@@ -147,7 +130,10 @@ export const MilestoneList = ({ goalId, milestones, canEdit }: MilestoneListProp
             onChange={(e) => setDraft(e.target.value)}
             placeholder={t('goals.milestonePlaceholder')}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleAdd();
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAdd();
+              }
             }}
           />
           <Button onClick={handleAdd} isLoading={add.isPending} leftIcon={<Plus size={14} />}>

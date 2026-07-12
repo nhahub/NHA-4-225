@@ -135,15 +135,13 @@ describe('Epic 1: Goals & Milestones API', () => {
       expect(res.body.data.title).toBe('Milestone 2');
     });
 
-    it('should toggle milestone completion', async () => {
+    it('should not expose a manual toggle endpoint — completion is derived from task points only', async () => {
       const res = await request(app)
         .patch(`/api/milestones/${milestoneId}/toggle`).set("X-Requested-With", "XMLHttpRequest")
         .set("Cookie", cookie)
-        .expect(200);
+        .expect(404);
 
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.is_completed).toBe(true);
-      expect(res.body.data.completed_at).not.toBeNull();
+      expect(res.body.success).toBe(false);
     });
   });
 });

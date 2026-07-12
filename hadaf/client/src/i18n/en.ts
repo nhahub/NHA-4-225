@@ -329,7 +329,6 @@ const en = {
       updateFailed: 'Could not update the goal. Please try again.',
       archiveFailed: 'Could not archive the goal. Please try again.',
       replaceFailed: 'Could not replace the goal. Please try again.',
-      toggleMilestoneFailed: 'Could not update the milestone. Please try again.',
       reorderMilestonesFailed: 'Could not reorder milestones. Please try again.',
       addMilestoneFailed: 'Could not add the milestone. Please try again.',
     },

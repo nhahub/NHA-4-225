@@ -53,13 +53,6 @@ export const replaceGoal = async (
   return response.data;
 };
 
-export const toggleMilestone = async (
-  milestoneId: string,
-): Promise<Pick<Milestone, '_id' | 'title' | 'is_completed' | 'completed_at'>> => {
-  const response = await apiClient.patch<Milestone>(`/milestones/${milestoneId}/toggle`);
-  return response.data;
-};
-
 export const reorderMilestones = async (
   milestones: Array<{ id: string; sort_order: number }>,
 ): Promise<void> => {

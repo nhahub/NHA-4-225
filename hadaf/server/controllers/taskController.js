@@ -55,6 +55,37 @@ async function getStreakDays(userId, dayStartStr = "04:00") {
   return streak;
 }
 
+// ─── Milestone completion recompute ────────────────────────────────────────────
+
+/**
+ * Recomputes a milestone's completion purely from the points its linked tasks
+ * carry: complete once earned (from completed tasks) meets or exceeds planned
+ * (from all its tasks, pending or done). There is no manual toggle — completion
+ * is always derived this way, so it can only be set by this function, and it
+ * is re-run after any task create/complete/delete that touches the milestone's
+ * task pool (so it can also correctly re-open, e.g. a new task adds to the
+ * planned pool and the existing earned total no longer meets it).
+ *
+ * @param {import('mongoose').Types.ObjectId|string} milestoneId
+ */
+async function recomputeMilestoneCompletion(milestoneId) {
+  const tasks = await Task.find({ milestoneId })
+    .select("goalPointsPlanned goalPointsEarned status")
+    .lean();
+
+  const plannedPoints = tasks.reduce((sum, t) => sum + (t.goalPointsPlanned || 0), 0);
+  const earnedPoints = tasks
+    .filter((t) => t.status === "completed")
+    .reduce((sum, t) => sum + (t.goalPointsEarned || 0), 0);
+  const shouldBeComplete = plannedPoints > 0 && earnedPoints >= plannedPoints;
+
+  const milestone = await Milestone.findById(milestoneId);
+  if (!milestone || milestone.is_completed === shouldBeComplete) return;
+
+  milestone.is_completed = shouldBeComplete;
+  milestone.completed_at = shouldBeComplete ? new Date() : null;
+  await milestone.save();
+}
 
 // ─── Create Task (E2-1) ────────────────────────────────────────────────────────
 
@@ -110,14 +141,6 @@ exports.createTask = catchAsync(async (req, res) => {
         field: "milestoneId",
       });
     }
-    // Linking a new (pending) task to a milestone that was already marked complete
-    // would otherwise leave it showing 100% with an outstanding task underneath —
-    // reopen it so its derived state stays honest.
-    if (milestone.is_completed) {
-      milestone.is_completed = false;
-      milestone.completed_at = null;
-      await milestone.save();
-    }
   }
 
   // Auto-detect task type from supplied fields (Architecture.md §6.5)
@@ -148,6 +171,12 @@ exports.createTask = catchAsync(async (req, res) => {
     checklist,
     status: "pending",
   });
+
+  // Adding a task to a milestone's planned-points pool can re-open a milestone
+  // that was previously at 100% (its earned total no longer meets the new planned total).
+  if (task.milestoneId) {
+    await recomputeMilestoneCompletion(task.milestoneId);
+  }
 
   await AnalyticsEvent.create({
     userId: req.user.id,
@@ -256,20 +285,10 @@ exports.completeTask = catchAsync(async (req, res) => {
     });
   }
 
-  // Milestones ARE sub-goals: when every task tied to a milestone is complete, the
-  // milestone auto-completes. Only touches milestones that still have pending tasks
-  // to avoid clobbering a milestone the user already completed manually.
+  // Milestones ARE sub-goals: they complete once the points earned across their
+  // tasks meet the points planned for them — never by manual toggle.
   if (updated.milestoneId) {
-    const remainingCount = await Task.countDocuments({
-      milestoneId: updated.milestoneId,
-      status: { $ne: "completed" },
-    });
-    if (remainingCount === 0) {
-      await Milestone.findOneAndUpdate(
-        { _id: updated.milestoneId, is_completed: false },
-        { is_completed: true, completed_at: new Date() }
-      );
-    }
+    await recomputeMilestoneCompletion(updated.milestoneId);
   }
 
   await AnalyticsEvent.create({
@@ -412,6 +431,13 @@ exports.deleteTask = catchAsync(async (req, res) => {
       error: "tasks.errors.cannotDelete",
     });
   }
+
+  // Removing a pending task shrinks its milestone's planned-points pool, which
+  // can push an already-earned total across the completion threshold.
+  if (deleted.milestoneId) {
+    await recomputeMilestoneCompletion(deleted.milestoneId);
+  }
+
   res.status(200).json({ success: true, data: { taskId: deleted._id } });
 });
 

@@ -7,7 +7,6 @@ import {
   updateGoal as apiUpdateGoal,
   archiveGoal as apiArchiveGoal,
   replaceGoal as apiReplaceGoal,
-  toggleMilestone as apiToggleMilestone,
   reorderMilestones as apiReorderMilestones,
   addMilestone as apiAddMilestone,
   type GetGoalsParams,
@@ -104,24 +103,6 @@ export const useReplaceGoal = () => {
       handleError(err, {
         title: 'goals.errors.replaceFailed',
         retry: () => apiReplaceGoal(vars.id, vars.input),
-      }),
-  });
-};
-
-export const useToggleMilestone = () => {
-  const qc = useQueryClient();
-  const handleError = useApiErrorHandler();
-  return useMutation({
-    mutationFn: (milestoneId: string) => apiToggleMilestone(milestoneId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
-      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS, 'detail'] });
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
-    },
-    onError: (err, milestoneId) =>
-      handleError(err, {
-        title: 'goals.errors.toggleMilestoneFailed',
-        retry: () => apiToggleMilestone(milestoneId),
       }),
   });
 };

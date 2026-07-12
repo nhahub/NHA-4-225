@@ -194,5 +194,71 @@ describe('Epic 2: Tasks API', () => {
       expect(res.body.success).toBe(false);
       expect(res.body.field).toBe('milestoneId');
     });
+
+    it('should NOT auto-complete a milestone when only partial points are earned', async () => {
+      const taskRes = await request(app)
+        .post('/api/tasks').set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie)
+        .send({
+          title: 'Write the spec',
+          goalId,
+          milestoneId,
+          goalPointsPlanned: 40,
+          date: new Date().toISOString().split('T')[0],
+        })
+        .expect(201);
+
+      await request(app)
+        .patch(`/api/tasks/${taskRes.body.data._id}/complete`).set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie)
+        .send({ goalPointsEarned: 25 }) // partial — below the 40-point plan
+        .expect(200);
+
+      const detailRes = await request(app)
+        .get(`/api/goals/${goalId}`).set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie)
+        .expect(200);
+
+      const milestone = detailRes.body.data.milestones.find((m) => m.id === milestoneId || m._id === milestoneId);
+      expect(milestone.is_completed).toBe(false);
+      expect(milestone.progress).toBe(63); // 25/40 rounded
+    });
+
+    it('should re-open a completed milestone when a new task raises its planned-points pool', async () => {
+      const firstTask = await request(app)
+        .post('/api/tasks').set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie)
+        .send({ title: 'Task A', goalId, milestoneId, goalPointsPlanned: 40, date: new Date().toISOString().split('T')[0] });
+
+      await request(app)
+        .patch(`/api/tasks/${firstTask.body.data._id}/complete`).set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie)
+        .send({ goalPointsEarned: 40 })
+        .expect(200);
+
+      let detailRes = await request(app)
+        .get(`/api/goals/${goalId}`).set("X-Requested-With", "XMLHttpRequest").set("Cookie", cookie);
+      let milestone = detailRes.body.data.milestones.find((m) => m.id === milestoneId || m._id === milestoneId);
+      expect(milestone.is_completed).toBe(true);
+
+      // Adding a second task grows the planned pool past what's been earned so far.
+      await request(app)
+        .post('/api/tasks').set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie)
+        .send({ title: 'Task B', goalId, milestoneId, goalPointsPlanned: 10, date: new Date().toISOString().split('T')[0] })
+        .expect(201);
+
+      detailRes = await request(app)
+        .get(`/api/goals/${goalId}`).set("X-Requested-With", "XMLHttpRequest").set("Cookie", cookie);
+      milestone = detailRes.body.data.milestones.find((m) => m.id === milestoneId || m._id === milestoneId);
+      expect(milestone.is_completed).toBe(false);
+    });
+
+    it('should have no manual toggle route for milestone completion', async () => {
+      const res = await request(app)
+        .patch(`/api/milestones/${milestoneId}/toggle`).set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie);
+      expect(res.status).toBe(404);
+    });
   });
 });

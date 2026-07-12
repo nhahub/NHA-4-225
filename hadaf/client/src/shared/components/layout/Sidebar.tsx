@@ -44,11 +44,10 @@ export const Sidebar = ({ stats }: SidebarProps) => {
   };
 
   const getIntroText = () => {
-    const formattedNarrator = formatNarrator(currentQuote.narrator);
     if (currentQuote.type === 'hadith') {
-      return `عن ${formattedNarrator} رضي الله عنه قال: قال رسول الله ﷺ:`;
+      return `عن ${formatNarrator(currentQuote.narrator)} رضي الله عنه قال: قال رسول الله ﷺ:`;
     } else {
-      return `عن ${formattedNarrator} رضي الله عنه قال:`;
+      return `قال ${currentQuote.narrator} رضي الله عنه:`;
     }
   };
 

@@ -236,15 +236,17 @@ const WizardBody: React.FC<{ editGoal: Goal | null; onClose: () => void }> = ({
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
   };
 
+  // Enter never implicitly submits the form — on the last step it's swallowed
+  // (only the explicit Confirm/Save button submits); on earlier steps it advances
+  // (after validating), the same as clicking Next.
   const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (e.key !== 'Enter') return;
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA') return; // allow newlines
+    e.preventDefault();
     if (step < STEPS.length - 1) {
-      e.preventDefault();
       void handleNext();
     }
-    // On the final step Enter is allowed to submit normally.
   };
 
   const onInvalid = (errs: FieldErrors<FormValues>) => {
@@ -622,7 +624,6 @@ const MilestoneDraftList: React.FC<{
 }> = ({ fields, append, remove }) => {
   const { t, locale } = useTranslation();
   const { register, watch } = useFormContext<FormValues>();
-  const titleRef = useRef<HTMLInputElement | null>(null);
 
   const formatRange = (from?: string, to?: string) => {
     if (!from || !to) return null;
@@ -650,10 +651,6 @@ const MilestoneDraftList: React.FC<{
             <Input
               {...register(`milestoneDrafts.${i}.title` as const)}
               placeholder={t('goals.milestonePlaceholder')}
-              ref={(el) => {
-                titleRef.current = el;
-                register(`milestoneDrafts.${i}.title` as const).ref(el);
-              }}
               className="flex-1 h-8 text-sm bg-transparent border-transparent focus:bg-transparent px-2 placeholder:text-gray-400 font-medium min-w-0"
               autoComplete="off"
             />
