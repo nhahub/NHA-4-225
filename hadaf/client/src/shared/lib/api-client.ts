@@ -118,8 +118,15 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
     const payload = error.response?.data;
 
+    // Auth endpoints (login, register, refresh) return 401 for legitimate
+    // reasons (wrong password, expired token). We must NOT trigger the
+    // silent-refresh cascade or redirect-to-login for these — just let the
+    // error propagate to the caller.
+    const requestUrl = originalRequest?.url ?? '';
+    const isAuthEndpoint = /\/auth\/(login|register|refresh)/.test(requestUrl);
+
     // ---- 401 silent-refresh path (E0-6) ----
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
       // If a refresh is already in flight, queue behind it.
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -164,7 +171,8 @@ apiClient.interceptors.response.use(
     }
 
     // Refresh failed or non-envelope 401 → clear + redirect.
-    if (error.response?.status === 401) {
+    // Skip for auth endpoints — they handle their own error display.
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('token');
       localStorage.removeItem('auth-storage');
       const currentPath = window.location.pathname + window.location.search;

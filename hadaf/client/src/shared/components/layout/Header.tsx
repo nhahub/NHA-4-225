@@ -64,6 +64,7 @@ export const Header = () => {
         selectedDate={selectedDate}
         isSidebarCollapsed={isSidebarCollapsed}
         searchQuery={searchQuery}
+        score={score}
         onSearchChange={setSearchQuery}
         onSearchToggle={() => setIsSearchExpanded((v) => !v)}
         onSearchClear={() => setSearchQuery('')}

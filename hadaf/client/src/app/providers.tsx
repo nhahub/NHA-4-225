@@ -5,7 +5,6 @@ import { Toaster } from 'sonner';
 import { queryClient } from '@/shared/lib/react-query';
 import { LocaleProvider } from '@/providers/LocaleProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
-import { DayTypeProvider } from '@/providers/DayTypeProvider';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -16,22 +15,20 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
     <ThemeProvider>
       <LocaleProvider>
         <QueryClientProvider client={queryClient}>
-          <DayTypeProvider>
-            <BrowserRouter>
-              {children}
+          <BrowserRouter>
+            {children}
 
-              <Toaster
-                position="top-right"
-                richColors
-                expand={false}
-                duration={3000}
-              />
+            <Toaster
+              position="top-right"
+              richColors
+              expand={false}
+              duration={3000}
+            />
 
-              {import.meta.env.DEV && (
-                <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-              )}
-            </BrowserRouter>
-          </DayTypeProvider>
+            {import.meta.env.DEV && (
+              <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+            )}
+          </BrowserRouter>
         </QueryClientProvider>
       </LocaleProvider>
     </ThemeProvider>

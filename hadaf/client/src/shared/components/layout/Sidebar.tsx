@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Target, Repeat, LayoutGrid, Settings, CheckCircle2, Clock, Zap, Hourglass, X, BookOpen, Quote, LogOut } from 'lucide-react';
+import { Home, Target, Repeat, LayoutGrid, Settings, CheckCircle2, Clock, Zap, Hourglass, X, BookOpen, Quote, LogOut, CheckSquare } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import { useUIStore } from '@/shared/stores/useUIStore';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
@@ -62,6 +62,7 @@ export const Sidebar = ({ stats }: SidebarProps) => {
   // 5 items per E0-6 spec (Home, Goals, Habits, Overview, Settings).
   const navItems = [
     { icon: Home, label: t('nav.home'), path: '/' },
+    { icon: CheckSquare, label: t('nav.tasks'), path: '/tasks' },
     { icon: Target, label: t('nav.goals'), path: '/goals' },
     { icon: Repeat, label: t('nav.habits'), path: '/habits' },
     { icon: LayoutGrid, label: t('nav.overview'), path: '/overview' },

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Target, Repeat, MoreHorizontal } from 'lucide-react';
+import { Home, Target, Repeat, MoreHorizontal, CheckSquare } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import { useTranslation } from '@/providers/useLocale';
 
@@ -11,6 +11,7 @@ export const BottomNav = () => {
 
   const items = [
     { icon: Home, label: t('nav.home'), path: '/' },
+    { icon: CheckSquare, label: t('nav.tasks'), path: '/tasks' },
     { icon: Target, label: t('nav.goals'), path: '/goals' },
     { icon: Repeat, label: t('nav.habits'), path: '/habits' },
     { icon: MoreHorizontal, label: t('nav.more'), path: '/settings' },

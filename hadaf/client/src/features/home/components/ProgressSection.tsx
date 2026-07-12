@@ -32,8 +32,8 @@ export const ProgressSection = ({ summary, capacity, isLoading }: ProgressSectio
         {t('home.sections.progress')}
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card padding="md">
+      <div className="flex flex-col gap-6">
+        <Card padding="md" className="bg-gradient-to-br from-brand-50/50 to-white dark:from-brand-900/10 dark:to-gray-900">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, useWatch, FormProvider, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { X, Sparkles, CheckSquare, Layers } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { useCreateTask } from '../hooks/useTasks';
@@ -58,10 +57,10 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
   return (
     <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity"
+        className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      <div className="relative bg-white dark:bg-background-paper rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-scale-in flex flex-col border border-gray-100 dark:border-gray-800">
+      <div className="relative bg-white/95 dark:bg-background-paper/95 backdrop-blur-xl rounded-[2rem] shadow-2xl w-full max-w-[420px] max-h-[90vh] overflow-hidden animate-scale-in flex flex-col border border-white/20 dark:border-gray-800/60">
         <CreateTaskForm
           onClose={onClose}
           initialDate={initialDate}
@@ -182,14 +181,16 @@ const CreateTaskForm: React.FC<{
 
   return (
     <>
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <Sparkles size={18} className="text-brand-500" />
+      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100/50 dark:border-gray-800/60 bg-gradient-to-r from-brand-50/50 to-transparent dark:from-brand-900/10 dark:to-transparent">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <div className="bg-brand-100 dark:bg-brand-900/40 p-1.5 rounded-lg">
+             <Sparkles size={18} className="text-brand-600 dark:text-brand-400" />
+          </div>
           {isEdit ? t('tasks.editTask') : t('tasks.newTask')}
         </h2>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400 transition-colors"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800/60 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           aria-label={t('common.cancel')}
         >
           <X size={20} />

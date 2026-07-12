@@ -30,12 +30,13 @@ export const BacklogRibbon = ({ count }: BacklogRibbonProps) => {
       <Link
         to={ROUTES.TASKS}
         className={cn(
-          'group block rounded-3xl border border-gray-200 dark:border-gray-800',
-          'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/60',
-          'transition-colors',
+          'group block rounded-2xl border border-gray-200/50 dark:border-gray-700/50',
+          'bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl',
+          'hover:bg-gradient-to-br hover:from-white hover:to-gray-50 dark:hover:from-gray-800 dark:hover:to-gray-900',
+          'hover:shadow-md transition-all duration-300',
         )}
       >
-        <Card padding="md">
+        <Card padding="md" variant="ghost" className="border-0 shadow-none">
           <div className="flex items-center gap-3">
             <div
               className={cn(

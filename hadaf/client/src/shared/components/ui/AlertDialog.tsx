@@ -13,7 +13,7 @@ const AlertDialogOverlay = React.forwardRef<
   <AlertDialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      'fixed inset-0 z-50 bg-foreground/40 backdrop-blur-xs',
+      'fixed inset-0 z-50 bg-black/40 dark:bg-black/60 backdrop-blur-sm',
       'data-[state=open]:animate-in data-[state=open]:fade-in-0',
       'data-[state=closed]:animate-out data-[state=closed]:fade-out-0',
       className,
@@ -32,9 +32,9 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed top-1/2 start-1/2 z-50 grid w-full max-w-md -translate-x-1/2 -translate-y-1/2',
-        'gap-4 rounded-xl bg-background-paper dark:bg-background-paper p-6 shadow-lg',
-        'border border-border',
+        'fixed top-1/2 start-1/2 z-50 grid w-full max-w-[400px] -translate-x-1/2 -translate-y-1/2',
+        'gap-5 rounded-2xl bg-white/95 dark:bg-background-paper/95 p-6 shadow-2xl backdrop-blur-xl',
+        'border border-gray-100 dark:border-gray-800/60',
         'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
         'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
         className,
@@ -101,8 +101,8 @@ const AlertDialogAction = React.forwardRef<
   <AlertDialogPrimitive.Action
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white',
-      'hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500',
+      'inline-flex items-center justify-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20',
+      'hover:bg-brand-700 hover:shadow-brand-500/30 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       className,
     )}
@@ -118,11 +118,11 @@ const AlertDialogCancel = React.forwardRef<
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center rounded-lg border border-border',
-      'bg-background-paper dark:bg-background-paper px-4 py-2 text-sm font-medium',
-      'text-foreground',
-      'hover:bg-background dark:hover:bg-background',
-      'focus:outline-none focus:ring-2 focus:ring-brand-500',
+      'inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800',
+      'bg-white dark:bg-gray-800/50 px-5 py-2.5 text-sm font-medium transition-colors',
+      'text-gray-700 dark:text-gray-300',
+      'hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white',
+      'focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 focus:ring-offset-2',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       className,
     )}

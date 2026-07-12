@@ -31,7 +31,7 @@ export const EmptyState = ({ icon, title, body, cta, children, className }: Empt
   return (
     <div
       className={cn(
-        'rounded-3xl border border-border bg-background-paper p-10 flex flex-col items-center justify-center text-center',
+        'p-10 flex flex-col items-center justify-center text-center',
         className,
       )}
     >

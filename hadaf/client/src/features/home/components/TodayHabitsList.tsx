@@ -18,8 +18,8 @@ export const TodayHabitsList = ({ habits, isLoading }: TodayHabitsListProps) => 
   const { t } = useTranslation();
 
   return (
-    <section aria-labelledby="home-habits-heading">
-      <header className="flex items-center justify-between mb-3">
+    <section aria-labelledby="home-habits-heading" className="flex-1 flex flex-col">
+      <header className="flex items-center justify-between mb-4">
         <h2
           id="home-habits-heading"
           className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400"
@@ -29,12 +29,12 @@ export const TodayHabitsList = ({ habits, isLoading }: TodayHabitsListProps) => 
       </header>
 
       {isLoading ? (
-        <Card padding="md" className="space-y-3">
+        <div className="space-y-3 flex-1">
           <div className="h-12 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
           <div className="h-12 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-        </Card>
+        </div>
       ) : habits.length === 0 ? (
-        <Card padding="md">
+        <div className="flex-1 flex items-center justify-center">
           <div className="text-center py-6">
             <ShieldCheck size={28} className="mx-auto mb-2 text-gray-300 dark:text-gray-600" aria-hidden="true" />
             <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
@@ -44,12 +44,11 @@ export const TodayHabitsList = ({ habits, isLoading }: TodayHabitsListProps) => 
               {t('home.habits.emptyHelper')}
             </p>
           </div>
-        </Card>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {habits.slice(0, 4).map((habit) => (
             <HabitCard key={habit._id} habit={habit} />
-          ))}
         </div>
       )}
     </section>

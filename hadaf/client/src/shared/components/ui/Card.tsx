@@ -12,13 +12,13 @@ const cardVariants = cva(
     variants: {
       variant: {
         default: [
-          "bg-white dark:bg-gray-900",
-          "border border-gray-200 dark:border-gray-800",
-          "shadow-card hover:shadow-card-hover",
+          "bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl",
+          "border border-gray-200/50 dark:border-gray-800/60",
+          "shadow-sm hover:shadow-md transition-all duration-300",
         ],
         elevated: [
-          "bg-white dark:bg-gray-900",
-          "shadow-lg hover:shadow-xl",
+          "bg-gradient-to-br from-white/95 to-gray-50/90 dark:from-gray-800/95 dark:to-gray-900/90 backdrop-blur-xl",
+          "shadow-lg hover:shadow-xl border border-white/20 dark:border-gray-700/50 transition-all duration-300",
         ],
         ghost: "bg-transparent",
       },

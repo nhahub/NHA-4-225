@@ -31,16 +31,30 @@ export const DailyOverview = ({ data, user, hour }: DailyOverviewProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <AdaptiveGreeting data={data} user={user} hour={hour} />
 
-      <TodayTasksList tasks={data.tasks} />
+      {/* Bento Grid Container */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        
+        {/* Left Column: Tasks (occupies 8 cols on desktop) */}
+        <div className="md:col-span-8 flex flex-col gap-6">
+          <TodayTasksList tasks={data.tasks} />
+        </div>
 
-      <TodayHabitsList habits={data.habits} />
+        {/* Right Column: Habits & Progress (occupies 4 cols on desktop) */}
+        <div className="md:col-span-4 flex flex-col gap-6">
+          <TodayHabitsList habits={data.habits} />
+          
+          <div className="sticky top-24">
+            <ProgressSection summary={data.summary} capacity={data.capacity} />
+            <div className="mt-6">
+              <BacklogRibbon count={data.backlogCount} />
+            </div>
+          </div>
+        </div>
 
-      <BacklogRibbon count={data.backlogCount} />
-
-      <ProgressSection summary={data.summary} capacity={data.capacity} />
+      </div>
     </div>
   );
 };

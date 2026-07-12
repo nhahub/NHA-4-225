@@ -73,7 +73,7 @@ export const AdaptiveGreeting = ({ data, user, hour }: AdaptiveGreetingProps) =>
   return (
     <section
       aria-label={t('home.title')}
-      className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 md:p-8"
+      className="py-4 md:py-6"
     >
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">

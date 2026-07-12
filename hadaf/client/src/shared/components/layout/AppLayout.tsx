@@ -6,6 +6,7 @@ import { BottomNav } from './BottomNav';
 import { TaskFormModal } from '@/features/tasks/components/TaskFormModal';
 import { GlobalTaskCompletion } from '@/features/tasks/components/GlobalTaskCompletion';
 import { OfflineBanner } from '@/shared/components/OfflineBanner';
+import { DayTypeProvider } from '@/providers/DayTypeProvider';
 import { useUIStore } from '@/shared/stores/useUIStore';
 import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats';
 import { useDateStore } from '@/shared/stores/useDateStore';
@@ -17,39 +18,41 @@ export const AppLayout = () => {
   const stats = useDashboardStats(selectedDate);
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background text-foreground dark:bg-background transition-colors flex relative isolate">
-      <OfflineBanner onRetry={() => window.location.reload()} />
+    <DayTypeProvider>
+      <div className="min-h-screen bg-background dark:bg-background text-foreground dark:bg-background transition-colors flex relative isolate">
+        <OfflineBanner onRetry={() => window.location.reload()} />
 
-      <Sidebar stats={stats} />
+        <Sidebar stats={stats} />
 
-      <div
-        className={cn(
-          'flex-1 flex flex-col min-h-screen transition-all duration-300 relative z-0',
-          isSidebarCollapsed ? 'md:ps-[80px]' : 'md:ps-[280px]',
-        )}
-      >
-        <Header />
+        <div
+          className={cn(
+            'flex-1 flex flex-col min-h-screen transition-all duration-300 relative z-0',
+            isSidebarCollapsed ? 'md:ps-[80px]' : 'md:ps-[280px]',
+          )}
+        >
+          <Header />
 
-        <main className="flex-1 p-4 md:p-8 pt-4 max-w-7xl mx-auto w-full animate-fade-in relative z-0 pb-24 md:pb-8">
-          <Outlet />
-        </main>
+          <main className="flex-1 p-4 md:p-8 pt-4 max-w-7xl mx-auto w-full animate-fade-in relative z-0 pb-24 md:pb-8">
+            <Outlet />
+          </main>
 
-        <Footer />
+          <Footer />
+        </div>
+
+        <BottomNav />
+
+        <div className="relative z-[1200]">
+          <TaskFormModal
+            isOpen={isTaskModalOpen}
+            onClose={closeTaskModal}
+            task={taskToEdit || undefined}
+          />
+        </div>
+
+        <div className="relative z-[1300]">
+          <GlobalTaskCompletion />
+        </div>
       </div>
-
-      <BottomNav />
-
-      <div className="relative z-[1200]">
-        <TaskFormModal
-          isOpen={isTaskModalOpen}
-          onClose={closeTaskModal}
-          task={taskToEdit || undefined}
-        />
-      </div>
-
-      <div className="relative z-[1300]">
-        <GlobalTaskCompletion />
-      </div>
-    </div>
+    </DayTypeProvider>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Moon, Sun, Calendar, Search, Plus, X, ChevronDown, RotateCcw, PanelLeft } from 'lucide-react';
+import { Moon, Sun, Calendar, Search, Plus, X, ChevronDown, RotateCcw, PanelLeft, Zap } from 'lucide-react';
 import { format, isSameDay, differenceInCalendarDays, startOfToday } from 'date-fns';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/components/ui/Button';
@@ -13,6 +13,7 @@ interface HeaderContentProps {
   selectedDate: Date;
   isSidebarCollapsed: boolean;
   searchQuery: string;
+  score: number;
   onSearchChange: (val: string) => void;
   onSearchToggle: () => void;
   onSearchClear: () => void;
@@ -30,6 +31,7 @@ export const HeaderContent = ({
   selectedDate,
   isSidebarCollapsed,
   searchQuery,
+  score,
   onSearchChange,
   onSearchToggle,
   onSearchClear,
@@ -169,6 +171,19 @@ export const HeaderContent = ({
         </div>
 
         <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block" />
+
+        {/* Daily Score Pill */}
+        <div 
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-brand-50 to-brand-100/50 dark:from-brand-900/20 dark:to-brand-800/20 border border-brand-200/50 dark:border-brand-700/30 rounded-full shadow-sm"
+          title={t('sidebar.dailyScore')}
+        >
+          <div className="bg-brand-500 rounded-full p-1 animate-pulse shadow-sm shadow-brand-500/40">
+             <Zap size={10} className="text-white fill-white" />
+          </div>
+          <span className="text-xs font-bold text-brand-700 dark:text-brand-300 tabular-nums">
+            {score}
+          </span>
+        </div>
 
         <LanguageSwitcher />
 

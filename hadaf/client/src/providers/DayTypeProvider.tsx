@@ -45,3 +45,4 @@ export const DayTypeProvider: React.FC<DayTypeProviderProps> = ({ children, now 
 
   return <DayTypeContext.Provider value={value}>{children}</DayTypeContext.Provider>;
 };
+
