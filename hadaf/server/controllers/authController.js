@@ -188,14 +188,17 @@ exports.login = catchAsync(async (req, res, next) => {
     });
   }
 
-  // 3) Ensure email is verified
-  if (!user.isVerified) {
-    return res.status(401).json({
-      success: false,
-      errorCode: "AUTH",
-      error: "auth.errors.pleaseVerifyEmail",
-    });
-  }
+  // 3) Email verification is bypassed for MVP (register sets isVerified: true
+  // and verification emails are disabled). Gating login on it only locks out
+  // accounts created before the bypass. Re-enable together with the
+  // verification email flow post-MVP.
+  // if (!user.isVerified) {
+  //   return res.status(401).json({
+  //     success: false,
+  //     errorCode: "AUTH",
+  //     error: "auth.errors.pleaseVerifyEmail",
+  //   });
+  // }
 
   // 4) Log login event
   await AnalyticsEvent.create({

@@ -4,10 +4,7 @@
 
 import { TaskHeader } from './TaskHeader';
 import { TaskScheduling } from './TaskScheduling';
-import {
-  TaskPriorityPicker,
-  TaskDifficultyPicker,
-} from './TaskPriority';
+import { TaskPriorityPicker } from './TaskPriority';
 import { TaskChecklist } from './TaskSubtasks';
 
 export const TaskFormBody = () => (
@@ -15,7 +12,6 @@ export const TaskFormBody = () => (
     <TaskHeader />
     <TaskScheduling />
     <TaskPriorityPicker />
-    <TaskDifficultyPicker />
     <TaskChecklist />
   </div>
 );

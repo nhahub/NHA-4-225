@@ -2,7 +2,7 @@ import { Calendar as CalendarIcon, Clock, ArrowRight, Sparkles } from 'lucide-re
 import { useFormContext, useWatch } from 'react-hook-form';
 import { Input } from '@/shared/components/ui/Input';
 import { cn } from '@/shared/utils/cn';
-import { format, addDays, differenceInMinutes, parse } from 'date-fns';
+import { format, addDays, differenceInMinutes, parse, addMinutes, roundToNearestMinutes } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/providers/useLocale';
 import type { TaskFormValues } from './formValues';
@@ -17,7 +17,7 @@ interface TaskSchedulingProps {
 
 export const TaskScheduling = ({ isAutoScheduled }: TaskSchedulingProps) => {
   const { t } = useTranslation();
-  const { register, control, setValue } = useFormContext<TaskFormValues>();
+  const { register, control, setValue, getValues } = useFormContext<TaskFormValues>();
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const date = useWatch({ control, name: 'date' });
@@ -60,6 +60,15 @@ export const TaskScheduling = ({ isAutoScheduled }: TaskSchedulingProps) => {
 
   const switchToTimeBlock = () => {
     setValue('plannedDurationMinutes', undefined, { shouldDirty: true });
+    
+    // If the inputs are blank, calculate an intelligent default
+    const currentStart = getValues('timeBlockStart');
+    if (!currentStart) {
+      const nextSlot = roundToNearestMinutes(new Date(), { nearestTo: 30, roundingMethod: 'ceil' });
+      setValue('timeBlockStart', format(nextSlot, 'HH:mm'), { shouldDirty: true });
+      setValue('timeBlockEnd', format(addMinutes(nextSlot, 30), 'HH:mm'), { shouldDirty: true });
+    }
+    
     setFlexibleMode(false);
   };
 
@@ -162,54 +171,55 @@ export const TaskScheduling = ({ isAutoScheduled }: TaskSchedulingProps) => {
         </label>
 
         {!flexibleMode ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <div>
-              <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 w-fit">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex flex-wrap items-start sm:items-center gap-3">
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 w-fit shrink-0">
                 <Input
                   type="time"
                   {...register('timeBlockStart')}
-                  className="bg-transparent border-none h-8 p-0 text-center font-semibold text-sm w-20 focus:ring-0"
+                  className="bg-transparent border-none h-8 p-0 text-center font-semibold text-sm w-24 sm:w-28 focus:ring-0"
                 />
                 <ArrowRight size={14} className="text-gray-400 shrink-0 rtl:rotate-180" />
                 <Input
                   type="time"
                   {...register('timeBlockEnd')}
                   className={cn(
-                    'bg-transparent border-none h-8 p-0 text-center font-semibold text-sm w-20 focus:ring-0',
+                    'bg-transparent border-none h-8 p-0 text-center font-semibold text-sm w-24 sm:w-28 focus:ring-0',
                     isAutoScheduled && 'text-brand-600 dark:text-brand-400',
                   )}
                   readOnly={isAutoScheduled}
                 />
               </div>
-              {duration > 0 && (
-                <div className="text-[10px] text-gray-400 mt-1.5 font-medium ms-1">
-                  {t('tasks.durationMinutes', { count: duration })}
+
+              {isAutoScheduled ? (
+                <div className="flex-1 min-w-[200px] flex items-center gap-2 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 px-3 py-2 rounded-xl animate-fade-in h-[46px]">
+                  <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-300">
+                    <Sparkles size={12} fill="currentColor" />
+                  </div>
+                  <div className="flex flex-col justify-center leading-none gap-1">
+                    <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">
+                      {t('tasks.autoCalculated')}
+                    </span>
+                    <span className="text-[10px] text-blue-600/80 dark:text-blue-400 font-medium">
+                      {t('tasks.autoCalculatedHelper')}
+                    </span>
+                  </div>
                 </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={switchToFlexible}
+                  className="shrink-0 text-xs font-semibold text-brand-600 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors px-3 py-2 rounded-xl border border-brand-200 dark:border-brand-500/30 flex items-center gap-1.5 h-[46px]"
+                >
+                  <Sparkles size={14} />
+                  {t('tasks.flexibleDuration')}
+                </button>
               )}
             </div>
-
-            {isAutoScheduled ? (
-              <div className="flex-1 min-w-[200px] flex items-center gap-2 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 px-3 py-2 rounded-xl animate-fade-in self-start h-[46px]">
-                <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-300">
-                  <Sparkles size={12} fill="currentColor" />
-                </div>
-                <div className="flex flex-col justify-center leading-none gap-1">
-                  <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">
-                    {t('tasks.autoCalculated')}
-                  </span>
-                  <span className="text-[10px] text-blue-600/80 dark:text-blue-400 font-medium">
-                    {t('tasks.autoCalculatedHelper')}
-                  </span>
-                </div>
+            {duration > 0 && (
+              <div className="text-[10px] text-gray-400 font-medium ms-2">
+                {t('tasks.durationMinutes', { count: duration })}
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={switchToFlexible}
-                className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors"
-              >
-                {t('tasks.flexibleDuration')}
-              </button>
             )}
           </div>
         ) : (
@@ -228,8 +238,9 @@ export const TaskScheduling = ({ isAutoScheduled }: TaskSchedulingProps) => {
             <button
               type="button"
               onClick={switchToTimeBlock}
-              className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors"
+              className="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors px-3 py-1.5 rounded-lg border border-brand-200 dark:border-brand-500/30 flex items-center gap-1.5"
             >
+              <Clock size={14} />
               {t('tasks.useTimeBlock')}
             </button>
           </div>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/shared/components/ui/Button';
 import { Task } from '../types';
 import { cn } from '@/shared/utils/cn';
@@ -73,7 +73,6 @@ export const TaskCompletionModal: React.FC<TaskCompletionModalProps> = ({
   const planned = task.plannedDurationMinutes ?? 0;
   const breakdown = calculateTaskPointsPreview({
     type: task.type,
-    difficulty: task.difficulty,
     actualMinutes: actualMinutes ?? planned,
     plannedMinutes: planned,
   });

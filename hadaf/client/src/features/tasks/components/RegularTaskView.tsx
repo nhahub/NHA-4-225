@@ -1,4 +1,4 @@
-﻿import { Trash2, Edit2, Clock, Check, Zap, CalendarClock } from 'lucide-react';
+import { Trash2, Edit2, Clock, Check, Zap, CalendarClock } from 'lucide-react';
 import { useState } from 'react';
 import { Task, TaskPriority } from '../types';
 import { useDeleteTask } from '../hooks/useTasks';
@@ -15,16 +15,20 @@ interface RegularTaskViewProps {
 }
 
 const priorityAccent: Record<TaskPriority, string> = {
-  high: 'border-s-red-500',
-  medium: 'border-s-orange-500',
-  low: 'border-s-blue-500',
+  urgent: 'border-s-red-600',
+  high: 'border-s-orange-500',
+  medium: 'border-s-blue-500',
+  low: 'border-s-emerald-500',
 };
 
 const priorityBadgeLight: Record<TaskPriority, string> = {
-  high: 'text-red-700 bg-red-50 border-red-100',
-  medium: 'text-orange-700 bg-orange-50 border-orange-100',
-  low: 'text-blue-700 bg-blue-50 border-blue-100',
+  urgent: 'text-red-700 bg-red-50 border-red-100',
+  high: 'text-orange-700 bg-orange-50 border-orange-100',
+  medium: 'text-blue-700 bg-blue-50 border-blue-100',
+  low: 'text-emerald-700 bg-emerald-50 border-emerald-100',
 };
+
+
 
 export const RegularTaskView = ({ task, onEdit, className }: RegularTaskViewProps) => {
   const { t } = useTranslation();

@@ -9,8 +9,7 @@ const taskSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
   type: { type: String, enum: ['scheduled', 'flexible', 'quick'], default: 'quick' },
-  difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' },
-  priority: { type: String, enum: ['high', 'medium', 'low'], default: 'medium', index: true },
+  priority: { type: String, enum: ['urgent', 'high', 'medium', 'low'], default: 'medium', index: true },
   date: { type: String, required: true, index: true }, // Format: YYYY-MM-DD
   timeBlockStart: { type: String }, // Format: HH:MM
   timeBlockEnd: { type: String },
@@ -33,7 +32,7 @@ const taskSchema = new mongoose.Schema({
 //   tasks.sort((a, b) => PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority])
 
 // Exported so the controller and (later) any client-side mirror logic agree on rank order.
-const PRIORITY_RANK = { high: 3, medium: 2, low: 1 };
+const PRIORITY_RANK = { urgent: 4, high: 3, medium: 2, low: 1 };
 
 taskSchema.index({ userId: 1, date: 1 }); // idx_tasks_user_date
 
@@ -45,8 +44,7 @@ const createTaskSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   type: z.enum(['scheduled', 'flexible', 'quick']).optional(),
-  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
-  priority: z.enum(['high', 'medium', 'low']).default('medium'),
+  priority: z.enum(['urgent', 'high', 'medium', 'low']).default('medium'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
   timeBlockStart: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").optional().or(z.literal('')),
   timeBlockEnd: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").optional().or(z.literal('')),

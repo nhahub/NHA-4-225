@@ -14,12 +14,6 @@
  *   Streak:     ×1.05 per consecutive day, capped at ×1.5
  */
 
-const DIFFICULTY_MULTIPLIERS = {
-  easy: 1.0,
-  medium: 1.2,
-  hard: 1.4,
-};
-
 const ACCURACY_BONUS = 1.15;
 // Streak: each consecutive day adds +0.05 to the multiplier (linear), capped at ×1.5
 // PRD (FR26): "×1.05 لكل يوم" = ×1.05 per day as a flat per-day addition.
@@ -39,7 +33,6 @@ const MILESTONE_BONUS_POINTS = 10;
  *
  * @param {object} input
  * @param {'scheduled'|'flexible'|'quick'} input.type               - Task type
- * @param {'easy'|'medium'|'hard'}         input.difficulty          - Task difficulty
  * @param {number}                          input.actualMinutes       - Actual time spent (required for non-quick tasks;
  *                                                                        undefined is treated as 0 — the controller must
  *                                                                        validate presence before calling this function)
@@ -51,15 +44,12 @@ const MILESTONE_BONUS_POINTS = 10;
  */
 exports.calculateTaskPoints = ({
   type,
-  difficulty = "medium",
   actualMinutes,
   plannedMinutes = 0,
   streakDays = 0,
 }) => {
   // Quick tasks always earn exactly 2 points
   if (type === "quick") return QUICK_TASK_POINTS;
-
-  const difficultyMultiplier = DIFFICULTY_MULTIPLIERS[difficulty] ?? 1.0;
 
   // Defensive guard: undefined actualMinutes (e.g. client omitted it for non-quick task)
   // produces 0 here. The E2-2 controller must 400 before reaching this point for
@@ -87,7 +77,7 @@ exports.calculateTaskPoints = ({
     ? Math.min(1 + STREAK_BONUS_PER_DAY * streakDays, STREAK_BONUS_CAP)
     : 1.0;
 
-  const raw = (effectiveActual / 10) * difficultyMultiplier * accuracyBonus * streakBonus;
+  const raw = (effectiveActual / 10) * accuracyBonus * streakBonus;
   return Math.max(1, Math.ceil(raw));
 };
 
@@ -97,15 +87,13 @@ exports.calculateTaskPoints = ({
  *
  * @param {object} input
  * @param {'scheduled'|'flexible'|'quick'} input.type
- * @param {'easy'|'medium'|'hard'}         input.difficulty
  * @param {number}                          [input.plannedMinutes=0]
  * @returns {number} Predicted points
  */
-exports.predictTaskPoints = ({ type, difficulty = "medium", plannedMinutes = 0 }) => {
+exports.predictTaskPoints = ({ type, plannedMinutes = 0 }) => {
   if (type === "quick") return QUICK_TASK_POINTS;
 
-  const difficultyMultiplier = DIFFICULTY_MULTIPLIERS[difficulty] ?? 1.0;
-  const raw = (plannedMinutes / 10) * difficultyMultiplier;
+  const raw = (plannedMinutes / 10);
   return Math.max(1, Math.ceil(raw));
 };
 

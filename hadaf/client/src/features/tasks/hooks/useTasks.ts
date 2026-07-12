@@ -30,7 +30,6 @@ export interface UpdateTaskInput {
     title?: string;
     description?: string;
     priority?: Task['priority'];
-    difficulty?: Task['difficulty'];
     date?: string;
     timeBlockStart?: string;
     timeBlockEnd?: string;
@@ -168,7 +167,6 @@ export const useUpdateTask = () => {
         input.title !== undefined ||
         input.description !== undefined ||
         input.priority !== undefined ||
-        input.difficulty !== undefined ||
         input.checklist !== undefined ||
         input.plannedDurationMinutes !== undefined
       ) {

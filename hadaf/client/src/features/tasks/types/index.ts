@@ -1,6 +1,5 @@
 export type TaskType = 'scheduled' | 'flexible' | 'quick';
-export type TaskDifficulty = 'easy' | 'medium' | 'hard';
-export type TaskPriority = 'high' | 'medium' | 'low';
+export type TaskPriority = 'urgent' | 'high' | 'medium' | 'low';
 export type TaskStatus = 'pending' | 'completed' | 'postponed';
 
 export interface ChecklistItem {
@@ -16,7 +15,6 @@ export interface Task {
   title: string;
   description?: string;
   type: TaskType;
-  difficulty: TaskDifficulty;
   priority: TaskPriority;
   date: string;
   timeBlockStart?: string;
@@ -38,7 +36,6 @@ export interface CreateTaskInput {
   title: string;
   description?: string;
   date: string;
-  difficulty?: TaskDifficulty;
   priority?: TaskPriority;
   type?: TaskType;
   timeBlockStart?: string;

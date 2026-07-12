@@ -1,7 +1,6 @@
 import { useTranslation } from '@/providers/useLocale';
 import { TaskItem } from '@/features/tasks/components/TaskItem';
 import { useUIStore } from '@/shared/stores/useUIStore';
-import { Card } from '@/shared/components/ui/Card';
 import { Inbox, Plus } from 'lucide-react';
 import type { Task } from '@/features/tasks/types';
 import { sortTasks } from '@/features/tasks/utils/taskUtils';
@@ -69,7 +68,6 @@ export const TodayTasksList = ({ tasks, isLoading }: TodayTasksListProps) => {
               <span>{t('tasks.newTask')}</span>
             </button>
           </div>
-        </div>
       ) : remaining === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-emerald-700 dark:text-emerald-300 text-center font-medium bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-lg">
@@ -90,6 +88,7 @@ export const TodayTasksList = ({ tasks, isLoading }: TodayTasksListProps) => {
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-1">
               {t('home.tasks.remaining', { count: sorted.length - 5 })}
             </p>
+          )}
         </div>
       )}
     </section>

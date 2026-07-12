@@ -9,12 +9,10 @@ export interface ScoreBreakdown {
 // this is only used for the live breakdown rendered above the confirm button.
 export const calculateTaskPointsPreview = ({
   type,
-  difficulty,
   actualMinutes,
   plannedMinutes,
 }: {
   type: 'scheduled' | 'flexible' | 'quick';
-  difficulty: 'easy' | 'medium' | 'hard';
   actualMinutes?: number;
   plannedMinutes?: number;
 }): ScoreBreakdown => {
@@ -28,29 +26,24 @@ export const calculateTaskPointsPreview = ({
 
   const cappedActual = planned > 0 ? Math.min(actual, planned * 3) : actual;
 
-  const difficultyMult =
-    difficulty === 'hard' ? 1.4 : difficulty === 'medium' ? 1.2 : 1.0;
-
   const onTime =
     planned > 0 && Math.abs(actual - planned) <= 15 ? 1.15 : 1.0;
 
-  const raw = (cappedActual / 10) * basePer10Min * difficultyMult * onTime;
+  const raw = (cappedActual / 10) * basePer10Min * onTime;
   return {
-    base: Math.ceil((cappedActual / 10) * basePer10Min * difficultyMult),
-    bonus: Math.ceil(raw - Math.ceil((cappedActual / 10) * basePer10Min * difficultyMult)),
+    base: Math.ceil((cappedActual / 10) * basePer10Min),
+    bonus: Math.ceil(raw - Math.ceil((cappedActual / 10) * basePer10Min)),
     total: Math.ceil(raw),
   };
 };
 
 export const getPointsBreakdown = (
   _type: 'scheduled' | 'flexible' | 'quick',
-  _difficulty: 'easy' | 'medium' | 'hard',
   actualMinutes: number,
   plannedMinutes = 0,
 ): ScoreBreakdown =>
   calculateTaskPointsPreview({
     type: _type,
-    difficulty: _difficulty,
     actualMinutes,
     plannedMinutes,
   });

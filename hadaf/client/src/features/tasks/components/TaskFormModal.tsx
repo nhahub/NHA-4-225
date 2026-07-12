@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, useWatch, FormProvider, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { X, Sparkles, CheckSquare, Layers } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { useCreateTask } from '../hooks/useTasks';
 import type { Task } from '../types';
 import { cn } from '@/shared/utils/cn';
-import { format, addMinutes, parse, isValid } from 'date-fns';
+import { format, addMinutes, parse, isValid, roundToNearestMinutes } from 'date-fns';
 import { useTranslation } from '@/providers/useLocale';
 import type { TaskFormValues } from './form/formValues';
 import { TaskHeader } from './form/TaskHeader';
 import { TaskScheduling } from './form/TaskScheduling';
-import {
-  TaskPriorityPicker,
-  TaskDifficultyPicker,
-} from './form/TaskPriority';
+import { TaskPriorityPicker } from './form/TaskPriority';
+import { TaskGoalSelector } from './form/TaskGoalSelector';
 import { TaskChecklist } from './form/TaskSubtasks';
 import { rescheduleTask } from '../api/taskApi';
 
@@ -22,8 +21,8 @@ const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD'),
-  priority: z.enum(['high', 'medium', 'low']),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
+  priority: z.enum(['urgent', 'high', 'medium', 'low']),
+  goalId: z.string().optional().or(z.literal('')),
   timeBlockStart: z.string().optional().or(z.literal('')),
   timeBlockEnd: z.string().optional().or(z.literal('')),
   plannedDurationMinutes: z
@@ -60,7 +59,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
         className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      <div className="relative bg-white/95 dark:bg-background-paper/95 backdrop-blur-xl rounded-[2rem] shadow-2xl w-full max-w-[420px] max-h-[90vh] overflow-hidden animate-scale-in flex flex-col border border-white/20 dark:border-gray-800/60">
+      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-scale-in flex flex-col border border-gray-100 dark:border-gray-800">
         <CreateTaskForm
           onClose={onClose}
           initialDate={initialDate}
@@ -80,6 +79,11 @@ const CreateTaskForm: React.FC<{
   const createTask = useCreateTask();
   const today = new Date();
   const defaultDate = initialDate ? format(initialDate, 'yyyy-MM-dd') : format(today, 'yyyy-MM-dd');
+  
+  // Calculate intelligent defaults for new tasks
+  const nextSlot = roundToNearestMinutes(today, { nearestTo: 30, roundingMethod: 'ceil' });
+  const defaultStart = format(nextSlot, 'HH:mm');
+  const defaultEnd = format(addMinutes(nextSlot, 30), 'HH:mm');
 
   const methods = useForm<TaskFormValues>({
     resolver: zodResolver(formSchema) as never,
@@ -88,9 +92,9 @@ const CreateTaskForm: React.FC<{
       description: editTask?.description ?? '',
       date: editTask?.date ?? defaultDate,
       priority: editTask?.priority ?? 'medium',
-      difficulty: editTask?.difficulty ?? 'medium',
-      timeBlockStart: editTask?.timeBlockStart ?? '',
-      timeBlockEnd: editTask?.timeBlockEnd ?? '',
+      goalId: editTask?.goalId ?? undefined,
+      timeBlockStart: editTask ? (editTask.timeBlockStart ?? '') : defaultStart,
+      timeBlockEnd: editTask ? (editTask.timeBlockEnd ?? '') : defaultEnd,
       plannedDurationMinutes: editTask?.plannedDurationMinutes ?? undefined,
       checklist:
         editTask?.checklist?.map((c) => ({ title: c.title, is_completed: c.is_completed })) ??
@@ -167,7 +171,7 @@ const CreateTaskForm: React.FC<{
         description: data.description,
         date: data.date,
         priority: data.priority,
-        difficulty: data.difficulty,
+        goalId: data.goalId,
         timeBlockStart: data.timeBlockStart || undefined,
         timeBlockEnd: data.timeBlockEnd || undefined,
         plannedDurationMinutes: data.plannedDurationMinutes,
@@ -181,12 +185,10 @@ const CreateTaskForm: React.FC<{
 
   return (
     <>
-      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100/50 dark:border-gray-800/60 bg-gradient-to-r from-brand-50/50 to-transparent dark:from-brand-900/10 dark:to-transparent">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <div className="bg-brand-100 dark:bg-brand-900/40 p-1.5 rounded-lg">
-             <Sparkles size={18} className="text-brand-600 dark:text-brand-400" />
-          </div>
-          {isEdit ? t('tasks.editTask') : t('tasks.newTask')}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+           <Sparkles size={18} className="text-brand-500" />
+          {isEdit ? t('tasks.editTask', 'Edit Task') : t('tasks.newTask', 'New Task')}
         </h2>
         <button
           onClick={onClose}
@@ -205,6 +207,7 @@ const CreateTaskForm: React.FC<{
             className={cn('space-y-6')}
           >
             <TaskHeader />
+            <TaskGoalSelector />
 
             <div className="grid grid-cols-2 gap-3 p-1 bg-gray-100 dark:bg-gray-800/50 rounded-xl">
               <button
@@ -237,7 +240,6 @@ const CreateTaskForm: React.FC<{
 
             <TaskScheduling isAutoScheduled={isProject} />
             <TaskPriorityPicker />
-            <TaskDifficultyPicker />
 
             {isEdit && hadChecklist && (
               <p className="text-[11px] text-amber-600 dark:text-amber-400 italic">

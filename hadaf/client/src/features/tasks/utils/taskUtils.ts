@@ -1,6 +1,7 @@
 import { Task, TaskPriority } from '../types';
 
 const PRIORITY_WEIGHT: Record<TaskPriority, number> = {
+  urgent: 4,
   high: 3,
   medium: 2,
   low: 1,

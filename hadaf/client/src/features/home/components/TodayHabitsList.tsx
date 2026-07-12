@@ -1,5 +1,4 @@
 import { useTranslation } from '@/providers/useLocale';
-import { Card } from '@/shared/components/ui/Card';
 import { HabitCard } from '@/features/habits/components/HabitCard';
 import { ShieldCheck } from 'lucide-react';
 import type { Habit } from '@/features/habits/types';
@@ -49,6 +48,7 @@ export const TodayHabitsList = ({ habits, isLoading }: TodayHabitsListProps) => 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {habits.slice(0, 4).map((habit) => (
             <HabitCard key={habit._id} habit={habit} />
+          ))}
         </div>
       )}
     </section>

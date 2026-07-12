@@ -73,7 +73,6 @@ exports.createTask = catchAsync(async (req, res) => {
     goalId,
     title,
     description,
-    difficulty,
     priority,
     date,
     timeBlockStart,
@@ -106,7 +105,7 @@ exports.createTask = catchAsync(async (req, res) => {
   }
 
   // Predicted points for the live preview (returned in response, not stored yet)
-  const predictedPoints = predictTaskPoints({ type, difficulty, plannedMinutes: resolvedPlannedMinutes });
+  const predictedPoints = predictTaskPoints({ type, plannedMinutes: resolvedPlannedMinutes });
 
   const task = await Task.create({
     userId: req.user.id,
@@ -114,7 +113,6 @@ exports.createTask = catchAsync(async (req, res) => {
     title,
     description,
     type,
-    difficulty,
     priority,
     date,
     timeBlockStart,
@@ -127,7 +125,7 @@ exports.createTask = catchAsync(async (req, res) => {
   await AnalyticsEvent.create({
     userId: req.user.id,
     eventType: "task_created",
-    eventData: { taskId: task._id, type, difficulty, date },
+    eventData: { taskId: task._id, type, date },
   });
 
   res.status(201).json({
@@ -155,7 +153,7 @@ exports.completeTask = catchAsync(async (req, res) => {
 
   const { taskId, actualDurationMinutes } = validation.data;
 
-  // Load the task to read its type/difficulty/plannedMinutes for scoring.
+  // Load the task to read its type/plannedMinutes for scoring.
   // No status check here — the atomic write below owns that check.
   const task = await Task.findOne({ _id: taskId, userId: req.user.id });
   if (!task) {
@@ -184,7 +182,6 @@ exports.completeTask = catchAsync(async (req, res) => {
 
   const pointsEarned = calculateTaskPoints({
     type:           task.type,
-    difficulty:     task.difficulty,
     actualMinutes:  actualDurationMinutes,
     plannedMinutes: task.plannedDurationMinutes ?? 0,
     streakDays,

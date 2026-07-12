@@ -158,6 +158,16 @@ apiClient.interceptors.response.use(
       // Refresh failed — fall through to logout + redirect.
     }
 
+    // Refresh failed or non-envelope 401 → clear + redirect.
+    // Skip for auth endpoints — they handle their own error display.
+    if (error.response?.status === 401 && !isAuthEndpoint) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('auth-storage');
+      const currentPath = window.location.pathname + window.location.search;
+      window.location.assign('/login?redirect=' + encodeURIComponent(currentPath));
+      return new Promise(() => {}); // pause execution during redirect
+    }
+
     // ---- Standard error envelope handling ----
     if (payload && payload.success === false) {
       const apiErr = new ApiError(
@@ -168,15 +178,6 @@ apiClient.interceptors.response.use(
       );
       console.error('API Error:', apiErr.i18nKey, apiErr.code, apiErr.field ?? '');
       return Promise.reject(apiErr);
-    }
-
-    // Refresh failed or non-envelope 401 → clear + redirect.
-    // Skip for auth endpoints — they handle their own error display.
-    if (error.response?.status === 401 && !isAuthEndpoint) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('auth-storage');
-      const currentPath = window.location.pathname + window.location.search;
-      window.location.assign('/login?redirect=' + encodeURIComponent(currentPath));
     }
 
     const fallback = new ApiError(

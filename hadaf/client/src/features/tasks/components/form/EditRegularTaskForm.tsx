@@ -1,9 +1,9 @@
-﻿import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Edit3 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
-import { Task, ChecklistItem } from '../../types';
+import { Task } from '../../types';
 import { cn } from '@/shared/utils/cn';
 import { useTranslation } from '@/providers/useLocale';
 import {
@@ -16,8 +16,7 @@ const schema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  priority: z.enum(['high', 'medium', 'low']),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
+  priority: z.enum(['urgent', 'high', 'medium', 'low']),
   timeBlockStart: z.string().optional().or(z.literal('')),
   timeBlockEnd: z.string().optional().or(z.literal('')),
   plannedDurationMinutes: z.number().int().nonnegative().optional(),
@@ -40,7 +39,6 @@ export const EditRegularTaskForm = ({ task, onClose }: EditRegularTaskFormProps)
       description: task.description ?? '',
       date: task.date,
       priority: task.priority,
-      difficulty: task.difficulty,
       timeBlockStart: task.timeBlockStart ?? '',
       timeBlockEnd: task.timeBlockEnd ?? '',
       plannedDurationMinutes: task.plannedDurationMinutes ?? undefined,
@@ -72,14 +70,13 @@ export const EditRegularTaskForm = ({ task, onClose }: EditRegularTaskFormProps)
                     title: data.title,
                     description: data.description,
                     priority: data.priority,
-                    difficulty: data.difficulty,
                     date: data.date,
                     timeBlockStart: data.timeBlockStart || undefined,
                     timeBlockEnd: data.timeBlockEnd || undefined,
                     plannedDurationMinutes: data.plannedDurationMinutes,
                     checklist: (data.checklist ?? [])
                       .filter((c) => c.title.trim())
-                      .map<ChecklistItem>((c) => ({
+                      .map((c: any) => ({
                         title: c.title,
                         is_completed: c.is_completed ?? false,
                       })),

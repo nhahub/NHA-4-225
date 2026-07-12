@@ -1,4 +1,4 @@
-import type { TaskDifficulty, TaskPriority } from '../../types';
+import type { TaskPriority } from '../../types';
 
 export interface ChecklistFormValue {
   title: string;
@@ -14,7 +14,7 @@ export interface TaskFormValues {
   description?: string;
   date: string;
   priority: TaskPriority;
-  difficulty: TaskDifficulty;
+  goalId?: string;
   timeBlockStart?: string;
   timeBlockEnd?: string;
   plannedDurationMinutes?: number;

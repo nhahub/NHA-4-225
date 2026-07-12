@@ -102,15 +102,15 @@ export const Sidebar = ({ stats }: SidebarProps) => {
         )}>
           <div className="flex items-center gap-3">
             <img 
-              src="/logo.webp" 
+              src="/image.png" 
               alt="Logo" 
               className="w-8 h-8 object-contain" 
             />
             <span className={cn(
-              "text-xl font-bold text-gray-900 dark:text-white tracking-tight transition-opacity duration-200",
+              "text-2xl font-black tracking-tight transition-opacity duration-200 text-brand-600 dark:text-brand-500 uppercase",
               isSidebarCollapsed ? "hidden opacity-0" : "block opacity-100"
             )}>
-              {`هدف`}
+              {t('app.name')}
             </span>
           </div>
           
@@ -158,9 +158,6 @@ export const Sidebar = ({ stats }: SidebarProps) => {
             </NavLink>
           ))}
         </nav>
-
-        {/* Spacer */}
-        <div className="flex-1" />
 
         {/* --- 🌟 Athar Section (Premium & Clear) 🌟 --- */}
         {!isSidebarCollapsed && (
