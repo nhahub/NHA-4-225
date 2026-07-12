@@ -67,6 +67,7 @@ app.get("/", (req, res) => {
 
 const userRoutes = require("./routes/userRoutes");
 const dailySummaryRoutes = require("./routes/dailySummaryRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -76,6 +77,7 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/habits", habitRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/daily-summaries", dailySummaryRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // 404 fallback — must precede the error handler so unknown routes return
 // the documented contract shape, not Express's default HTML.
