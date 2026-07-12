@@ -6,6 +6,7 @@ const z = zod.z || zod;
 const taskSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   goalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal', index: true },
+  milestoneId: { type: mongoose.Schema.Types.ObjectId, ref: 'Milestone', index: true },
   title: { type: String, required: true },
   description: { type: String },
   type: { type: String, enum: ['scheduled', 'flexible', 'quick'], default: 'quick' },
@@ -21,6 +22,10 @@ const taskSchema = new mongoose.Schema({
   }],
   status: { type: String, enum: ['pending', 'completed', 'postponed'], default: 'pending' },
   pointsEarned: { type: Number, default: 0 },
+  // Goal-progress points, distinct from `pointsEarned` (the gamification score above).
+  // Only meaningful when `goalId` is set.
+  goalPointsPlanned: { type: Number },
+  goalPointsEarned: { type: Number },
   completedAt: { type: Date }
 }, { timestamps: true });
 
@@ -39,8 +44,12 @@ taskSchema.index({ userId: 1, date: 1 }); // idx_tasks_user_date
 // Compound index for goal-scoped task queries (Architecture.md idx_tasks_user_goal)
 taskSchema.index({ userId: 1, goalId: 1 }); // idx_tasks_user_goal
 
+// Compound index for milestone-scoped progress aggregation
+taskSchema.index({ userId: 1, milestoneId: 1 }); // idx_tasks_user_milestone
+
 const createTaskSchema = z.object({
   goalId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid Goal ID").optional().or(z.literal('')),
+  milestoneId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid Milestone ID").optional().or(z.literal('')),
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   type: z.enum(['scheduled', 'flexible', 'quick']).optional(),
@@ -49,6 +58,7 @@ const createTaskSchema = z.object({
   timeBlockStart: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").optional().or(z.literal('')),
   timeBlockEnd: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").optional().or(z.literal('')),
   plannedDurationMinutes: z.number().int().nonnegative().optional(),
+  goalPointsPlanned: z.number().int().min(1, "Goal points must be at least 1").optional(),
   checklist: z.array(z.object({
     title: z.string().min(1, "Checklist item title is required"),
     is_completed: z.boolean().default(false)
@@ -58,11 +68,17 @@ const createTaskSchema = z.object({
 .refine(
   (d) => (!!d.timeBlockStart === !!d.timeBlockEnd),
   { message: "timeBlockStart and timeBlockEnd must both be provided or both omitted", path: ["timeBlockStart"] }
+)
+// A milestone can only be selected alongside its parent goal
+.refine(
+  (d) => (!d.milestoneId || !!d.goalId),
+  { message: "milestoneId requires goalId to be set", path: ["milestoneId"] }
 );
 
 const completeTaskSchema = z.object({
   taskId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid Task ID"),
-  actualDurationMinutes: z.number().int().nonnegative().optional()
+  actualDurationMinutes: z.number().int().nonnegative().optional(),
+  goalPointsEarned: z.number().int().min(0, "Goal points earned cannot be negative").optional()
 });
 
 const rescheduleTaskSchema = z.object({

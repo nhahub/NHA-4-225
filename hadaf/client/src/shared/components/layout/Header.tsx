@@ -26,14 +26,12 @@ export const Header = () => {
 
   const { data: summary } = useQuery({
     queryKey: QUERY_KEYS.DAILY_SUMMARY,
-    queryFn: getDailySummary,
+    queryFn: () => getDailySummary(),
   });
 
   const score = (summary as { pointsEarned?: number } | undefined)?.pointsEarned ?? 0;
-  const target = (summary as { dailyTarget?: number } | undefined)?.dailyTarget ?? 100;
-  const rawProgress = target > 0 ? (score / target) * 100 : 0;
-  const progress = Math.min(100, Math.round(rawProgress));
-  const isOverachiever = rawProgress >= 100;
+  const progress = score;
+  const isOverachiever = progress >= 100;
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -55,7 +53,7 @@ export const Header = () => {
 
   return (
     <header className="h-[72px] sticky top-0 z-40 transition-all relative shadow-sm group">
-      <HeaderProgressBar progress={progress} isOverachiever={isOverachiever} />
+      <HeaderProgressBar progress={progress} score={score} isOverachiever={isOverachiever} />
 
       <HeaderContent
         currentTime={currentTime}
@@ -64,7 +62,6 @@ export const Header = () => {
         selectedDate={selectedDate}
         isSidebarCollapsed={isSidebarCollapsed}
         searchQuery={searchQuery}
-        score={score}
         onSearchChange={setSearchQuery}
         onSearchToggle={() => setIsSearchExpanded((v) => !v)}
         onSearchClear={() => setSearchQuery('')}

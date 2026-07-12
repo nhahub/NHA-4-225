@@ -1,13 +1,17 @@
-﻿import { Zap, Target, TrendingUp } from 'lucide-react';
+import { Zap, Target, TrendingUp } from 'lucide-react';
 import { useTranslation } from '@/providers/useLocale';
 
 interface ScoreBreakdownProps {
   basePoints: number;
   bonusPoints: number;
   totalPoints: number;
+  breakdownDetails?: {
+    priorityMultiplier: number;
+    accuracyMultiplier: number;
+  };
 }
 
-export const ScoreBreakdown = ({ basePoints, bonusPoints, totalPoints }: ScoreBreakdownProps) => {
+export const ScoreBreakdown = ({ basePoints, bonusPoints, totalPoints, breakdownDetails }: ScoreBreakdownProps) => {
   const { t } = useTranslation();
   return (
     <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
@@ -25,6 +29,13 @@ export const ScoreBreakdown = ({ basePoints, bonusPoints, totalPoints }: ScoreBr
           </div>
           <span className="font-bold text-gray-700 dark:text-gray-200">{basePoints}</span>
         </div>
+
+        {breakdownDetails && breakdownDetails.priorityMultiplier !== 1 && (
+          <div className="flex justify-between items-center text-xs text-gray-500">
+            <span className="ms-6">{t('tasks.priorityMultiplier', 'Priority Multiplier')}</span>
+            <span className="font-mono text-brand-600">x{breakdownDetails.priorityMultiplier}</span>
+          </div>
+        )}
 
         <div className="flex justify-between items-center text-sm">
           <div className="flex items-center gap-2">
@@ -52,6 +63,13 @@ export const ScoreBreakdown = ({ basePoints, bonusPoints, totalPoints }: ScoreBr
             {bonusPoints >= 0 ? `+${bonusPoints}` : bonusPoints}
           </span>
         </div>
+
+        {breakdownDetails && breakdownDetails.accuracyMultiplier !== 1 && (
+          <div className="flex justify-between items-center text-xs text-gray-500">
+            <span className="ms-6">{t('tasks.accuracyMultiplier', 'Accuracy/Early Finish')}</span>
+            <span className="font-mono text-green-600">x{breakdownDetails.accuracyMultiplier}</span>
+          </div>
+        )}
 
         <div className="h-px bg-gray-200 dark:bg-gray-700/50 my-1" />
 

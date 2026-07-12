@@ -12,6 +12,7 @@ export interface Task {
   _id: string;
   userId?: string;
   goalId?: string;
+  milestoneId?: string;
   title: string;
   description?: string;
   type: TaskType;
@@ -24,6 +25,10 @@ export interface Task {
   checklist: ChecklistItem[];
   status: TaskStatus;
   pointsEarned: number;
+  /** Points this task is worth toward its parent goal's targetPoints. Only set when goalId is set. */
+  goalPointsPlanned?: number;
+  /** Points actually confirmed delivered toward the goal at completion time. */
+  goalPointsEarned?: number;
   completedAt?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -33,6 +38,7 @@ export interface Task {
 
 export interface CreateTaskInput {
   goalId?: string;
+  milestoneId?: string;
   title: string;
   description?: string;
   date: string;
@@ -41,11 +47,13 @@ export interface CreateTaskInput {
   timeBlockStart?: string;
   timeBlockEnd?: string;
   plannedDurationMinutes?: number;
+  goalPointsPlanned?: number;
   checklist?: { title: string; is_completed?: boolean }[];
 }
 
 export interface CompleteTaskInput {
   actualDurationMinutes?: number;
+  goalPointsEarned?: number;
 }
 
 export interface RescheduleTaskInput {

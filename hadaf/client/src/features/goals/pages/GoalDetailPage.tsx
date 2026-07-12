@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, Edit, Trash2, Save } from 'lucide-react';
+import { ArrowRight, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Card } from '@/shared/components/ui/Card';
 import { Skeleton } from '@/shared/components/ui/Skeleton';
 import { Button } from '@/shared/components/ui/Button';
-import { Input } from '@/shared/components/ui/Input';
 import { ProgressRing } from '@/shared/components/ui/ProgressRing';
 import { HealthDot } from '@/shared/components/ui/HealthDot';
 import { useTranslation, useLocale } from '@/providers/useLocale';
-import { useGoal, useOverrideProgress, useArchiveGoal } from '../hooks/useGoals';
+import { useGoal, useArchiveGoal } from '../hooks/useGoals';
 import { MilestoneList } from '../components/MilestoneList';
 import { WeeklyHeatmap } from '../components/WeeklyHeatmap';
 import { GoalWizard } from '../components/GoalWizard';
@@ -23,11 +22,9 @@ export const GoalDetailPage = () => {
   const { locale } = useLocale();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
-  const [overrideDraft, setOverrideDraft] = useState<number | ''>('');
   const [archiveOpen, setArchiveOpen] = useState(false);
 
   const { data: detail, isLoading } = useGoal(id);
-  const overrideProgress = useOverrideProgress();
   const archiveGoal = useArchiveGoal();
 
   // Heatmap data: derive from goal-scoped tasks returned by /api/goals/:id.
@@ -58,28 +55,6 @@ export const GoalDetailPage = () => {
   const { goal, milestones } = detail;
   const progress = goal.progress ?? 0;
   const isActive = goal.status === 'active';
-
-  const handleSaveOverride = () => {
-    if (overrideDraft === '' || typeof overrideDraft !== 'number') return;
-    overrideProgress.mutate(
-      { id: goal._id, progress: overrideDraft },
-      {
-        onSuccess: () => {
-          toast.success(t('goals.overrideSaved'));
-          setOverrideDraft('');
-        },
-      },
-    );
-  };
-
-  const handleClearOverride = () => {
-    overrideProgress.mutate(
-      { id: goal._id, progress: null },
-      {
-        onSuccess: () => toast.success(t('goals.overrideCleared')),
-      },
-    );
-  };
 
   const handleArchive = () => {
     setArchiveOpen(true);
@@ -118,14 +93,6 @@ export const GoalDetailPage = () => {
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {goal.category === 'other' ? goal.customCategory : GOAL_CATEGORY_LABELS[goal.category][locale as 'ar' | 'en']}
             </p>
-            {goal.measure && (
-              <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">
-                <span className="text-xs text-gray-400 uppercase font-bold block mb-1">
-                  {t('goals.measure')}
-                </span>
-                {goal.measure}
-              </p>
-            )}
             {goal.description && (
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 {goal.description}
@@ -133,9 +100,9 @@ export const GoalDetailPage = () => {
             )}
             <div className="mt-4 flex items-center gap-3 flex-wrap">
               <HealthDot health={goal.health ?? 'yellow'} label size="md" />
-              {goal.isOverride && (
-                <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
-                  {t('goals.manualOverride')}
+              {goal.currentWeek != null && goal.totalWeeks != null && (
+                <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                  {t('goals.week')} {goal.currentWeek}/{goal.totalWeeks}
                 </span>
               )}
               <span className="text-[11px] text-gray-400">
@@ -158,42 +125,31 @@ export const GoalDetailPage = () => {
           )}
         </div>
 
-        {isActive && (
-          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
-              {t('goals.overrideTitle')}
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              {t('goals.overrideHelper')}
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                placeholder={String(progress)}
-                value={overrideDraft}
-                onChange={(e) =>
-                  setOverrideDraft(e.target.value === '' ? '' : Number(e.target.value))
-                }
-                className="w-32"
-              />
-              <span className="text-sm text-gray-500">%</span>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<Save size={14} />}
-                isLoading={overrideProgress.isPending}
-                onClick={handleSaveOverride}
-                disabled={overrideDraft === '' || typeof overrideDraft !== 'number'}
-              >
-                {t('goals.setOverride')}
-              </Button>
-              {goal.isOverride && (
-                <Button variant="ghost" size="sm" onClick={handleClearOverride}>
-                  {t('goals.clearOverride')}
-                </Button>
-              )}
+        {goal.stats && (
+          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+            <div>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {goal.stats.completedTasksCount}/{goal.stats.tasksCount}
+              </p>
+              <p className="text-[11px] text-gray-400 uppercase font-bold">{t('goals.tasks')}</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {goal.stats.completedMilestonesCount}/{goal.stats.milestonesCount}
+              </p>
+              <p className="text-[11px] text-gray-400 uppercase font-bold">{t('goals.milestones')}</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {goal.stats.earnedPoints}/{goal.stats.targetPoints}
+              </p>
+              <p className="text-[11px] text-gray-400 uppercase font-bold">{t('goals.targetPoints')}</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {goal.weeklyExecutionScore ?? 0}%
+              </p>
+              <p className="text-[11px] text-gray-400 uppercase font-bold">{t('goals.weeklyExecutionScore')}</p>
             </div>
           </div>
         )}
@@ -207,6 +163,7 @@ export const GoalDetailPage = () => {
         <WeeklyHeatmap
           completedByDate={completedByDate}
           cycleEnd={cycleEnd}
+          weeks={goal.totalWeeks}
         />
       </Card>
 

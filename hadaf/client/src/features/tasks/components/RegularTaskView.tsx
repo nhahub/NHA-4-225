@@ -75,11 +75,14 @@ export const RegularTaskView = ({ task, onEdit, className }: RegularTaskViewProp
           {isDone && <Check size={12} className="text-white" strokeWidth={3} />}
         </button>
 
-        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        <div 
+          onClick={() => onEdit?.(task)}
+          className="flex-1 min-w-0 flex flex-col gap-1.5 cursor-pointer text-left group/body"
+        >
           <div className="flex flex-wrap items-center gap-2 pe-12 leading-none">
             <h3
               className={cn(
-                'text-base font-bold text-gray-900 dark:text-gray-100 truncate max-w-full',
+                'text-base font-bold text-gray-900 dark:text-gray-100 truncate max-w-full group-hover/body:text-brand-600 transition-colors',
                 isDone && 'text-gray-500 line-through decoration-gray-300',
               )}
             >
@@ -134,7 +137,7 @@ export const RegularTaskView = ({ task, onEdit, className }: RegularTaskViewProp
         </div>
       </div>
 
-      <div className="absolute top-3 end-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-1">
+      <div className="absolute top-3 end-3 flex gap-1 opacity-100 transition-opacity duration-200 bg-transparent p-1">
         {onEdit && (
           <button
             onClick={() => onEdit(task)}

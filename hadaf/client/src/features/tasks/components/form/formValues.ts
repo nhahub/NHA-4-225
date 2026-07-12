@@ -15,6 +15,8 @@ export interface TaskFormValues {
   date: string;
   priority: TaskPriority;
   goalId?: string;
+  milestoneId?: string;
+  goalPointsPlanned?: number;
   timeBlockStart?: string;
   timeBlockEnd?: string;
   plannedDurationMinutes?: number;

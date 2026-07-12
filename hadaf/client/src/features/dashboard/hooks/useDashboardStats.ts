@@ -25,7 +25,7 @@ export const useDashboardStats = (selectedDate: Date): DashboardStats => {
 
   const summary = useQuery({
     queryKey: QUERY_KEYS.DAILY_SUMMARY,
-    queryFn: getDailySummary,
+    queryFn: () => getDailySummary(),
   });
   const tasksQ = useQuery({
     queryKey: [...QUERY_KEYS.TASKS, 'dashboard', dateStr] as const,

@@ -1,7 +1,8 @@
 import { CalendarDays, Inbox, AlertCircle } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { EmptyState } from '@/shared/components/EmptyState';
-import { TaskItem } from '../components/TaskItem';
+import { RegularTaskView } from '../components/RegularTaskView';
+import { BigTaskView } from '../components/BigTaskView';
 import { Skeleton } from '@/shared/components/ui/Skeleton';
 import { useDateStore } from '@/shared/stores/useDateStore';
 import { useUIStore } from '@/shared/stores/useUIStore';
@@ -81,12 +82,19 @@ export const TasksPage = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 items-start pb-20">
             {sortedTasks.map((task) => (
-              <TaskItem
-                key={task._id}
-                task={task}
-                onCheck={() => openTaskModal()}
-                onEdit={(t) => openTaskModal(t)}
-              />
+              task.checklist && task.checklist.length > 0 ? (
+                <BigTaskView
+                  key={task._id}
+                  task={task}
+                  onEdit={(t) => openTaskModal(t)}
+                />
+              ) : (
+                <RegularTaskView
+                  key={task._id}
+                  task={task}
+                  onEdit={(t) => openTaskModal(t)}
+                />
+              )
             ))}
           </div>
         )}

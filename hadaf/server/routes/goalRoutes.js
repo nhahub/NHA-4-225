@@ -20,8 +20,6 @@ router.route("/:id")
 
 router.post("/:id/replace", goalsController.replaceGoal);
 
-router.patch("/:id/override", goalsController.overrideProgress);
-
 router.post("/:id/milestones", milestonesController.addMilestone);
 
 module.exports = router;

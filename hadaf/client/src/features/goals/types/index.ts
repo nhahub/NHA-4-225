@@ -31,9 +31,23 @@ export interface Milestone {
   _id: string;
   goalId: string;
   title: string;
+  /** Date range this milestone (sub-goal) covers within the cycle. Absent for plain checklist-style milestones. */
+  startDate?: string | null;
+  endDate?: string | null;
   sort_order: number;
   is_completed: boolean;
   completed_at?: string | null;
+  /** Derived fields attached by the server when returned from goal detail. */
+  progress?: number;
+  tasksCount?: number;
+  completedTasksCount?: number;
+}
+
+/** Draft shape used while composing a goal in the wizard, before dates are resolved server-side. */
+export interface MilestoneDraft {
+  title: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface GoalStats {
@@ -41,6 +55,8 @@ export interface GoalStats {
   completedTasksCount: number;
   milestonesCount: number;
   completedMilestonesCount: number;
+  targetPoints: number;
+  earnedPoints: number;
 }
 
 export interface WeeklyCompletionBucket {
@@ -58,11 +74,11 @@ export interface Goal {
   description?: string;
   category: GoalCategory;
   customCategory?: string;
-  measure: string;
+  /** Target points pool the goal is measured against — earned via its linked tasks. */
+  targetPoints: number;
   relevance?: string;
   cycleStart: string;
   cycleEnd: string;
-  manualProgress?: number;
   status: GoalStatus;
   deletionReason?: string;
   createdAt?: string;
@@ -71,10 +87,13 @@ export interface Goal {
   /** Compile-progress fields — added by the server's `compileGoalProgress`. */
   progress?: number;
   health?: GoalHealth;
-  isOverride?: boolean;
   weeklyExecutionScore?: number;
   stats?: GoalStats;
-  /** Per-week completion buckets (12 entries, week 1–12). */
+  /** Total weeks in this goal's cycle (derived from cycleStart/cycleEnd; 12 by default). */
+  totalWeeks?: number;
+  /** Current week number within the cycle (1–totalWeeks). */
+  currentWeek?: number;
+  /** Per-week completion buckets — one entry per week of the cycle. */
   weeklyCompletion?: WeeklyCompletionBucket[];
 }
 
@@ -83,11 +102,11 @@ export interface CreateGoalInput {
   description?: string;
   category: GoalCategory;
   customCategory?: string;
-  measure: string;
+  targetPoints: number;
   relevance?: string;
   cycleStart: string;
   cycleEnd: string;
-  milestones?: string[];
+  milestones?: MilestoneDraft[];
 }
 
 export interface GoalDetailResponse {
@@ -98,6 +117,9 @@ export interface GoalDetailResponse {
     title: string;
     status: 'pending' | 'completed' | 'postponed';
     date: string;
-    priority: 'high' | 'medium' | 'low';
+    priority: 'urgent' | 'high' | 'medium' | 'low';
+    milestoneId?: string;
+    goalPointsPlanned?: number;
+    goalPointsEarned?: number;
   }>;
 }

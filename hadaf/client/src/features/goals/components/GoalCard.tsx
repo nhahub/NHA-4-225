@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation, useLocale } from '@/providers/useLocale';
 import { ProgressRing } from '@/shared/components/ui/ProgressRing';
 import { HealthDot } from '@/shared/components/ui/HealthDot';
@@ -10,14 +9,6 @@ interface GoalCardProps {
   onOpen: (id: string) => void;
 }
 
-const computeCurrentWeek = (cycleStart: Date | null) => {
-  if (!cycleStart) return undefined;
-  const diff = Date.now() - cycleStart.getTime();
-  if (diff < 0) return 1;
-  const week = Math.floor(diff / (1000 * 60 * 60 * 24 * 7)) + 1;
-  return Math.min(12, Math.max(1, week));
-};
-
 export const GoalCard = ({ goal, onOpen }: GoalCardProps) => {
   const { t } = useTranslation();
   const { locale } = useLocale();
@@ -26,13 +17,6 @@ export const GoalCard = ({ goal, onOpen }: GoalCardProps) => {
   const categoryLabel = goal.category === 'other'
     ? goal.customCategory
     : GOAL_CATEGORY_LABELS[goal.category][locale];
-
-  // Captured once at mount (lazy initializer) so the component stays pure on
-  // re-render. The marker week will refresh on full reload, which is fine for
-  // a dashboard card.
-  const [currentWeek] = useState(() =>
-    computeCurrentWeek(goal.cycleStart ? new Date(goal.cycleStart) : null),
-  );
 
   return (
     <button
@@ -50,9 +34,12 @@ export const GoalCard = ({ goal, onOpen }: GoalCardProps) => {
           </p>
           <div className="mt-2 flex items-center gap-2 flex-wrap">
             <HealthDot health={health} label />
-            {goal.isOverride && (
-              <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
-                {t('goals.manualOverride')}
+            {goal.stats && (
+              <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                {t('goals.pointsEarnedOf', {
+                  earned: goal.stats.earnedPoints,
+                  target: goal.stats.targetPoints,
+                })}
               </span>
             )}
           </div>
@@ -64,7 +51,7 @@ export const GoalCard = ({ goal, onOpen }: GoalCardProps) => {
         </p>
       )}
       {goal.weeklyCompletion && goal.weeklyCompletion.length > 0 && (
-        <WeeklyBars buckets={goal.weeklyCompletion} currentWeek={currentWeek} />
+        <WeeklyBars buckets={goal.weeklyCompletion} currentWeek={goal.currentWeek} />
       )}
       <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
         <span>

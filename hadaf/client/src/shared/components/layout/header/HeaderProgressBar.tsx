@@ -3,10 +3,11 @@ import { Zap } from 'lucide-react';
 
 interface HeaderProgressBarProps {
   progress: number;
+  score: number;
   isOverachiever: boolean;
 }
 
-export const HeaderProgressBar = ({ progress, isOverachiever }: HeaderProgressBarProps) => {
+export const HeaderProgressBar = ({ progress, score, isOverachiever }: HeaderProgressBarProps) => {
   
   const getStyles = (p: number, over: boolean) => {
     // 1. Legendary (> 100%) - Purple/Gold
@@ -53,13 +54,13 @@ export const HeaderProgressBar = ({ progress, isOverachiever }: HeaderProgressBa
       {/* 1. Static Background (Glass) */}
       <div className="absolute inset-0 bg-white/95 dark:bg-background/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-colors" />
 
-{/* 2. Moving Progress Fill */}
+      {/* 2. Moving Progress Fill */}
       <div
         className={cn(
           "absolute inset-y-0 start-0 transition-all duration-1000 ease-out border-e border-white/20",
           styles.fill
         )}
-        style={{ width: `${progress}%` }}
+        style={{ width: `${Math.min(100, progress)}%` }}
       >
         {/* Border Line at Bottom */}
         <div className={cn(
@@ -77,22 +78,22 @@ export const HeaderProgressBar = ({ progress, isOverachiever }: HeaderProgressBa
       <div 
         className="absolute bottom-0 z-20 transition-all duration-1000 ease-out"
         style={{ 
-          left: `${progress}%`,
+          left: `${Math.min(100, progress)}%`,
           
-          transform: `translate(-${progress}%, 50%)`
+          transform: `translate(-${Math.min(100, progress)}%, 50%)`
         }}
       >
         <div className={cn(
           "flex flex-col items-center transition-all duration-500",
-          progress === 0 ? "opacity-0 scale-75" : "opacity-100 scale-100"
+          "opacity-100 scale-100"
         )}>
            {/* The Badge Pill */}
            <div className={cn(
-             "px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors min-w-[3rem] justify-center",
+             "px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 transition-colors whitespace-nowrap justify-center shadow-md",
              styles.badge
            )}>
              {isOverachiever && <Zap size={8} fill="currentColor" />}
-             {progress}%
+             <span>{score} pts</span>
            </div>
         </div>
       </div>

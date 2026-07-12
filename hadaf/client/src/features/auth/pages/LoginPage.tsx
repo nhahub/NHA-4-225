@@ -27,7 +27,7 @@ const registerSchema = z.object({
 });
 
 export const LoginPage = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [isRightPanelActive, setIsRightPanelActive] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -91,8 +91,14 @@ export const LoginPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-950 transition-colors px-4 font-sans relative overflow-hidden">
       <header className="absolute top-0 start-0 w-full p-6 md:px-12 flex justify-between items-center z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/20">{`ح`}</div>
-          <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight hidden sm:block">{`هدف`}</span>
+          <img 
+            src="/image.png" 
+            alt="Logo" 
+            className="w-10 h-10 object-contain drop-shadow-md" 
+          />
+          <span className="text-2xl font-black text-gray-900 dark:text-white tracking-widest uppercase hidden sm:block">
+            {locale === 'en' ? 'HADAF' : t('app.name')}
+          </span>
         </div>
         <div className="absolute start-1/2 -translate-x-1/2 hidden md:block">
           <span className="text-2xl font-bold text-gray-400 dark:text-gray-600 tabular-nums tracking-tight opacity-50 select-none">{format(currentTime, 'h:mm a')}</span>

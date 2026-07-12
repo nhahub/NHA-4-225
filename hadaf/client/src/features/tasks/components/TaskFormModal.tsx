@@ -23,6 +23,11 @@ const formSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD'),
   priority: z.enum(['urgent', 'high', 'medium', 'low']),
   goalId: z.string().optional().or(z.literal('')),
+  milestoneId: z.string().optional().or(z.literal('')),
+  goalPointsPlanned: z
+    .union([z.number().int().min(1), z.nan(), z.undefined()])
+    .optional()
+    .transform((v) => (typeof v === 'number' && !isNaN(v) ? v : undefined)),
   timeBlockStart: z.string().optional().or(z.literal('')),
   timeBlockEnd: z.string().optional().or(z.literal('')),
   plannedDurationMinutes: z
@@ -93,6 +98,8 @@ const CreateTaskForm: React.FC<{
       date: editTask?.date ?? defaultDate,
       priority: editTask?.priority ?? 'medium',
       goalId: editTask?.goalId ?? undefined,
+      milestoneId: editTask?.milestoneId ?? undefined,
+      goalPointsPlanned: editTask?.goalPointsPlanned ?? 1,
       timeBlockStart: editTask ? (editTask.timeBlockStart ?? '') : defaultStart,
       timeBlockEnd: editTask ? (editTask.timeBlockEnd ?? '') : defaultEnd,
       plannedDurationMinutes: editTask?.plannedDurationMinutes ?? undefined,
@@ -172,6 +179,8 @@ const CreateTaskForm: React.FC<{
         date: data.date,
         priority: data.priority,
         goalId: data.goalId,
+        milestoneId: data.goalId ? data.milestoneId || undefined : undefined,
+        goalPointsPlanned: data.goalId ? data.goalPointsPlanned ?? 1 : undefined,
         timeBlockStart: data.timeBlockStart || undefined,
         timeBlockEnd: data.timeBlockEnd || undefined,
         plannedDurationMinutes: data.plannedDurationMinutes,

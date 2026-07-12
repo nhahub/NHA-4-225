@@ -26,7 +26,7 @@ export const DayTypeProvider: React.FC<DayTypeProviderProps> = ({ children, now 
   const { data: settings } = useSettings();
   const { data: summary, isLoading: summaryLoading } = useQuery({
     queryKey: QUERY_KEYS.DAILY_SUMMARY,
-    queryFn: getDailySummary,
+    queryFn: () => getDailySummary(),
   });
 
   const value = useMemo<DayTypeContextValue>(() => {

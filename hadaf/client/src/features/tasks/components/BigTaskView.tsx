@@ -1,4 +1,4 @@
-﻿import { Trash2, Edit2, Clock, Check, Zap, ChevronDown, ChevronUp, Layers, CheckCircle2, CheckSquare } from 'lucide-react';
+import { Trash2, Edit2, Clock, Check, Zap, ChevronDown, ChevronUp, Layers, CheckCircle2, CheckSquare } from 'lucide-react';
 import { useState } from 'react';
 import { Task } from '../types';
 import { useDeleteTask, useCreateTask } from '../hooks/useTasks';
@@ -72,8 +72,8 @@ export const BigTaskView = ({ task, onEdit, className }: BigTaskViewProps) => {
       </div>
 
       <div
-        className="p-4 pb-3 cursor-pointer select-none relative"
-        onClick={() => !isDone && setIsOpen(!isOpen)}
+        className="p-4 flex flex-col gap-3 cursor-pointer group/body"
+        onClick={() => onEdit?.(task)}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 overflow-hidden w-full">
@@ -147,9 +147,12 @@ export const BigTaskView = ({ task, onEdit, className }: BigTaskViewProps) => {
           </div>
 
           {!isDone && checklist.length > 0 && (
-            <div className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
+            <button 
+              onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+              className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+            >
               {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </div>
+            </button>
           )}
         </div>
       </div>
@@ -228,7 +231,7 @@ export const BigTaskView = ({ task, onEdit, className }: BigTaskViewProps) => {
         </div>
       )}
 
-      <div className="absolute top-3 end-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      <div className="absolute top-3 end-3 flex gap-1 opacity-100 transition-opacity duration-200">
         {!isDone && onEdit && (
           <button
             onClick={(e) => {

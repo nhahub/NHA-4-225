@@ -7,7 +7,6 @@ import {
   updateGoal as apiUpdateGoal,
   archiveGoal as apiArchiveGoal,
   replaceGoal as apiReplaceGoal,
-  overrideProgress as apiOverrideProgress,
   toggleMilestone as apiToggleMilestone,
   reorderMilestones as apiReorderMilestones,
   addMilestone as apiAddMilestone,
@@ -105,24 +104,6 @@ export const useReplaceGoal = () => {
       handleError(err, {
         title: 'goals.errors.replaceFailed',
         retry: () => apiReplaceGoal(vars.id, vars.input),
-      }),
-  });
-};
-
-export const useOverrideProgress = () => {
-  const qc = useQueryClient();
-  const handleError = useApiErrorHandler();
-  return useMutation({
-    mutationFn: ({ id, progress }: { id: string; progress: number | null }) =>
-      apiOverrideProgress(id, progress),
-    onSuccess: (goal) => {
-      qc.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.GOAL_DETAIL(goal._id) });
-    },
-    onError: (err, vars) =>
-      handleError(err, {
-        title: 'goals.errors.overrideFailed',
-        retry: () => apiOverrideProgress(vars.id, vars.progress),
       }),
   });
 };

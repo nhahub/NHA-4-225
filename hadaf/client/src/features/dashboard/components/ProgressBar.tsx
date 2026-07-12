@@ -42,7 +42,6 @@ export const ProgressBar = ({
   showLabel = false,
   className,
 }: ProgressBarProps) => {
-  const clamped = Math.max(0, Math.min(150, percent));
   const effective: Status = status ?? deriveStatus(percent);
 
   return (
@@ -62,12 +61,12 @@ export const ProgressBar = ({
             'absolute inset-y-0 start-0 transition-[width] duration-700 ease-out rounded-full',
             STATUS_COLOR[effective],
           )}
-          style={{ width: `${(clamped / 150) * 100}%` }}
+          style={{ width: `${Math.min(100, percent)}%` }}
         />
       </div>
       {showLabel && (
         <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-          {Math.round(percent)}%
+          {Math.round(percent)} pts
         </div>
       )}
     </div>

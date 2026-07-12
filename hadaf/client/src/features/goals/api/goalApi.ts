@@ -53,16 +53,6 @@ export const replaceGoal = async (
   return response.data;
 };
 
-export const overrideProgress = async (
-  id: string,
-  progress: number | null,
-): Promise<Goal> => {
-  const response = await apiClient.patch<Goal>(`/goals/${id}/override`, {
-    progress,
-  });
-  return response.data;
-};
-
 export const toggleMilestone = async (
   milestoneId: string,
 ): Promise<Pick<Milestone, '_id' | 'title' | 'is_completed' | 'completed_at'>> => {
@@ -79,9 +69,11 @@ export const reorderMilestones = async (
 export const addMilestone = async (
   goalId: string,
   title: string,
+  dates?: { startDate?: string; endDate?: string },
 ): Promise<Milestone> => {
   const response = await apiClient.post<Milestone>(`/goals/${goalId}/milestones`, {
     title,
+    ...dates,
   });
   return response.data;
 };

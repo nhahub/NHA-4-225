@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/shared/components/ui/Button';
+import { Input } from '@/shared/components/ui/Input';
 import { Task } from '../types';
 import { cn } from '@/shared/utils/cn';
 import { useTranslation } from '@/providers/useLocale';
@@ -32,15 +33,19 @@ export const TaskCompletionModal: React.FC<TaskCompletionModalProps> = ({
   const [actualMinutes, setActualMinutes] = useState<number | undefined>(undefined);
   const [showVictory, setShowVictory] = useState(false);
   const [displayedPoints, setDisplayedPoints] = useState(0);
+  const [goalPointsEarned, setGoalPointsEarned] = useState<number>(1);
 
   const hasPlannedTime =
     task.type !== 'quick' && task.plannedDurationMinutes !== undefined;
+  const isGoalLinked = !!task.goalId;
+  const plannedGoalPoints = task.goalPointsPlanned ?? 1;
 
   // Initialize time fields
   useEffect(() => {
     if (!isOpen) return;
     setShowVictory(false);
     setDisplayedPoints(0);
+    setGoalPointsEarned(plannedGoalPoints);
     if (task.timeBlockStart && task.timeBlockEnd) {
       setStartTime(task.timeBlockStart);
       setEndTime(task.timeBlockEnd);
@@ -75,6 +80,7 @@ export const TaskCompletionModal: React.FC<TaskCompletionModalProps> = ({
     type: task.type,
     actualMinutes: actualMinutes ?? planned,
     plannedMinutes: planned,
+    priority: task.priority,
   });
 
   const timeDiff = planned - (actualMinutes ?? planned);
@@ -100,7 +106,10 @@ export const TaskCompletionModal: React.FC<TaskCompletionModalProps> = ({
     try {
       await completeTask.mutateAsync({
         id: task._id,
-        input: hasPlannedTime ? { actualDurationMinutes: actualMinutes ?? 0 } : {},
+        input: {
+          ...(hasPlannedTime ? { actualDurationMinutes: actualMinutes ?? 0 } : {}),
+          ...(isGoalLinked ? { goalPointsEarned } : {}),
+        },
       });
     } catch (e) {
       console.error(e);
@@ -151,10 +160,30 @@ export const TaskCompletionModal: React.FC<TaskCompletionModalProps> = ({
             timeDiff={timeDiff}
           />
 
+          {isGoalLinked && (
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                {t('tasks.goalPointsEarnedLabel')}
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {t('tasks.goalPointsEarnedPrompt', { planned: plannedGoalPoints })}
+              </p>
+              <Input
+                type="number"
+                min={0}
+                max={plannedGoalPoints}
+                value={goalPointsEarned}
+                onChange={(e) => setGoalPointsEarned(Math.max(0, Number(e.target.value) || 0))}
+                className="w-28"
+              />
+            </div>
+          )}
+
           <ScoreBreakdown
             basePoints={breakdown.base}
             bonusPoints={breakdown.bonus}
             totalPoints={breakdown.total}
+            breakdownDetails={breakdown.breakdownDetails}
           />
         </div>
 

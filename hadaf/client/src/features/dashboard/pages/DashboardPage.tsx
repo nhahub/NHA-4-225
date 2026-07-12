@@ -42,9 +42,7 @@ export const DashboardPage = () => {
     return <Skeleton className="h-64 w-full rounded-3xl" />;
   }
 
-  const pointsRatio = stats.dailyTarget > 0
-    ? (stats.dailyScore / stats.dailyTarget) * 100
-    : 0;
+  const pointsRatio = stats.dailyScore;
 
   return (
     <div className="space-y-8">

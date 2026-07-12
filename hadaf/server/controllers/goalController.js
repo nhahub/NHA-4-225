@@ -3,16 +3,19 @@ const Milestone = require("../models/Milestone");
 const Task = require("../models/Task");
 const AnalyticsEvent = require("../models/AnalyticsEvent");
 const {
-  calculateHybridProgress,
+  calculateGoalPointsProgress,
+  calculateMilestoneProgress,
   calculateGoalHealth,
   getCurrentWeek,
+  getTotalWeeks,
   calculateWeeklyExecutionScore,
 } = require("../utils/goal-progress");
 const catchAsync = require("../utils/catchAsync");
 
 // Compile helper for goal details and active goal list calculations
 const compileGoalProgress = async (goal) => {
-  const currentWeek = getCurrentWeek(goal.cycleStart);
+  const totalWeeks = getTotalWeeks(goal.cycleStart, goal.cycleEnd);
+  const currentWeek = getCurrentWeek(goal.cycleStart, new Date(), totalWeeks);
 
   // Calculate current week date boundaries in UTC to prevent timezone drift
   const weekStart = new Date(goal.cycleStart);
@@ -30,6 +33,7 @@ const compileGoalProgress = async (goal) => {
   const [
     tasksCount,
     completedTasksCount,
+    pointsAgg,
     milestonesCount,
     completedMilestonesCount,
     weeklyTasksCount,
@@ -38,6 +42,20 @@ const compileGoalProgress = async (goal) => {
   ] = await Promise.all([
     Task.countDocuments({ goalId: goal._id }),
     Task.countDocuments({ goalId: goal._id, status: "completed" }),
+    Task.aggregate([
+      { $match: { goalId: goal._id } },
+      {
+        $group: {
+          _id: null,
+          earnedTotal: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "completed"] }, { $ifNull: ["$goalPointsEarned", 0] }, 0],
+            },
+          },
+          anyWithPoints: { $sum: { $cond: [{ $gt: ["$goalPointsPlanned", 0] }, 1, 0] } },
+        },
+      },
+    ]),
     Milestone.countDocuments({ goalId: goal._id }),
     Milestone.countDocuments({ goalId: goal._id, is_completed: true }),
     Task.countDocuments({ goalId: goal._id, date: { $gte: weekStartStr, $lte: weekEndStr } }),
@@ -45,51 +63,50 @@ const compileGoalProgress = async (goal) => {
     Task.find({ goalId: goal._id, date: { $gte: goal.cycleStart.toISOString().split("T")[0], $lte: goal.cycleEnd.toISOString().split("T")[0] } }, { date: 1, status: 1 }).lean(),
   ]);
 
-  let progress = calculateHybridProgress(
+  const { earnedTotal = 0, anyWithPoints = 0 } = pointsAgg[0] || {};
+
+  const progress = calculateGoalPointsProgress(
+    goal.targetPoints,
+    earnedTotal,
     tasksCount,
     completedTasksCount,
-    milestonesCount,
-    completedMilestonesCount
+    anyWithPoints > 0
   );
 
-  // If manualProgress override is present, use it
-  let isOverride = false;
-  if (goal.manualProgress !== undefined && goal.manualProgress !== null) {
-    progress = goal.manualProgress;
-    isOverride = true;
-  }
-
-  const health = calculateGoalHealth(progress, currentWeek);
+  const health = calculateGoalHealth(progress, currentWeek, totalWeeks);
   const weeklyExecutionScore = calculateWeeklyExecutionScore(
     weeklyCompletedTasksCount,
     weeklyTasksCount
   );
 
-  // Build per-week completion buckets (12 weeks per cycle).
+  // Build per-week completion buckets across the full cycle length.
   // Each bucket carries `total` (any task scheduled that week) and `completed`
-  // (subset whose status is 'completed'). Weeks outside the cycle clamp to 1/12.
-  const weeklyCompletion = buildWeeklyCompletionBuckets(cycleTasks, goal.cycleStart);
+  // (subset whose status is 'completed').
+  const weeklyCompletion = buildWeeklyCompletionBuckets(cycleTasks, goal.cycleStart, totalWeeks);
 
   return {
     ...goal.toObject(),
     progress,
     health,
-    isOverride,
+    totalWeeks,
+    currentWeek,
     weeklyExecutionScore,
     stats: {
       tasksCount,
       completedTasksCount,
       milestonesCount,
       completedMilestonesCount,
+      targetPoints: goal.targetPoints,
+      earnedPoints: earnedTotal,
     },
     weeklyCompletion,
   };
 };
 
-// Bucket task documents into 12 ISO-week buckets relative to a goal's cycleStart.
+// Bucket task documents into ISO-week buckets relative to a goal's cycleStart.
 // Pure of Express/Mongoose concerns — accepts pre-fetched task lean docs.
-function buildWeeklyCompletionBuckets(tasks, cycleStart) {
-  const buckets = Array.from({ length: 12 }, (_, i) => ({
+function buildWeeklyCompletionBuckets(tasks, cycleStart, totalWeeks = 12) {
+  const buckets = Array.from({ length: totalWeeks }, (_, i) => ({
     week: i + 1,
     total: 0,
     completed: 0,
@@ -108,7 +125,7 @@ function buildWeeklyCompletionBuckets(tasks, cycleStart) {
     const diffDays = Math.floor((taskDate - start) / (1000 * 60 * 60 * 24));
     if (diffDays < 0) continue;
 
-    const idx = Math.min(11, Math.floor(diffDays / 7));
+    const idx = Math.min(totalWeeks - 1, Math.floor(diffDays / 7));
     buckets[idx].total += 1;
     if (task.status === "completed") buckets[idx].completed += 1;
   }
@@ -117,6 +134,39 @@ function buildWeeklyCompletionBuckets(tasks, cycleStart) {
     b.ratio = b.total > 0 ? Math.round((b.completed / b.total) * 100) : 0;
   }
   return buckets;
+}
+
+// Groups a goal's tasks by milestoneId and attaches derived progress to each milestone.
+// Accepts already-fetched milestone docs and task lean docs to avoid N+1 queries.
+function attachMilestoneProgress(milestones, tasks) {
+  const byMilestone = new Map();
+  for (const task of tasks) {
+    if (!task.milestoneId) continue;
+    const key = task.milestoneId.toString();
+    if (!byMilestone.has(key)) byMilestone.set(key, []);
+    byMilestone.get(key).push(task);
+  }
+
+  return milestones.map((m) => {
+    const milestoneTasks = byMilestone.get(m._id.toString()) ?? [];
+    const tasksCount = milestoneTasks.length;
+    const completedTasksCount = milestoneTasks.filter((t) => t.status === "completed").length;
+    const plannedPoints = milestoneTasks.reduce((sum, t) => sum + (t.goalPointsPlanned || 0), 0);
+    const earnedPoints = milestoneTasks
+      .filter((t) => t.status === "completed")
+      .reduce((sum, t) => sum + (t.goalPointsEarned || 0), 0);
+
+    const progress = tasksCount > 0
+      ? calculateMilestoneProgress(plannedPoints, earnedPoints, tasksCount, completedTasksCount)
+      : (m.is_completed ? 100 : 0);
+
+    return {
+      ...(m.toObject ? m.toObject() : m),
+      progress,
+      tasksCount,
+      completedTasksCount,
+    };
+  });
 }
 
 // Create Goal
@@ -137,7 +187,7 @@ exports.createGoal = catchAsync(async (req, res, next) => {
     description,
     category,
     customCategory,
-    measure,
+    targetPoints,
     relevance,
     cycleStart,
     cycleEnd,
@@ -164,7 +214,7 @@ exports.createGoal = catchAsync(async (req, res, next) => {
     description,
     category,
     customCategory,
-    measure,
+    targetPoints,
     relevance,
     cycleStart,
     cycleEnd,
@@ -174,7 +224,9 @@ exports.createGoal = catchAsync(async (req, res, next) => {
   if (milestones && milestones.length > 0) {
     const milestoneDocs = milestones.map((m, index) => ({
       goalId: goal._id,
-      title: m,
+      title: m.title,
+      startDate: m.startDate,
+      endDate: m.endDate,
       sort_order: index,
       is_completed: false,
     }));
@@ -242,20 +294,22 @@ exports.getGoalDetails = catchAsync(async (req, res, next) => {
   const [compiledGoal, milestones, tasks] = await Promise.all([
     compileGoalProgress(goal),
     Milestone.find({ goalId: goal._id }).sort({ sort_order: 1 }),
-    Task.find({ goalId: goal._id }).sort({ date: 1, priority: -1 }),
+    Task.find({ goalId: goal._id }).sort({ date: 1, priority: -1 }).lean(),
   ]);
+
+  const compiledMilestones = attachMilestoneProgress(milestones, tasks);
 
   res.status(200).json({
     success: true,
     data: {
       goal: compiledGoal,
-      milestones,
+      milestones: compiledMilestones,
       tasks,
     },
   });
 });
 
-// Edit Goal configuration (title, description, category, measure, relevance - progress unaffected)
+// Edit Goal configuration (title, description, category, targetPoints, relevance - progress recalculated from tasks on next read)
 exports.updateGoal = catchAsync(async (req, res, next) => {
   const validation = Goal.updateGoalSchema.safeParse(req.body);
   if (!validation.success) {
@@ -324,7 +378,7 @@ exports.replaceGoal = catchAsync(async (req, res, next) => {
     description,
     category,
     customCategory,
-    measure,
+    targetPoints,
     relevance,
     cycleStart,
     cycleEnd,
@@ -342,7 +396,7 @@ exports.replaceGoal = catchAsync(async (req, res, next) => {
     description,
     category,
     customCategory,
-    measure,
+    targetPoints,
     relevance,
     cycleStart,
     cycleEnd,
@@ -352,7 +406,9 @@ exports.replaceGoal = catchAsync(async (req, res, next) => {
   if (milestones && milestones.length > 0) {
     const milestoneDocs = milestones.map((m, index) => ({
       goalId: newGoal._id,
-      title: m,
+      title: m.title,
+      startDate: m.startDate,
+      endDate: m.endDate,
       sort_order: index,
       is_completed: false,
     }));
@@ -408,66 +464,5 @@ exports.softDeleteGoal = catchAsync(async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: null,
-  });
-});
-
-// Override calculated progress manually
-exports.overrideProgress = catchAsync(async (req, res, next) => {
-  const validation = Goal.overrideGoalSchema.safeParse(req.body);
-  if (!validation.success) {
-    const firstError = validation.error.issues[0];
-    return res.status(400).json({
-      success: false,
-      errorCode: "VALIDATION",
-      error: firstError.message,
-      field: firstError.path[0],
-    });
-  }
-
-  const { progress } = validation.data;
-
-  if (progress === undefined || progress === null) {
-    const goal = await Goal.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
-      { $unset: { manualProgress: "" } },
-      { new: true }
-    );
-
-    if (!goal) {
-      return res.status(404).json({
-        success: false,
-        errorCode: "VALIDATION",
-        error: "goals.errors.notFound",
-      });
-    }
-
-    const compiledGoal = await compileGoalProgress(goal);
-    return res.status(200).json({
-      success: true,
-      data: compiledGoal,
-    });
-  }
-
-  // `progress` is already a validated number 0–100 from `overrideGoalSchema`.
-  const progressNum = progress;
-
-  const goal = await Goal.findOneAndUpdate(
-    { _id: req.params.id, userId: req.user.id },
-    { manualProgress: progressNum },
-    { new: true }
-  );
-
-  if (!goal) {
-    return res.status(404).json({
-      success: false,
-      errorCode: "VALIDATION",
-      error: "goals.errors.notFound",
-    });
-  }
-
-  const compiledGoal = await compileGoalProgress(goal);
-  res.status(200).json({
-    success: true,
-    data: compiledGoal,
   });
 });

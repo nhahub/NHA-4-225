@@ -39,10 +39,10 @@ describe('Epic 1: Goals & Milestones API', () => {
           title: 'Learn Node.js',
           description: 'Master backend development',
           category: 'education_work',
-          measure: 'Complete 2 milestones',
+          targetPoints: 100,
           cycleStart: new Date().toISOString(),
           cycleEnd: new Date(Date.now() + 86400000 * 84).toISOString(),
-          milestones: ['Learn Express', 'Learn MongoDB']        
+          milestones: [{ title: 'Learn Express' }, { title: 'Learn MongoDB' }]
         })
         .expect(201);
       
@@ -63,6 +63,39 @@ describe('Epic 1: Goals & Milestones API', () => {
       expect(res.body.success).toBe(false);
       expect(res.body.errorCode).toBe('VALIDATION');
     });
+
+    it('should accept a configurable cycle length as long as it is a whole number of weeks', async () => {
+      const res = await request(app)
+        .post('/api/goals').set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie)
+        .send({
+          title: 'Short 4-week goal',
+          category: 'health',
+          targetPoints: 50,
+          cycleStart: new Date().toISOString(),
+          cycleEnd: new Date(Date.now() + 86400000 * 28).toISOString(), // 4 weeks
+        })
+        .expect(201);
+
+      expect(res.body.success).toBe(true);
+    });
+
+    it('should reject a cycle length that is not a whole number of weeks', async () => {
+      const res = await request(app)
+        .post('/api/goals').set("X-Requested-With", "XMLHttpRequest")
+        .set("Cookie", cookie)
+        .send({
+          title: 'Bad cycle goal',
+          category: 'health',
+          targetPoints: 50,
+          cycleStart: new Date().toISOString(),
+          cycleEnd: new Date(Date.now() + 86400000 * 30).toISOString(), // 30 days, not a whole week
+        })
+        .expect(400);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.field).toBe('cycleEnd');
+    });
   });
 
   describe('Milestones Operations', () => {
@@ -78,10 +111,10 @@ describe('Epic 1: Goals & Milestones API', () => {
           description: 'Test description',
           category: 'other',
           customCategory: 'My Custom Category',
-          measure: 'Complete 1 milestone',
+          targetPoints: 100,
           cycleStart: new Date().toISOString(),
           cycleEnd: new Date(Date.now() + 86400000 * 84).toISOString(),
-          milestones: ['Milestone 1']
+          milestones: [{ title: 'Milestone 1' }]
         });
       goalId = res.body.data._id;
       const Milestone = require('../../models/Milestone');

@@ -1,8 +1,10 @@
 const Milestone = require("../models/Milestone");
 const Goal = require("../models/Goal");
+const Task = require("../models/Task");
 const catchAsync = require("../utils/catchAsync");
 
-// Toggle Milestone Checked State
+// Toggle Milestone Checked State (manual — only allowed when the milestone has no
+// linked tasks; once tasks exist, completion is derived automatically)
 exports.toggleMilestone = catchAsync(async (req, res, next) => {
   const milestone = await Milestone.findById(req.params.id).populate("goalId");
 
@@ -11,6 +13,15 @@ exports.toggleMilestone = catchAsync(async (req, res, next) => {
       success: false,
       errorCode: "VALIDATION",
       error: "milestones.errors.notFound",
+    });
+  }
+
+  const linkedTaskCount = await Task.countDocuments({ milestoneId: milestone._id });
+  if (linkedTaskCount > 0) {
+    return res.status(400).json({
+      success: false,
+      errorCode: "VALIDATION",
+      error: "milestones.errors.derivedFromTasks",
     });
   }
 
@@ -81,7 +92,7 @@ exports.reorderMilestones = catchAsync(async (req, res, next) => {
 // Add Milestone to an existing Goal
 exports.addMilestone = catchAsync(async (req, res, next) => {
   const goalId = req.params.id;
-  const { title } = req.body;
+  const { title, startDate, endDate } = req.body;
 
   if (!title) {
     return res.status(400).json({
@@ -105,6 +116,8 @@ exports.addMilestone = catchAsync(async (req, res, next) => {
   const milestone = await Milestone.create({
     goalId,
     title,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
     sort_order: milestoneCount,
     is_completed: false,
   });
@@ -114,6 +127,8 @@ exports.addMilestone = catchAsync(async (req, res, next) => {
     data: {
       id: milestone._id,
       title: milestone.title,
+      startDate: milestone.startDate,
+      endDate: milestone.endDate,
       is_completed: milestone.is_completed,
       sort_order: milestone.sort_order,
     },

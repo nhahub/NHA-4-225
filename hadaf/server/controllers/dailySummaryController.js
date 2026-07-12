@@ -187,19 +187,19 @@ exports.getToday = catchAsync(async (req, res) => {
     return res.status(404).json({ success: false, errorCode: "UNKNOWN", error: "errors.unauthorized" });
   }
 
-  const todayStr = resolveLogicalDate(new Date(), user.settings.day_start);
+  const targetDateStr = req.query.date || resolveLogicalDate(new Date(), user.settings.day_start);
 
-  let summary = await DailySummary.findOne({ userId: req.user.id, date: todayStr }).lean();
+  let summary = await DailySummary.findOne({ userId: req.user.id, date: targetDateStr }).lean();
 
   if (!summary) {
-    // Missing summary for today, run the full helper to generate a blank/computed one
-    await exports.upsertDailySummaryHelper(req.user.id, todayStr);
-    summary = await DailySummary.findOne({ userId: req.user.id, date: todayStr }).lean();
+    // Missing summary for target date, run the full helper to generate a blank/computed one
+    await exports.upsertDailySummaryHelper(req.user.id, targetDateStr);
+    summary = await DailySummary.findOne({ userId: req.user.id, date: targetDateStr }).lean();
   }
 
   res.status(200).json({
     success: true,
-    data: summary || { date: todayStr, dayType: "work", tasksCompleted: 0, habitsCompleted: 0, pointsEarned: 0, dayState: "good_enough" }
+    data: summary || { date: targetDateStr, dayType: "work", tasksCompleted: 0, habitsCompleted: 0, pointsEarned: 0, dayState: "good_enough" }
   });
 });
 

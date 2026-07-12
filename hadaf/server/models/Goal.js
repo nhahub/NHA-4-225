@@ -12,12 +12,11 @@ const goalSchema = new mongoose.Schema({
     required: true 
   },
   customCategory: { type: String },
-  measure: { type: String, required: true },
+  targetPoints: { type: Number, required: true, default: 100, min: 1 },
   relevance: { type: String },
   cycleStart: { type: Date, required: true },
   cycleEnd: { type: Date, required: true },
-  manualProgress: { type: Number },
-  status: { 
+  status: {
     type: String, 
     enum: ['active', 'completed', 'archived', 'replaced'], 
     default: 'active',
@@ -42,31 +41,45 @@ goalSchema.pre('deleteOne', { document: true, query: false }, async function (ne
   }
 });
 
+const dateField = z.preprocess((arg) => {
+  if (typeof arg === "string" || arg instanceof Date) return new Date(arg);
+  return arg;
+}, z.date());
+
+const optionalDateField = z.preprocess((arg) => {
+  if (arg === undefined || arg === null || arg === "") return undefined;
+  if (typeof arg === "string" || arg instanceof Date) return new Date(arg);
+  return arg;
+}, z.date().optional());
+
+// Milestones ARE sub-goals: a time-boxed segment of the cycle. Dates are optional so a
+// plain checklist-style milestone (no date range) remains valid.
+const milestoneDraftSchema = z.object({
+  title: z.string().min(1, "Milestone title is required"),
+  startDate: optionalDateField,
+  endDate: optionalDateField,
+});
+
 const createGoalSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   category: z.enum(['education_work', 'family', 'health', 'religion_spirituality', 'other']),
   customCategory: z.string().optional(),
-  measure: z.string().min(1, "Measure is required"),
+  targetPoints: z.number().int().min(1, "Target points must be at least 1").max(100000),
   relevance: z.string().optional(),
-  cycleStart: z.preprocess((arg) => {
-    if (typeof arg === "string" || arg instanceof Date) return new Date(arg);
-    return arg;
-  }, z.date()),
-  cycleEnd: z.preprocess((arg) => {
-    if (typeof arg === "string" || arg instanceof Date) return new Date(arg);
-    return arg;
-  }, z.date()),
-  milestones: z.array(z.string().min(1)).optional()
+  cycleStart: dateField,
+  cycleEnd: dateField,
+  milestones: z.array(milestoneDraftSchema).optional()
 }).refine((data) => {
   const start = new Date(data.cycleStart);
   const end = new Date(data.cycleEnd);
   start.setHours(0, 0, 0, 0);
   end.setHours(0, 0, 0, 0);
   const diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
-  return diffDays === 84;
+  // Cycle length must be a whole number of weeks, 1–52 (12 is the default "12 Week Year").
+  return diffDays > 0 && diffDays % 7 === 0 && diffDays / 7 <= 52;
 }, {
-  message: "Goal cycle must be exactly 12 weeks (84 days)",
+  message: "Goal cycle must be a whole number of weeks, between 1 and 52",
   path: ["cycleEnd"]
 }).refine((data) => {
   if (data.category === 'other') {
@@ -88,19 +101,12 @@ const updateGoalSchema = z.object({
   description: z.string().optional(),
   category: z.enum(['education_work', 'family', 'health', 'religion_spirituality', 'other']).optional(),
   customCategory: z.string().optional(),
-  measure: z.string().min(1, "Measure is required").optional(),
+  targetPoints: z.number().int().min(1, "Target points must be at least 1").max(100000).optional(),
   relevance: z.string().optional(),
 });
 
 const replaceGoalSchema = createGoalSchema.extend({
   reason: z.string().min(1, "Replacement reason is required")
-});
-
-// Body for PATCH /api/goals/:id/override. Pass `null`, omit the field, or
-// send `undefined` to clear the override (controller uses $unset);
-// any number 0–100 sets manualProgress.
-const overrideGoalSchema = z.object({
-  progress: z.number().min(0).max(100).nullable().optional(),
 });
 
 const Goal = mongoose.model("Goal", goalSchema);
@@ -109,6 +115,5 @@ Goal.createGoalSchema = createGoalSchema;
 Goal.softDeleteGoalSchema = softDeleteGoalSchema;
 Goal.updateGoalSchema = updateGoalSchema;
 Goal.replaceGoalSchema = replaceGoalSchema;
-Goal.overrideGoalSchema = overrideGoalSchema;
 
 module.exports = Goal;

@@ -60,8 +60,8 @@ export const useHomeData = (selectedDate: Date): HomeData => {
   const summaryQuery = useQueries({
     queries: [
       {
-        queryKey: ['home', 'daily-summary', 'today'] as const,
-        queryFn: getDailySummary,
+        queryKey: ['home', 'daily-summary', dateStr] as const,
+        queryFn: () => getDailySummary(dateStr),
       },
       {
         queryKey: ['home', 'daily-summary', 'capacity'] as const,

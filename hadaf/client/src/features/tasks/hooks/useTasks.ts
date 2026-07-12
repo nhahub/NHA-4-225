@@ -68,6 +68,10 @@ export const useCreateTask = () => {
       queryClient.invalidateQueries({ queryKey: key });
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
+      // Goal-linked tasks change the parent goal's stats/points pool immediately.
+      queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+      // HomePage keeps its own local ['home', ...] query keys — see useHomeData.ts.
+      queryClient.invalidateQueries({ queryKey: ['home'] });
     },
     onError: (err, input) =>
       handleError(err, {
@@ -86,6 +90,9 @@ export const useCompleteTask = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
+      // A completed goal/milestone task must be reflected on the parent goal right away.
+      queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+      queryClient.invalidateQueries({ queryKey: ['home'] });
     },
     onError: (err, vars) =>
       handleError(err, {
@@ -134,6 +141,8 @@ export const useDeleteTask = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.TASKS] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DAILY_SUMMARY });
+      queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.GOALS] });
+      queryClient.invalidateQueries({ queryKey: ['home'] });
     },
     onError: (err, id) =>
       handleError(err, { title: 'tasks.errors.deleteFailed', retry: () => apiDeleteTask(id) }),

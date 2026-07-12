@@ -3,6 +3,8 @@ import { Card } from '@/shared/components/ui/Card';
 import { ProgressBar } from '@/features/dashboard/components/ProgressBar';
 import { CapacityGauge } from '@/features/dashboard/components/CapacityGauge';
 import type { DailySummary, CapacityData } from '@/features/dashboard/api/dashboardApi';
+import { useDateStore } from '@/shared/stores/useDateStore';
+import { format, startOfToday, differenceInCalendarDays } from 'date-fns';
 
 interface ProgressSectionProps {
   summary: DailySummary | undefined;
@@ -17,11 +19,20 @@ interface ProgressSectionProps {
  */
 export const ProgressSection = ({ summary, capacity, isLoading }: ProgressSectionProps) => {
   const { t } = useTranslation();
+  const { selectedDate } = useDateStore();
 
-  const pointsRatio =
-    summary && summary.dailyTarget > 0
-      ? (summary.pointsEarned / summary.dailyTarget) * 100
-      : 0;
+  const today = startOfToday();
+  const diff = differenceInCalendarDays(selectedDate, today);
+  
+  let dateText = '';
+  if (diff === 0) dateText = "Today's";
+  else if (diff === -1) dateText = "Yesterday's";
+  else if (diff === 1) dateText = "Tomorrow's";
+  else dateText = format(selectedDate, "d MMM");
+
+  const heading = `${dateText} Score`;
+
+  const pointsRatio = summary?.pointsEarned ?? 0;
 
   return (
     <section aria-labelledby="home-progress-heading">
@@ -29,7 +40,7 @@ export const ProgressSection = ({ summary, capacity, isLoading }: ProgressSectio
         id="home-progress-heading"
         className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3"
       >
-        {t('home.sections.progress')}
+        {heading}
       </h2>
 
       <div className="flex flex-col gap-6">
@@ -39,9 +50,6 @@ export const ProgressSection = ({ summary, capacity, isLoading }: ProgressSectio
               <h3 className="text-base font-bold text-gray-900 dark:text-white">
                 {t('home.progress.scoreLabel')}
               </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {t('home.progress.ofTarget', { target: summary?.dailyTarget ?? 0 })}
-              </p>
             </div>
             <div className="text-end">
               <div className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">

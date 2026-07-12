@@ -1,5 +1,6 @@
 const Task = require("../models/Task");
 const Goal = require("../models/Goal");
+const Milestone = require("../models/Milestone");
 const AnalyticsEvent = require("../models/AnalyticsEvent");
 const catchAsync = require("../utils/catchAsync");
 const { detectTaskType, calculateBlockDuration } = require("../utils/task-type");
@@ -71,6 +72,7 @@ exports.createTask = catchAsync(async (req, res) => {
 
   const {
     goalId,
+    milestoneId,
     title,
     description,
     priority,
@@ -78,6 +80,7 @@ exports.createTask = catchAsync(async (req, res) => {
     timeBlockStart,
     timeBlockEnd,
     plannedDurationMinutes,
+    goalPointsPlanned,
     checklist,
   } = validation.data;
 
@@ -92,6 +95,28 @@ exports.createTask = catchAsync(async (req, res) => {
         error: "tasks.errors.goalNotFound",
         field: "goalId",
       });
+    }
+  }
+
+  // Verify milestoneId exists and belongs to the given goal (schema already
+  // enforces milestoneId requires goalId)
+  if (milestoneId) {
+    const milestone = await Milestone.findOne({ _id: milestoneId, goalId });
+    if (!milestone) {
+      return res.status(404).json({
+        success: false,
+        errorCode: "VALIDATION",
+        error: "tasks.errors.milestoneNotFound",
+        field: "milestoneId",
+      });
+    }
+    // Linking a new (pending) task to a milestone that was already marked complete
+    // would otherwise leave it showing 100% with an outstanding task underneath —
+    // reopen it so its derived state stays honest.
+    if (milestone.is_completed) {
+      milestone.is_completed = false;
+      milestone.completed_at = null;
+      await milestone.save();
     }
   }
 
@@ -110,6 +135,7 @@ exports.createTask = catchAsync(async (req, res) => {
   const task = await Task.create({
     userId: req.user.id,
     goalId: goalId || undefined, // strip empty string from optional field
+    milestoneId: milestoneId || undefined,
     title,
     description,
     type,
@@ -118,6 +144,7 @@ exports.createTask = catchAsync(async (req, res) => {
     timeBlockStart,
     timeBlockEnd,
     plannedDurationMinutes: resolvedPlannedMinutes || undefined,
+    goalPointsPlanned: goalId ? (goalPointsPlanned ?? 1) : undefined,
     checklist,
     status: "pending",
   });
@@ -140,6 +167,7 @@ exports.completeTask = catchAsync(async (req, res) => {
   const validation = Task.completeTaskSchema.safeParse({
     taskId: req.params.id,
     actualDurationMinutes: req.body?.actualDurationMinutes,
+    goalPointsEarned: req.body?.goalPointsEarned,
   });
   if (!validation.success) {
     const firstError = validation.error.issues[0];
@@ -151,7 +179,7 @@ exports.completeTask = catchAsync(async (req, res) => {
     });
   }
 
-  const { taskId, actualDurationMinutes } = validation.data;
+  const { taskId, actualDurationMinutes, goalPointsEarned } = validation.data;
 
   // Load the task to read its type/plannedMinutes for scoring.
   // No status check here — the atomic write below owns that check.
@@ -184,6 +212,7 @@ exports.completeTask = catchAsync(async (req, res) => {
     type:           task.type,
     actualMinutes:  actualDurationMinutes,
     plannedMinutes: task.plannedDurationMinutes ?? 0,
+    priority:       task.priority,
     streakDays,
   });
 
@@ -196,6 +225,16 @@ exports.completeTask = catchAsync(async (req, res) => {
   };
   if (actualDurationMinutes != null) {
     completionFields.actualDurationMinutes = actualDurationMinutes;
+  }
+
+  // Goal-progress points: only meaningful for goal-linked tasks. The user confirms how
+  // many of the planned points were actually delivered (defaults to the full planned
+  // amount); never allow it to exceed what was planned so a single task can't blow past
+  // the goal's target pool.
+  if (task.goalId) {
+    const planned = task.goalPointsPlanned ?? 1;
+    const resolvedGoalPoints = goalPointsEarned != null ? Math.min(goalPointsEarned, planned) : planned;
+    completionFields.goalPointsEarned = resolvedGoalPoints;
   }
 
   // Atomic check-and-set: the status: { $ne: "completed" } condition and the write
@@ -215,6 +254,22 @@ exports.completeTask = catchAsync(async (req, res) => {
       errorCode: "VALIDATION",
       error: "tasks.errors.alreadyCompleted",
     });
+  }
+
+  // Milestones ARE sub-goals: when every task tied to a milestone is complete, the
+  // milestone auto-completes. Only touches milestones that still have pending tasks
+  // to avoid clobbering a milestone the user already completed manually.
+  if (updated.milestoneId) {
+    const remainingCount = await Task.countDocuments({
+      milestoneId: updated.milestoneId,
+      status: { $ne: "completed" },
+    });
+    if (remainingCount === 0) {
+      await Milestone.findOneAndUpdate(
+        { _id: updated.milestoneId, is_completed: false },
+        { is_completed: true, completed_at: new Date() }
+      );
+    }
   }
 
   await AnalyticsEvent.create({

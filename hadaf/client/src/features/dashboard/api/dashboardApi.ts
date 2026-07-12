@@ -24,7 +24,8 @@ export interface DailySummary {
   summaryShown?: boolean;
 }
 
-export const getDailySummary = async (): Promise<DailySummary> => {
-  const response = await apiClient.get<DailySummary>('/daily-summaries/today');
+export const getDailySummary = async (dateStr?: string): Promise<DailySummary> => {
+  const url = dateStr ? `/daily-summaries/today?date=${dateStr}` : '/daily-summaries/today';
+  const response = await apiClient.get<DailySummary>(url);
   return response.data;
 };
